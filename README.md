@@ -6,7 +6,7 @@ This project was developed as part of a **Database and Software Process** course
 
 ## Tech Stack
 
-- **Frontend:** HTML, CSS, Tailwind CSS, JavaScript, React.js
+- **Frontend:** HTML, CSS, Tailwind CSS, JavaScript, Vue.js + Vite
 - **Backend:** Node.js กับ Express  
 - **ฐานข้อมูล:** MySQL  
 
