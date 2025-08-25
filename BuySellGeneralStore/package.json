@@ -20,6 +20,8 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "sass": "^1.90.0"
+    "@iconify-json/uil": "^1.2.3",
+    "sass": "^1.90.0",
+    "sass-embedded": "^1.90.0"
   }
 }
