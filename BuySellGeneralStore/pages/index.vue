@@ -6,15 +6,9 @@ import SoldoutCard from '~/components/Product/Sold out Card.vue'
 import Producthot from '~/components/Product/Producthot.vue'
 
 const activePage = ref('Home')
-const cartCount = ref(0)  // ตัวนับสินค้าในรถเข็น
 
 const setActive = (page) => {
   activePage.value = page
-}
-
-// ฟังก์ชันเพิ่มสินค้าในรถเข็น
-const addToCart = () => {
-  cartCount.value++
 }
 </script>
 
@@ -29,31 +23,28 @@ const addToCart = () => {
     </ul>
     <div class="cart-icon">
       <i class="fas fa-shopping-cart"></i>
-      <span class="cart-count" v-if="cartCount > 0">{{ cartCount }}</span>
     </div>
   </nav>
   
-  <!-- ไอคอนรถเข็นแบบ SVG ลอยมุมขวาบน -->
-<div class="cart">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-       viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-       class="w-6 h-6">
-     <path stroke-linecap="round" stroke-linejoin="round"
-          d="M2.25 3h1.5l1.5 13.5h12.75l1.5-9H6.75M16.5 21a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-  </svg>
-  <span class="floating-cart-count" v-if="cartCount > 0">{{ cartCount }}</span>
-</div>
+ <!-- ไอคอนรถเข็นแบบ SVG ลอยมุมขวาบน -->
+  <div class="cart">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+         class="w-6 h-6">
+       <path stroke-linecap="round" stroke-linejoin="round"
+            d="M2.25 3h1.5l1.5 13.5h12.75l1.5-9H6.75M16.5 21a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+    </svg>
+  </div>
 
   <!-- ขายดี -->
   <div class="text-block">
     <h2 class="title">สินค้าขายดี</h2>
   </div>
-  <!-- ProductHot -->
+  <!--  ProductHot -->
   <div class="product-list">
     <Producthot :name="'ปากกา'" :price="12" :qty="101" />
     <Producthot :name="'ปากกา'" :price="12" :qty="101" />
   </div>
-
   <!-- สินค้าลดราคา -->
   <div class="text-block1">
     <h2 class="title">สินค้าลดราคา</h2>
@@ -64,25 +55,14 @@ const addToCart = () => {
     <ProductCardSell :name="'ปากกา'" :originalPrice="13" :price="12" :qty="101" />
     <ProductCardSell :name="'ปากกา'" :originalPrice="13" :price="12" :qty="101" />
   </div>
-
-  <!-- สินค้าปกติ -->
+    <!-- สินค้าปกติ -->
   <div class="text-block1">
     <h2 class="title">สินค้าปกติ</h2>
   </div>
-  <!-- ProductCard -->
+  <!--  ProductCard -->
   <div class="product-list">
-    <ProductCard
-      :name="'ปากกา'"
-      :price="12"
-      :qty="101"
-      @add-to-cart="addToCart"
-    />
-    <ProductCard
-      :name="'ปากกา'"
-      :price="12"
-      :qty="101"
-      @add-to-cart="addToCart"
-    />
+    <ProductCard :name="'ปากกา'" :price="12" :qty="101" />
+    <ProductCard :name="'ปากกา'" :price="12" :qty="101" />
     <SoldoutCard :name="'ปากกา'" :price="12" :qty="0" />
   </div>
 </template>
@@ -128,17 +108,6 @@ const addToCart = () => {
   width: 100px;
   display: flex;
   justify-content: flex-end;
-  align-items: center;
-}
-
-.cart-count {
-  background-color: #3cb371;
-  color: white;
-  font-size: 14px;
-  padding: 2px 6px;
-  border-radius: 50%;
-  margin-left: 6px;
-  font-weight: bold;
 }
 
 .title {
@@ -160,9 +129,9 @@ const addToCart = () => {
 }
 .cart {
   position: fixed;
-  bottom: 20px;
+  bottom: 20px;   /* เปลี่ยนจาก top เป็น bottom */
   right: 20px;
-  top: auto;
+  top: auto;      /* ป้องกัน top ทับซ้อน */
   background-color: white;
   padding: 8px;
   border-radius: 50%;

@@ -10,7 +10,7 @@
         <p class="product-qty">{{ qty }} Qty.</p>
       </div>
     </div>
-    <button class="add-to-cart" @click="addToCart">เพิ่มลงตะกร้า</button>
+    <button class="add-to-cart">เพิ่มลงตะกร้า</button>
   </div>
 </template>
 
@@ -29,11 +29,6 @@ export default {
     qty: {
       type: Number,
       default: 1
-    }
-  },
-  methods: {
-    addToCart() {
-      this.$emit('add-to-cart')
     }
   }
 }
@@ -76,7 +71,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 14px; 
 }
 
 .product-price {
@@ -100,6 +95,6 @@ export default {
 }
 
 .add-to-cart:hover {
-  background-color: #52b27e;
+  background-color: #52b27e; 
 }
 </style>
