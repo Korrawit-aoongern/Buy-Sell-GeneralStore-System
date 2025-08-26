@@ -56,102 +56,106 @@ const sortedProducts = computed(() => {
 </script>
 
 <template>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="spacer"></div>
-    <ul class="nav-links">
-      <li><router-link to="/" active-class="active">Home</router-link></li>
+  <div>
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="spacer"></div>
+      <ul class="nav-links">
+        <li><router-link to="/" active-class="active">Home</router-link></li>
         <li><router-link to="/Product" active-class="active">Product</router-link></li>
         <li><router-link to="/order" active-class="active">Order</router-link></li>
-    </ul>
-    <div class="cart-icon">
-      <i class="fas fa-shopping-cart"></i>
-    </div>
-  </nav>
+      </ul>
+      <div class="cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+    </nav>
 
-  <!-- Search bar -->
+    <!-- Search bar -->
     <div class="search-bar">
       <input type="text" placeholder="ค้นหา..." />
     </div>
-  
+
+    <!-- Sort dropdown -->
     <div class="sort-dropdown">
-    <label class="sort-label">จัดเรียงโดย</label>
-    <div class="select-wrapper">
-      <select v-model="selectedSort">
-        <option value="az">ก-ฮ A-Z</option>
-        <option value="za">ฮ-ก Z-A</option>
-        <option value="priceLowHigh">ราคาต่ำไปสูง</option>
-        <option value="priceHighLow">ราคาสูงไปต่ำ</option>
-      </select>
-      <span class="arrow">&#x25BC;</span> <!-- ลูกศร ▼ -->
+      <label class="sort-label">จัดเรียงโดย</label>
+      <div class="select-wrapper">
+        <select v-model="selectedSort">
+          <option value="az">ก-ฮ A-Z</option>
+          <option value="za">ฮ-ก Z-A</option>
+          <option value="priceLowHigh">ราคาต่ำไปสูง</option>
+          <option value="priceHighLow">ราคาสูงไปต่ำ</option>
+        </select>
+        <span class="arrow">&#x25BC;</span>
+      </div>
+    </div>
+
+    <!-- Floating cart icon -->
+    <div class="cart">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+           class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 3h1.5l1.5 13.5h12.75l1.5-9H6.75M16.5 21a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+      </svg>
+    </div>
+
+    <!-- Product list -->
+    <div class="product-list">
+      <ProductCard
+        v-for="(product, index) in sortedProducts"
+        :key="index"
+        :name="product.name"
+        :price="product.price"
+        :qty="product.qty"
+        :image="product.image"
+      />
+    </div>
+
+    <!-- Filter toggle button -->
+    <button class="filter-toggle" @click="toggleFilterTab" v-if="!showFilterTab">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+           stroke-width="2" viewBox="0 0 24 24" width="24" height="24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 6h18M3 12h18M3 18h18" />
+      </svg>
+    </button>
+
+    <!-- Filter tab popup -->
+    <div v-if="showFilterTab" class="filter-tab">
+      <button class="close-btn" @click="toggleFilterTab">✕</button>
+
+      <h3>สินค้า</h3>
+      <ul class="filter-list">
+        <li>อาหาร</li>
+        <li>ของใช้ในครัว</li>
+        <li>ของใช้ในห้องน้ำ</li>
+        <li>ของตกแต่งบ้าน</li>
+        <li>ของใช้ส่วนตัว</li>
+        <li>ของใช้เล็กกรอบกิ๊กส์</li>
+        <li>ของใช้กลางแจ้ง</li>
+        <li>ของใช้บ้านทั่วไป</li>
+      </ul>
+
+      <h3>ราคา</h3>
+      <ul class="filter-list">
+        <li><input type="radio" id="price-all" name="price" checked /> <label for="price-all">ไม่จำกัด</label></li>
+        <li><input type="radio" id="price-0-100" name="price" /> <label for="price-0-100">0.00 - 100.00</label></li>
+        <li><input type="radio" id="price-100-500" name="price" /> <label for="price-100-500">100.00 - 500.00</label></li>
+        <li><input type="radio" id="price-500-1000" name="price" /> <label for="price-500-1000">500.00 - 1,000.00</label></li>
+        <li><input type="radio" id="price-over-1000" name="price" /> <label for="price-over-1000">มากกว่า 1,000.00</label></li>
+      </ul>
+
+      <h3>ประเภทสินค้า</h3>
+      <ul class="filter-list">
+        <li><input type="radio" id="type-all" name="type" checked /> <label for="type-all">ไม่จำกัด</label></li>
+        <li><input type="radio" id="type-discount" name="type" /> <label for="type-discount">สินค้าลดราคา</label></li>
+        <li><input type="radio" id="type-hot" name="type" /> <label for="type-hot">สินค้าขายดี</label></li>
+        <li><input type="radio" id="type-normal" name="type" /> <label for="type-normal">สินค้าปกติ</label></li>
+      </ul>
     </div>
   </div>
-
- <!-- ไอคอนรถเข็นแบบ SVG ลอยมุมขวาบน -->
-  <div class="cart">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-         class="w-6 h-6">
-       <path stroke-linecap="round" stroke-linejoin="round"
-            d="M2.25 3h1.5l1.5 13.5h12.75l1.5-9H6.75M16.5 21a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-    </svg>
-  </div>
-
-  <!--  ProductCard -->
-  <div class="product-list">
-  <ProductCard
-    v-for="(product, index) in sortedProducts"
-    :key="index"
-    :name="product.name"
-    :price="product.price"
-    :qty="product.qty"
-    :image="product.image"
-  />
-</div>
-
-
- 
-<button class="filter-toggle" @click="toggleFilterTab" v-if="!showFilterTab">
-  <!-- ไอคอนสามขีด (hamburger) -->
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="24" height="24">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M3 12h18M3 18h18" />
-  </svg>
-</button>
-
-  <!-- แท็บ popup -->
-  <div v-if="showFilterTab" class="filter-tab">
-    <button class="close-btn" @click="toggleFilterTab">✕</button>
-    
-    <h3>สินค้า</h3>
-    <ul class="filter-list">
-      <li>อาหาร</li>
-      <li>ของใช้ในครัว</li>
-      <li>ของใช้ในห้องน้ำ</li>
-      <li>ของตกแต่งบ้าน</li>
-      <li>ของใช้ส่วนตัว</li>
-      <li>ของใช้เล็กกรอบกิ๊กส์</li>
-      <li>ของใช้กลางแจ้ง</li>
-      <li>ของใช้บ้านทั่วไป</li>
-    </ul>
-
-    <h3>ราคา</h3>
-    <ul class="filter-list">
-      <li><input type="radio" id="price-all" name="price" checked /> <label for="price-all">ไม่จำกัด</label></li>
-      <li><input type="radio" id="price-0-100" name="price" /> <label for="price-0-100">0.00 - 100.00</label></li>
-      <li><input type="radio" id="price-100-500" name="price" /> <label for="price-100-500">100.00 - 500.00</label></li>
-      <li><input type="radio" id="price-500-1000" name="price" /> <label for="price-500-1000">500.00 - 1,000.00</label></li>
-      <li><input type="radio" id="price-over-1000" name="price" /> <label for="price-over-1000">มากกว่า 1,000.00</label></li>
-    </ul>
-
-    <h3>ประเภทสินค้า</h3>
-    <ul class="filter-list">
-      <li><input type="radio" id="type-all" name="type" checked /> <label for="type-all">ไม่จำกัด</label></li>
-      <li><input type="radio" id="type-discount" name="type" /> <label for="type-discount">สินค้าลดราคา</label></li>
-      <li><input type="radio" id="type-hot" name="type" /> <label for="type-hot">สินค้าขายดี</label></li>
-      <li><input type="radio" id="type-normal" name="type" /> <label for="type-normal">สินค้าปกติ</label></li>
-    </ul>
-  </div>
 </template>
+
 
 <style scoped>
 .navbar {

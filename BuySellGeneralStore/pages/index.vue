@@ -46,72 +46,74 @@ const sortedProducts = computed(() => {
 const hotProducts = computed(() => productList.value.filter(p => p.type === 'hot'))
 const sellProducts = computed(() => productList.value.filter(p => p.type === 'sell'))
 const normalProducts = computed(() => productList.value.filter(p => p.type === 'normal'))
-
 </script>
 
 <template>
-  <!-- Navbar -->
-  <nav class="navbar">
-    <div class="spacer"></div>
-    <ul class="nav-links">
-      <li><router-link to="/" active-class="active">Home</router-link></li>
+  <div> <!-- ✅ Wrapper element -->
+  
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="spacer"></div>
+      <ul class="nav-links">
+        <li><router-link to="/" active-class="active">Home</router-link></li>
         <li><router-link to="/Product" active-class="active">Product</router-link></li>
         <li><router-link to="/order" active-class="active">Order</router-link></li>
-    </ul>
-    <div class="cart-icon">
-      <i class="fas fa-shopping-cart"></i>
+      </ul>
+      <div class="cart-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+    </nav>
+
+    <!-- ไอคอนรถเข็นแบบ SVG ลอยมุมขวาบน -->
+    <div class="cart">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+           viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+           class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.25 3h1.5l1.5 13.5h12.75l1.5-9H6.75M16.5 21a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+      </svg>
     </div>
-  </nav>
-  
- <!-- ไอคอนรถเข็นแบบ SVG ลอยมุมขวาบน -->
-  <div class="cart">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-         class="w-6 h-6">
-       <path stroke-linecap="round" stroke-linejoin="round"
-            d="M2.25 3h1.5l1.5 13.5h12.75l1.5-9H6.75M16.5 21a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm-9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-    </svg>
-  </div>
 
-<!-- ขายดี -->
-<div class="product-list">
-  <Producthot
-    v-for="(product, index) in hotProducts"
-    :key="index"
-    :name="product.name"
-    :price="product.price"
-    :qty="product.qty"
-    :image="product.image"
-  />
-</div>
+    <!-- ขายดี -->
+    <div class="product-list">
+      <Producthot
+        v-for="(product, index) in hotProducts"
+        :key="index"
+        :name="product.name"
+        :price="product.price"
+        :qty="product.qty"
+        :image="product.image"
+      />
+    </div>
 
-<!-- ลดราคา -->
-<div class="product-list">
-  <ProductCardSell
-  v-for="(product, index) in sellProducts"
-  :key="index"
-  :name="product.name"
-  :price="product.price"
-  :originalPrice="product.originalPrice"
-  :qty="product.qty"
-  :image="product.image"
-/>
+    <!-- ลดราคา -->
+    <div class="product-list">
+      <ProductCardSell
+        v-for="(product, index) in sellProducts"
+        :key="index"
+        :name="product.name"
+        :price="product.price"
+        :originalPrice="product.originalPrice"
+        :qty="product.qty"
+        :image="product.image"
+      />
+    </div>
 
-</div>
-
-<!-- ปกติ -->
-<div class="product-list">
-  <ProductCard
-    v-for="(product, index) in normalProducts"
-    :key="index"
-    :name="product.name"
-    :price="product.price"
-    :qty="product.qty"
-    :image="product.image"
-  />
-</div>
-
+    <!-- ปกติ -->
+    <div class="product-list">
+      <ProductCard
+        v-for="(product, index) in normalProducts"
+        :key="index"
+        :name="product.name"
+        :price="product.price"
+        :qty="product.qty"
+        :image="product.image"
+      />
+    </div>
+    
+  </div> <!-- 🔚 End wrapper -->
 </template>
+
 
 <style scoped>
 .navbar {
