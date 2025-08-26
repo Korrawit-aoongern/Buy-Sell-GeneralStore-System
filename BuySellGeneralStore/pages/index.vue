@@ -1,15 +1,52 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import ProductCard from '~/components/Product/Product Card.vue'
 import ProductCardSell from '~/components/Product/Product CardSell.vue'
 import SoldoutCard from '~/components/Product/Sold out Card.vue'
-import Producthot from '~/components/Product/Producthot.vue'
+import Producthot from '~/components/Product/Producthot.vue' // path แก้ตามจริง
 
 const activePage = ref('Home')
 
 const setActive = (page) => {
   activePage.value = page
 }
+
+const productList = ref([
+  {
+    name: 'ปากกา 1',
+    price: 12,
+    qty: 101,
+    type: 'hot',
+    image: new URL('@/assets/images/Pen.jpg', import.meta.url).href
+  },
+  {
+    name: 'ปากกา 2',
+    price: 10,
+    originalPrice: 15, // ✅ ราคาก่อนลด
+    qty: 60,
+    type: 'sell',
+    image: new URL('@/assets/images/R.jpg', import.meta.url).href
+  },
+  {
+    name: 'ปากกา 3',
+    price: 15,
+    qty: 90,
+    type: 'normal',
+    image: new URL('@/assets/images/Lan.jpg', import.meta.url).href
+  }
+])
+
+
+
+// ถ้าจะใช้ sortedProducts จริง ๆ
+const sortedProducts = computed(() => {
+  return productList.value // หรือเขียน logic การจัดเรียงได้ที่นี่
+})
+
+const hotProducts = computed(() => productList.value.filter(p => p.type === 'hot'))
+const sellProducts = computed(() => productList.value.filter(p => p.type === 'sell'))
+const normalProducts = computed(() => productList.value.filter(p => p.type === 'normal'))
+
 </script>
 
 <template>
@@ -17,9 +54,9 @@ const setActive = (page) => {
   <nav class="navbar">
     <div class="spacer"></div>
     <ul class="nav-links">
-      <li :class="{ active: activePage === 'Home' }" @click="setActive('Home')">Home</li>
-      <li :class="{ active: activePage === 'Product' }" @click="setActive('Product')">Product</li>
-      <li :class="{ active: activePage === 'Order' }" @click="setActive('Order')">Order</li>
+      <li><router-link to="/" active-class="active">Home</router-link></li>
+        <li><router-link to="/Product" active-class="active">Product</router-link></li>
+        <li><router-link to="/order" active-class="active">Order</router-link></li>
     </ul>
     <div class="cart-icon">
       <i class="fas fa-shopping-cart"></i>
@@ -36,35 +73,44 @@ const setActive = (page) => {
     </svg>
   </div>
 
-  <!-- ขายดี -->
-  <div class="text-block">
-    <h2 class="title">สินค้าขายดี</h2>
-  </div>
-  <!--  ProductHot -->
-  <div class="product-list">
-    <Producthot :name="'ปากกา'" :price="12" :qty="101" />
-    <Producthot :name="'ปากกา'" :price="12" :qty="101" />
-  </div>
-  <!-- สินค้าลดราคา -->
-  <div class="text-block1">
-    <h2 class="title">สินค้าลดราคา</h2>
-  </div>
-  <!-- ProductCardSell -->
-  <div class="product-list">
-    <ProductCardSell :name="'ปากกา'" :originalPrice="13" :price="12" :qty="101" />
-    <ProductCardSell :name="'ปากกา'" :originalPrice="13" :price="12" :qty="101" />
-    <ProductCardSell :name="'ปากกา'" :originalPrice="13" :price="12" :qty="101" />
-  </div>
-    <!-- สินค้าปกติ -->
-  <div class="text-block1">
-    <h2 class="title">สินค้าปกติ</h2>
-  </div>
-  <!--  ProductCard -->
-  <div class="product-list">
-    <ProductCard :name="'ปากกา'" :price="12" :qty="101" />
-    <ProductCard :name="'ปากกา'" :price="12" :qty="101" />
-    <SoldoutCard :name="'ปากกา'" :price="12" :qty="0" />
-  </div>
+<!-- ขายดี -->
+<div class="product-list">
+  <Producthot
+    v-for="(product, index) in hotProducts"
+    :key="index"
+    :name="product.name"
+    :price="product.price"
+    :qty="product.qty"
+    :image="product.image"
+  />
+</div>
+
+<!-- ลดราคา -->
+<div class="product-list">
+  <ProductCardSell
+  v-for="(product, index) in sellProducts"
+  :key="index"
+  :name="product.name"
+  :price="product.price"
+  :originalPrice="product.originalPrice"
+  :qty="product.qty"
+  :image="product.image"
+/>
+
+</div>
+
+<!-- ปกติ -->
+<div class="product-list">
+  <ProductCard
+    v-for="(product, index) in normalProducts"
+    :key="index"
+    :name="product.name"
+    :price="product.price"
+    :qty="product.qty"
+    :image="product.image"
+  />
+</div>
+
 </template>
 
 <style scoped>

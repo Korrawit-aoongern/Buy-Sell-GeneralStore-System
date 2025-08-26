@@ -2,7 +2,7 @@
   <div class="product-card">
     <div class="badge">ขายดี</div>
     <div class="product-image">
-      <img src="~assets/images/pen.jpg" alt="product" />
+      <img :src="image" alt="product" />
     </div>
     <div class="product-details">
       <h3 class="product-name">{{ name }}</h3>
@@ -19,19 +19,11 @@
 export default {
   name: 'ProductCard',
   props: {
-    name: {
-      type: String,
-      default: 'ชื่อสินค้า'
-    },
-    price: {
-      type: Number,
-      default: 0
-    },
-    qty: {
-      type: Number,
-      default: 1
-    }
-  }
+  name: { type: String, default: 'ชื่อสินค้า' },
+  price: { type: Number, default: 0 },
+  qty: { type: Number, default: 1 },
+  image: { type: String, default: '' } // ✅ เพิ่ม prop สำหรับรูปภาพ
+}
 }
 </script>
 
