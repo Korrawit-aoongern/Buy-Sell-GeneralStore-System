@@ -1,7 +1,7 @@
 <template>
   <div class="product-card">
     <div class="product-image">
-      <img :src="image" alt="product" />
+      <img src="~assets/images/R.jpg" alt="product" />
       <div v-if="qty === 0" class="sold-out-overlay">SOLD OUT</div>
     </div>
     <div class="product-details">
@@ -19,11 +19,19 @@
 export default {
   name: 'ProductCard',
   props: {
-  name: { type: String, default: 'ชื่อสินค้า' },
-  price: { type: Number, default: 0 },
-  qty: { type: Number, default: 1 },
-  image: { type: String, default: '' } // ✅ เพิ่ม prop สำหรับรูปภาพ
-}
+    name: {
+      type: String,
+      default: 'ชื่อสินค้า'
+    },
+    price: {
+      type: Number,
+      default: 0
+    },
+    qty: {
+      type: Number,
+      default: 1
+    }
+  }
 }
 </script>
 

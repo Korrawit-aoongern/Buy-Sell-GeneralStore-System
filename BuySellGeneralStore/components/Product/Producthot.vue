@@ -1,17 +1,21 @@
 <template>
   <div class="product-card">
     <div class="badge">ขายดี</div>
+
     <div class="product-image">
-      <img :src="image" alt="product" />
+      <img src="~assets/images/pen.jpg" alt="product" />
+      <div v-if="qty === 0" class="sold-out-overlay">SOLD OUT</div>
     </div>
+
     <div class="product-details">
       <h3 class="product-name">{{ name }}</h3>
       <div class="product-meta">
         <span class="product-price">{{ price.toFixed(2) }}</span>
-        <p class="product-qty">{{ qty }} Qty.</p>
+        <p class="product-qty" :class="{ 'zero-qty': qty === 0 }">{{ qty }} Qty.</p>
       </div>
     </div>
-    <button class="add-to-cart">เพิ่มลงตะกร้า</button>
+
+    <button class="add-to-cart" :disabled="qty === 0">เพิ่มลงตะกร้า</button>
   </div>
 </template>
 
@@ -19,11 +23,19 @@
 export default {
   name: 'ProductCard',
   props: {
-  name: { type: String, default: 'ชื่อสินค้า' },
-  price: { type: Number, default: 0 },
-  qty: { type: Number, default: 1 },
-  image: { type: String, default: '' } // ✅ เพิ่ม prop สำหรับรูปภาพ
-}
+    name: {
+      type: String,
+      default: 'ชื่อสินค้า'
+    },
+    price: {
+      type: Number,
+      default: 0
+    },
+    qty: {
+      type: Number,
+      default: 1
+    }
+  }
 }
 </script>
 
@@ -38,6 +50,7 @@ export default {
   text-align: center;
 }
 
+/* แบนเนอร์ขายดี */
 .badge {
   position: absolute;
   top: 10px;
@@ -55,6 +68,7 @@ export default {
 }
 
 .product-image {
+  position: relative; /* ต้องมีเพื่อ overlay */
   height: 175px;
   border-radius: 8px;
   margin-bottom: 12px;
@@ -65,6 +79,20 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* ข้อความ SOLD OUT */
+.sold-out-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: red;
+  font-weight: bold;
+  font-size: 32px;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
 }
 
 .product-name {
@@ -93,6 +121,12 @@ export default {
   margin: 0;
 }
 
+/* สีแดงเมื่อสินค้าหมด */
+.product-qty.zero-qty {
+  color: red;
+  font-weight: bold;
+}
+
 .add-to-cart {
   margin-top: 8px;
   background-color: #6ACC91;
@@ -106,5 +140,12 @@ export default {
 
 .add-to-cart:hover {
   background-color: #52b27e; 
+}
+
+/* สถานะปุ่ม disable */
+.add-to-cart:disabled {
+  background-color: #f5bebe;
+  cursor: not-allowed;
+  color: #f0a1a1;
 }
 </style>

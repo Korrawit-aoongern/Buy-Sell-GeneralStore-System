@@ -1,9 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import ProductCard from '~/components/Product/Product Card.vue'
 import ProductCardSell from '~/components/Product/Product CardSell.vue'
 import SoldoutCard from '~/components/Product/Sold out Card.vue'
-import Producthot from '~/components/Product/Producthot.vue' // path แก้ตามจริง
+import Producthot from '~/components/Product/Producthot.vue'
 
 const activePage = ref('Home')
 
@@ -15,9 +15,24 @@ const productList = ref([
   {
     name: 'ปากกา 1',
     price: 12,
-    qty: 101,
+    qty: 0,
     type: 'hot',
     image: new URL('@/assets/images/Pen.jpg', import.meta.url).href
+  },
+  {
+    name: 'ปากกา 1',
+    price: 12,
+    qty: 100,
+    type: 'hot',
+    image: new URL('@/assets/images/Pen.jpg', import.meta.url).href
+  },
+  {
+    name: 'ปากกา 2',
+    price: 10,
+    originalPrice: 15, // ✅ ราคาก่อนลด
+    qty: 0,
+    type: 'sell',
+    image: new URL('@/assets/images/R.jpg', import.meta.url).href
   },
   {
     name: 'ปากกา 2',
@@ -30,7 +45,14 @@ const productList = ref([
   {
     name: 'ปากกา 3',
     price: 15,
-    qty: 90,
+    qty: 0,
+    type: 'normal',
+    image: new URL('@/assets/images/Lan.jpg', import.meta.url).href
+  },
+  {
+    name: 'ปากกา 3',
+    price: 15,
+    qty: 10,
     type: 'normal',
     image: new URL('@/assets/images/Lan.jpg', import.meta.url).href
   }
@@ -75,6 +97,7 @@ const normalProducts = computed(() => productList.value.filter(p => p.type === '
     </div>
 
     <!-- ขายดี -->
+     <div class="text-block"> <h2 class="title">สินค้าขายดี</h2> </div>
     <div class="product-list">
       <Producthot
         v-for="(product, index) in hotProducts"
@@ -87,6 +110,7 @@ const normalProducts = computed(() => productList.value.filter(p => p.type === '
     </div>
 
     <!-- ลดราคา -->
+     <div class="text-block1"> <h2 class="title">สินค้าลดราคา</h2> </div>
     <div class="product-list">
       <ProductCardSell
         v-for="(product, index) in sellProducts"
@@ -100,6 +124,7 @@ const normalProducts = computed(() => productList.value.filter(p => p.type === '
     </div>
 
     <!-- ปกติ -->
+     <div class="text-block1"> <h2 class="title">สินค้าปกติ</h2> </div>
     <div class="product-list">
       <ProductCard
         v-for="(product, index) in normalProducts"

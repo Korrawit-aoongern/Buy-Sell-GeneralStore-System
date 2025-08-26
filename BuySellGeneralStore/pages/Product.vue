@@ -20,14 +20,14 @@ const toggleFilterTab = () => {
 const productList = ref([
   
   { name: 'ปากกา 1', price: 12, qty: 101, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 2', price: 15, qty: 95, image: new URL('~/assets/images/Lan.jpg', import.meta.url).href },
+  { name: 'ปากกา 2', price: 15, qty: 0, image: new URL('~/assets/images/Lan.jpg', import.meta.url).href },
   { name: 'ปากกา 3', price: 10, qty: 88, image: new URL('~/assets/images/R.jpg', import.meta.url).href },
   { name: 'ปากกา 4', price: 13, qty: 99, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 5', price: 11, qty: 50, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
+  { name: 'ปากกา 5', price: 11, qty: 0, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
   { name: 'ปากกา 6', price: 14, qty: 75, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
   { name: 'ปากกา 7', price: 12, qty: 100, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
   { name: 'ปากกา 8', price: 16, qty: 80, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 9', price: 10, qty: 110, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
+  { name: 'ปากกา 9', price: 10, qty: 0, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
   { name: 'ปากกา 10', price: 15, qty: 92, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
   { name: 'ปากกา 11', price: 13, qty: 105, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
   { name: 'ปากกา 12', price: 14, qty: 90, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
