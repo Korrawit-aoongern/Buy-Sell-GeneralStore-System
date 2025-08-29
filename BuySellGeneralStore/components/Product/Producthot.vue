@@ -3,7 +3,7 @@
     <div class="badge">ขายดี</div>
 
     <div class="product-image">
-      <img src="~assets/images/pen.jpg" alt="product" />
+      <img src="/Image/pen.jpg" alt="product" />
       <div v-if="qty === 0" class="sold-out-overlay">SOLD OUT</div>
     </div>
 

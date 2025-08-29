@@ -1,7 +1,7 @@
 <template>
   <div class="product-card">
     <div class="product-image">
-      <img src="~assets/images/R.jpg" alt="product" />
+      <img src="/Image/R.jpg" alt="product" />
       <div v-if="qty === 0" class="sold-out-overlay">SOLD OUT</div>
     </div>
     <div class="product-details">

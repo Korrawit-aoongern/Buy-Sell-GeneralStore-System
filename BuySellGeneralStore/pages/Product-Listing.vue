@@ -1,17 +1,25 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import ProductCard from '~/components/Product/Product Card.vue'
 
 const accentColor = '#6ACC91'
 const btnWidth = 220
 
 const selectedSort = ref('az')
+const isOpen = ref(false)
 const showPanel = ref(false)
 
 const activeCategory = ref(null) // null means "all"
 const activePrice = ref('all')
 const activePromo = ref('all')
 const pressAll = ref(false)
+
+const sortOptions = [
+  { value: "az", label: "ก-ฮ A-Z" },
+  { value: "za", label: "ฮ-ก Z-A" },
+  { value: "priceLowHigh", label: "ราคาต่ำไปสูง" },
+  { value: "priceHighLow", label: "ราคาสูงไปต่ำ" }
+]
 
 const categories = [
   { label: 'อาหาร', value: 'อาหาร' },
@@ -39,6 +47,24 @@ const promoTypes = [
   { label: 'สินค้าขายดี', value: 'hot' },
   { label: 'สินค้าปกติ', value: 'normal' },
 ]
+
+function toggleDropdown() {
+  isOpen.value = !isOpen.value
+}
+function selectOption(option) {
+  selectedSort.value = option.value
+  isOpen.value = false
+}
+
+// close when clicking outside
+function handleClickOutside(e) {
+  const selector = document.querySelector(".select-wrapper")
+  if (selector && !selector.contains(e.target)) {
+    isOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener("click", handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener("click", handleClickOutside))
 
 /* interactions */
 const togglePanel = () => {
@@ -93,22 +119,23 @@ const filteredProducts = computed(() => {
 
 
 const productList = ref([
-  { name: 'ปากกา 1', price: 12, qty: 101, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 2', price: 15, qty: 0, image: new URL('~/assets/images/Lan.jpg', import.meta.url).href },
-  { name: 'ปากกา 3', price: 10, qty: 88, image: new URL('~/assets/images/R.jpg', import.meta.url).href },
-  { name: 'ปากกา 4', price: 13, qty: 99, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 5', price: 11, qty: 0, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 6', price: 14, qty: 75, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 7', price: 12, qty: 100, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 8', price: 16, qty: 80, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 9', price: 10, qty: 0, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 10', price: 15, qty: 92, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 11', price: 13, qty: 105, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 12', price: 14, qty: 90, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 13', price: 11, qty: 60, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 14', price: 12, qty: 120, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
-  { name: 'ปากกา 15', price: 13, qty: 70, image: new URL('~/assets/images/pen.jpg', import.meta.url).href },
+  { name: 'ปากกา 1', price: 12, qty: 101, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 2', price: 15, qty: 0, image: '/Image/Lan.jpg' },
+  { name: 'ปากกา 3', price: 10, qty: 8, image: '/Image/R.jpg' },
+  { name: 'ปากกา 4', price: 13, qty: 1, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 5', price: 11, qty: 0, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 6', price: 14, qty: 75, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 7', price: 12, qty: 100, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 8', price: 16, qty: 80, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 9', price: 10, qty: 0, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 10', price: 15, qty: 92, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 11', price: 13, qty: 105, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 12', price: 14, qty: 90, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 13', price: 11, qty: 60, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 14', price: 12, qty: 120, image: '/Image/pen.jpg' },
+  { name: 'ปากกา 15', price: 13, qty: 70, image: '/Image/pen.jpg' },
 ])
+
 
 // ✅ จัดเรียงตามที่เลือก
 const sortedProducts = computed(() => {
@@ -203,32 +230,48 @@ const sortedProducts = computed(() => {
             <li><router-link to="/Order" active-class="active">Order</router-link></li>
           </ul>
           <div class="cart-icon">
-            <i class="fas fa-shopping-cart"></i>
+            <Icon name="material-symbols:shopping-cart-outline" style="color: black; width: 45px; height: 45px;" />
           </div>
         </nav>
         <!-- Search and Sort -->
         <div class="top-bar">
           <div class="search-bar">
-            <Icon name="material-symbols:search" style="color: black; width: 2em; height: 2em;"/>
+            <Icon name="material-symbols:search" style="color: black; width: 2em; height: 2em;" />
             <input type="text" />
           </div>
           <div class="sort-dropdown">
             <label class="sort-label">จัดเรียงโดย</label>
-            <div class="select-wrapper">
-              <select v-model="selectedSort">
-                <option value="az">ก-ฮ A-Z</option>
-                <option value="za">ฮ-ก Z-A</option>
-                <option value="priceLowHigh">ราคาต่ำไปสูง</option>
-                <option value="priceHighLow">ราคาสูงไปต่ำ</option>
-              </select>
-              <span class="arrow">&#x25BC;</span>
+
+            <!-- custom dropdown -->
+            <div class="select-wrapper" @click="toggleDropdown">
+              <div style="display: flex; align-items: center;">
+                <div class="selected">
+                  {{ sortOptions.find(opt => opt.value === selectedSort)?.label }}
+                </div>
+                <Icon name="material-symbols:keyboard-arrow-down" class="arrow" :class="{ open: isOpen }" />
+              </div>
+
+
+              <ul v-if="isOpen" class="select-option">
+                <li v-for="option in sortOptions" :key="option.value" :class="{ active: option.value === selectedSort }"
+                  @mousedown.stop="selectOption(option)">
+                  <span>{{ option.label }}</span>
+                  <Icon v-if="option.value === selectedSort" name="material-symbols:check" class="check-icon" />
+                </li>
+              </ul>
             </div>
           </div>
         </div>
         <!-- Product list -->
         <div class="product-list">
-          <ProductCard v-for="(product, index) in sortedProducts" :key="index" :name="product.name"
-            :price="product.price" :qty="product.qty" :image="product.image" />
+          <ProductCard
+            v-for="(product, index) in productList"
+            :key="index"
+            :name="product.name"
+            :price="product.price"
+            :qty="product.qty"
+            :image="product.image"
+            @update-qty="product.qty = $event" />
         </div>
       </main>
     </div>
@@ -437,7 +480,7 @@ body {
 
 /* Radio rows (price & promo lists) */
 .radios {
-  width: fit;
+  width: fit-content;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -505,6 +548,7 @@ body {
   justify-content: center;
   align-items: center;
   background-color: #fdfdf7;
+  margin: 1rem 2rem;
   padding: 1rem 2rem;
 }
 .nav-links {
@@ -522,8 +566,11 @@ body {
   font-weight: bold;
 }
 .cart-icon {
+  position: absolute;
+  right: 0;
+  margin-right: 166px;
   font-size: 24px;
-  color: #000;
+  color: #111827;
 }
 
 /* Search + Sort */
@@ -563,49 +610,86 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-family: Prompt , sans-serif;
+  font-family: Prompt, sans-serif;
   color: #999;
-  width: 220px;
-  margin-left: 178px
+  width: 252px;
+  margin-right: 60px;
+  margin-left: 90px;
 }
 
 .sort-label {
-  font-size: 0.9rem;
+  font-size: 12px;
+  font-weight: 100;
   color: #999;
 }
 
 .select-wrapper {
   position: relative;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.select-wrapper select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 100%;
-  padding: 10px 36px 10px 16px;
-  font-size: 1rem;
-  border: none;
-  border-radius: 12px;
-  outline: none;
-  color: #333;
-  background-color: transparent;
+  background-color: #FAFAF5;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   cursor: pointer;
-  font-family: Prompt , sans-serif;
+  user-select: none;
 }
 
-/* ลูกศร */
-.select-wrapper .arrow {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #3cb371; /* สีเขียว */
+.selected {
+  flex: 1;
+  padding: 10px 36px 10px 16px;
+  font-size: 12px;
+  color: #111827;
+}
+
+.arrow {
+  margin-right: 12px;
+  color: #6ACC91;
   pointer-events: none;
-  font-size: 14px;
+  width: 1.5em;
+  height: 1.5rem;
+  transition: transform 0.3s ease;
+}
+.arrow.open {
+  transform: rotate(90deg); /* rotate when dropdown is open */
+}
+
+/* fake dropdown list */
+.select-option {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  background: #FAFAF5;
+  border-radius: 9px;
+  font-weight: 100;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 20;
+}
+
+.select-option li {
+  display: flex;
+  justify-content: space-between; /* pushes tick to the right */
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 100;
+  cursor: pointer;
+  color: #111827;
+  transition: background-color ease 0.3s;
+}
+
+.select-option li:hover {
+  background: #f3f3ee;
+}
+.select-option li.active {
+  font-weight: 500;
+  background: #EAEAE7;
+}
+.check-icon {
+  color: #6ACC91;
+  width: 1rem;
+  height: 1.5rem;
 }
 
 /* Product grid */

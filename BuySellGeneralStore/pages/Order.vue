@@ -57,7 +57,7 @@ const closeCancelModal = () => {
       <div class="spacer"></div>
       <ul class="nav-links">
         <li><router-link to="/" active-class="active">Home</router-link></li>
-        <li><router-link to="/Product" active-class="active">Product</router-link></li>
+        <li><router-link to="/Product-Listing" active-class="active">Product</router-link></li>
         <li><router-link to="/order" active-class="active">Order</router-link></li>
       </ul>
       <div class="cart-icon">

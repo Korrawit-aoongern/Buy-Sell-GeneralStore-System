@@ -17,14 +17,14 @@ const productList = ref([
     price: 12,
     qty: 0,
     type: 'hot',
-    image: new URL('@/assets/images/Pen.jpg', import.meta.url).href
+    image: '/Image/pen.jpg'
   },
   {
     name: 'ปากกา 1',
     price: 12,
     qty: 100,
     type: 'hot',
-    image: new URL('@/assets/images/Pen.jpg', import.meta.url).href
+    image: '/Image/pen.jpg'
   },
   {
     name: 'ปากกา 2',
@@ -32,7 +32,7 @@ const productList = ref([
     originalPrice: 15, // ✅ ราคาก่อนลด
     qty: 0,
     type: 'sell',
-    image: new URL('@/assets/images/R.jpg', import.meta.url).href
+    image: '/Image/R.jpg'
   },
   {
     name: 'ปากกา 2',
@@ -40,21 +40,21 @@ const productList = ref([
     originalPrice: 15, // ✅ ราคาก่อนลด
     qty: 60,
     type: 'sell',
-    image: new URL('@/assets/images/R.jpg', import.meta.url).href
+    image: '/Image/R.jpg'
   },
   {
     name: 'ปากกา 3',
     price: 15,
     qty: 0,
     type: 'normal',
-    image: new URL('@/assets/images/Lan.jpg', import.meta.url).href
+    image: '/Image/R.jpg'
   },
   {
     name: 'ปากกา 3',
     price: 15,
     qty: 10,
     type: 'normal',
-    image: new URL('@/assets/images/Lan.jpg', import.meta.url).href
+    image: '/Image/Lan.jpg'
   }
 ])
 
@@ -78,7 +78,7 @@ const normalProducts = computed(() => productList.value.filter(p => p.type === '
       <div class="spacer"></div>
       <ul class="nav-links">
         <li><router-link to="/" active-class="active">Home</router-link></li>
-        <li><router-link to="/Product" active-class="active">Product</router-link></li>
+        <li><router-link to="/Product-Listing" active-class="active">Product</router-link></li>
         <li><router-link to="/order" active-class="active">Order</router-link></li>
       </ul>
       <div class="cart-icon">
