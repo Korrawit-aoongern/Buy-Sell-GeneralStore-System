@@ -131,7 +131,7 @@ const normalProducts = computed(() =>
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
@@ -141,13 +141,13 @@ body {
 
 .title {
   font-size: 1.8rem;
-  color: #000000;
+  color: #111827;
   margin-bottom: 1rem;
 }
 
 .description {
   font-size: 1.1rem;
-  color: #333;
+  color: #111827;
 }
 
 .product-list {
