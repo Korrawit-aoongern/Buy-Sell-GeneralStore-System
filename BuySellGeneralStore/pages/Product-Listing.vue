@@ -1,177 +1,196 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import ProductCard from '~/components/Product/Product Card.vue'
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import ProductCard from "~/components/Product/Product Card.vue";
+import Navbar from "~/components/UI/Navber.vue";
 
-const accentColor = '#6ACC91'
-const btnWidth = 220
+const accentColor = "#6ACC91";
+const btnWidth = 220;
 
-const selectedSort = ref('az')
-const isOpen = ref(false)
-const showPanel = ref(false)
+const selectedSort = ref("az");
+const isOpen = ref(false);
+const showPanel = ref(false);
 
-const activeCategory = ref(null) // null means "all"
-const activePrice = ref('all')
-const activePromo = ref('all')
-const pressAll = ref(false)
+const activeCategory = ref(null); // null means "all"
+const activePrice = ref("all");
+const activePromo = ref("all");
+const pressAll = ref(false);
 
 const sortOptions = [
   { value: "az", label: "ก-ฮ A-Z" },
   { value: "za", label: "ฮ-ก Z-A" },
   { value: "priceLowHigh", label: "ราคาต่ำไปสูง" },
-  { value: "priceHighLow", label: "ราคาสูงไปต่ำ" }
-]
+  { value: "priceHighLow", label: "ราคาสูงไปต่ำ" },
+];
 
 const categories = [
-  { label: 'อาหาร', value: 'อาหาร' },
-  { label: 'เครื่องเขียน', value: 'เครื่องเขียน' },
-  { label: 'ของใช้ในครัว', value: 'ของใช้ในครัว' },
-  { label: 'ของใช้ในห้องนํ้า', value: 'ของใช้ในห้องนํ้า' },
-  { label: 'ของตกแต่งบ้าน', value: 'ของตกแต่งบ้าน' },
-  { label: 'ของใช้ส่วนตัว', value: 'ของใช้ส่วนตัว' },
-  { label: 'ของใช้อิเล็กทรอนิกส์', value: 'อิเล็กทรอนิกส์' },
-  { label: 'ของใช้กลางแจ้ง', value: 'ของใช้กลางแจ้ง' },
-  { label: 'ของใช้ในบ้านทั่วไป', value: 'ของใช้ในบ้านทั่วไป' },
-]
+  { label: "อาหาร", value: "อาหาร" },
+  { label: "เครื่องเขียน", value: "เครื่องเขียน" },
+  { label: "ของใช้ในครัว", value: "ของใช้ในครัว" },
+  { label: "ของใช้ในห้องนํ้า", value: "ของใช้ในห้องนํ้า" },
+  { label: "ของตกแต่งบ้าน", value: "ของตกแต่งบ้าน" },
+  { label: "ของใช้ส่วนตัว", value: "ของใช้ส่วนตัว" },
+  { label: "ของใช้อิเล็กทรอนิกส์", value: "อิเล็กทรอนิกส์" },
+  { label: "ของใช้กลางแจ้ง", value: "ของใช้กลางแจ้ง" },
+  { label: "ของใช้ในบ้านทั่วไป", value: "ของใช้ในบ้านทั่วไป" },
+];
 
 const priceRanges = [
-  { label: 'ไม่จำกัด', value: 'all' },
-  { label: '0.00 - 100.00', value: '0-100' },
-  { label: '100.00 - 500.00', value: '100-500' },
-  { label: '500.00 - 1,000.00', value: '500-1000' },
-  { label: 'มากกว่า 1,000.00', value: '1000+' },
-]
+  { label: "ไม่จำกัด", value: "all" },
+  { label: "0.00 - 100.00", value: "0-100" },
+  { label: "100.00 - 500.00", value: "100-500" },
+  { label: "500.00 - 1,000.00", value: "500-1000" },
+  { label: "มากกว่า 1,000.00", value: "1000+" },
+];
 
 const promoTypes = [
-  { label: 'ไม่จำกัด', value: 'all' },
-  { label: 'สินค้าลดราคา', value: 'discount' },
-  { label: 'สินค้าขายดี', value: 'hot' },
-  { label: 'สินค้าปกติ', value: 'normal' },
-]
+  { label: "ไม่จำกัด", value: "all" },
+  { label: "สินค้าลดราคา", value: "discount" },
+  { label: "สินค้าขายดี", value: "hot" },
+  { label: "สินค้าปกติ", value: "normal" },
+];
 
 function toggleDropdown() {
-  isOpen.value = !isOpen.value
+  isOpen.value = !isOpen.value;
 }
 function selectOption(option) {
-  selectedSort.value = option.value
-  isOpen.value = false
+  selectedSort.value = option.value;
+  isOpen.value = false;
 }
 
 // close when clicking outside
 function handleClickOutside(e) {
-  const selector = document.querySelector(".select-wrapper")
+  const selector = document.querySelector(".select-wrapper");
   if (selector && !selector.contains(e.target)) {
-    isOpen.value = false
+    isOpen.value = false;
   }
 }
-onMounted(() => document.addEventListener("click", handleClickOutside))
-onBeforeUnmount(() => document.removeEventListener("click", handleClickOutside))
+onMounted(() => document.addEventListener("click", handleClickOutside));
+onBeforeUnmount(() =>
+  document.removeEventListener("click", handleClickOutside)
+);
 
 /* interactions */
 const togglePanel = () => {
-  showPanel.value = !showPanel.value
-}
+  showPanel.value = !showPanel.value;
+};
 const clearFilters = () => {
-  activeCategory.value = null
-  activePrice.value = 'all'
-  activePromo.value = 'all'
-}
+  activeCategory.value = null;
+  activePrice.value = "all";
+  activePromo.value = "all";
+};
 const setCategory = (cat) => {
-  activeCategory.value = cat === activeCategory.value ? null : cat
-}
+  activeCategory.value = cat === activeCategory.value ? null : cat;
+};
 
 /* filtering & sorting */
 const filteredProducts = computed(() => {
   return productList.value.filter((p) => {
     // search filter
-    if (search.value && !p.name.includes(search.value)) return false
+    if (search.value && !p.name.includes(search.value)) return false;
 
     // category filter
     if (activeCategory.value) {
-      if (p.category !== activeCategory.value) return false
+      if (p.category !== activeCategory.value) return false;
     }
 
     // price filter
     switch (activePrice.value) {
-      case '0-100':
-        if (!(p.price >= 0 && p.price <= 100)) return false
-        break
-      case '100-500':
-        if (!(p.price >= 100 && p.price <= 500)) return false
-        break
-      case '500-1000':
-        if (!(p.price >= 500 && p.price <= 1000)) return false
-        break
-      case '1000+':
-        if (!(p.price > 1000)) return false
-        break
+      case "0-100":
+        if (!(p.price >= 0 && p.price <= 100)) return false;
+        break;
+      case "100-500":
+        if (!(p.price >= 100 && p.price <= 500)) return false;
+        break;
+      case "500-1000":
+        if (!(p.price >= 500 && p.price <= 1000)) return false;
+        break;
+      case "1000+":
+        if (!(p.price > 1000)) return false;
+        break;
       default:
-        break
+        break;
     }
 
     // promo filter
-    if (activePromo.value !== 'all') {
-      if (p.promo !== activePromo.value) return false
+    if (activePromo.value !== "all") {
+      if (p.promo !== activePromo.value) return false;
     }
 
-    return true
-  })
-})
-
+    return true;
+  });
+});
 
 const productList = ref([
-  { name: 'ปากกา 1', price: 12, qty: 101, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 2', price: 15, qty: 0, image: '/Image/Lan.jpg' },
-  { name: 'ปากกา 3', price: 10, qty: 8, image: '/Image/R.jpg' },
-  { name: 'ปากกา 4', price: 13, qty: 1, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 5', price: 11, qty: 0, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 6', price: 14, qty: 75, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 7', price: 12, qty: 100, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 8', price: 16, qty: 80, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 9', price: 10, qty: 0, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 10', price: 15, qty: 92, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 11', price: 13, qty: 105, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 12', price: 14, qty: 90, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 13', price: 11, qty: 60, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 14', price: 12, qty: 120, image: '/Image/pen.jpg' },
-  { name: 'ปากกา 15', price: 13, qty: 70, image: '/Image/pen.jpg' },
-])
-
+  { name: "ปากกา 1", price: 12, qty: 101, image: "/Image/pen.jpg" },
+  { name: "ปากกา 2", price: 15, qty: 0, image: "/Image/Lan.jpg" },
+  { name: "ปากกา 3", price: 10, qty: 8, image: "/Image/R.jpg" },
+  { name: "ปากกา 4", price: 13, qty: 1, image: "/Image/pen.jpg" },
+  { name: "ปากกา 5", price: 11, qty: 0, image: "/Image/pen.jpg" },
+  { name: "ปากกา 6", price: 14, qty: 75, image: "/Image/pen.jpg" },
+  { name: "ปากกา 7", price: 12, qty: 100, image: "/Image/pen.jpg" },
+  { name: "ปากกา 8", price: 16, qty: 80, image: "/Image/pen.jpg" },
+  { name: "ปากกา 9", price: 10, qty: 0, image: "/Image/pen.jpg" },
+  { name: "ปากกา 10", price: 15, qty: 92, image: "/Image/pen.jpg" },
+  { name: "ปากกา 11", price: 13, qty: 105, image: "/Image/pen.jpg" },
+  { name: "ปากกา 12", price: 14, qty: 90, image: "/Image/pen.jpg" },
+  { name: "ปากกา 13", price: 11, qty: 60, image: "/Image/pen.jpg" },
+  { name: "ปากกา 14", price: 12, qty: 120, image: "/Image/pen.jpg" },
+  { name: "ปากกา 15", price: 13, qty: 70, image: "/Image/pen.jpg" },
+]);
 
 // ✅ จัดเรียงตามที่เลือก
 const sortedProducts = computed(() => {
-  const products = [...productList.value]
+  const products = [...productList.value];
   switch (selectedSort.value) {
-    case 'az':
-      return products.sort((a, b) => a.name.localeCompare(b.name, 'th'))
-    case 'za':
-      return products.sort((a, b) => b.name.localeCompare(a.name, 'th'))
-    case 'priceLowHigh':
-      return products.sort((a, b) => a.price - b.price)
-    case 'priceHighLow':
-      return products.sort((a, b) => b.price - a.price)
+    case "az":
+      return products.sort((a, b) => a.name.localeCompare(b.name, "th"));
+    case "za":
+      return products.sort((a, b) => b.name.localeCompare(a.name, "th"));
+    case "priceLowHigh":
+      return products.sort((a, b) => a.price - b.price);
+    case "priceHighLow":
+      return products.sort((a, b) => b.price - a.price);
     default:
-      return products
+      return products;
   }
-})
-
+});
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column;">
+  <div style="display: flex; flex-direction: column">
     <!-- Sidebar (Filter) -->
     <div class="page">
       <div style="display: flex; flex-direction: row">
         <div class="accent-strip" :style="{ background: accentColor }">
-          <button class="accent-btn" :class="{ open: showPanel }" @click="togglePanel"
-            :aria-expanded="showPanel">☰</button>
+          <button
+            class="accent-btn"
+            :class="{ open: showPanel }"
+            @click="togglePanel"
+            :aria-expanded="showPanel"
+          >
+            ☰
+          </button>
         </div>
-        <aside class="panel" :class="{ open: showPanel }" :style="{ '--btn-width': btnWidth + 'px' }">
+        <aside
+          class="panel"
+          :class="{ open: showPanel }"
+          :style="{ '--btn-width': btnWidth + 'px' }"
+        >
           <!-- All product filter button at top -->
           <div class="panel-top">
-            <button class="all-button"
-              :class="{ active: activeCategory === null && activePrice === 'all' && activePromo === 'all' }"
-              @click="clearFilters" @mousedown.prevent="pressAll = true" @mouseup="pressAll = false"
-              @mouseleave="pressAll = false">
+            <button
+              class="all-button"
+              :class="{
+                active:
+                  activeCategory === null &&
+                  activePrice === 'all' &&
+                  activePromo === 'all',
+              }"
+              @click="clearFilters"
+              @mousedown.prevent="pressAll = true"
+              @mouseup="pressAll = false"
+              @mouseleave="pressAll = false"
+            >
               สินค้าทั้งหมด
             </button>
           </div>
@@ -180,8 +199,13 @@ const sortedProducts = computed(() => {
             <!-- Category Filter Group -->
             <section class="group category-group">
               <div class="category-list">
-                <div v-for="(cat, i) in categories" :key="i" class="category-item"
-                  :class="{ active: activeCategory === cat.value }" @click="setCategory(cat.value)">
+                <div
+                  v-for="(cat, i) in categories"
+                  :key="i"
+                  class="category-item"
+                  :class="{ active: activeCategory === cat.value }"
+                  @click="setCategory(cat.value)"
+                >
                   {{ cat.label }}
                 </div>
               </div>
@@ -195,8 +219,17 @@ const sortedProducts = computed(() => {
               </div>
 
               <div class="radios" role="radiogroup" aria-label="price range">
-                <label v-for="(r, idx) in priceRanges" :key="idx" class="radio-row">
-                  <input type="radio" name="price" :value="r.value" v-model="activePrice" />
+                <label
+                  v-for="(r, idx) in priceRanges"
+                  :key="idx"
+                  class="radio-row"
+                >
+                  <input
+                    type="radio"
+                    name="price"
+                    :value="r.value"
+                    v-model="activePrice"
+                  />
                   <span class="radio-label">{{ r.label }}</span>
                 </label>
               </div>
@@ -210,8 +243,17 @@ const sortedProducts = computed(() => {
               </div>
 
               <div class="radios" role="radiogroup" aria-label="promo type">
-                <label v-for="(p, idx) in promoTypes" :key="idx" class="radio-row">
-                  <input type="radio" name="promo" :value="p.value" v-model="activePromo" />
+                <label
+                  v-for="(p, idx) in promoTypes"
+                  :key="idx"
+                  class="radio-row"
+                >
+                  <input
+                    type="radio"
+                    name="promo"
+                    :value="p.value"
+                    v-model="activePromo"
+                  />
                   <span class="radio-label">{{ p.label }}</span>
                 </label>
               </div>
@@ -221,22 +263,19 @@ const sortedProducts = computed(() => {
       </div>
 
       <!-- Main Content -->
-      <main :class="{ 'shrink': showFilterTab }" class="content">
+      <main :class="{ shrink: showFilterTab }" class="content">
         <!-- Navbar -->
-        <nav class="navbar">
-          <ul class="nav-links">
-            <li><router-link to="/" active-class="active">Home</router-link></li>
-            <li><router-link to="/Product" active-class="active" id="current">Product</router-link></li>
-            <li><router-link to="/Order" active-class="active">Order</router-link></li>
-          </ul>
-          <div class="cart-icon">
-            <Icon name="material-symbols:shopping-cart-outline" style="color: black; width: 45px; height: 45px;" />
-          </div>
-        </nav>
+        <div>
+          <Navbar />
+          <router-view />
+        </div>
         <!-- Search and Sort -->
         <div class="top-bar">
           <div class="search-bar">
-            <Icon name="material-symbols:search" style="color: black; width: 2em; height: 2em;" />
+            <Icon
+              name="material-symbols:search"
+              style="color: black; width: 2em; height: 2em"
+            />
             <input type="text" />
           </div>
           <div class="sort-dropdown">
@@ -244,19 +283,32 @@ const sortedProducts = computed(() => {
 
             <!-- custom dropdown -->
             <div class="select-wrapper" @click="toggleDropdown">
-              <div style="display: flex; align-items: center;">
+              <div style="display: flex; align-items: center">
                 <div class="selected">
-                  {{ sortOptions.find(opt => opt.value === selectedSort)?.label }}
+                  {{
+                    sortOptions.find((opt) => opt.value === selectedSort)?.label
+                  }}
                 </div>
-                <Icon name="material-symbols:keyboard-arrow-down" class="arrow" :class="{ open: isOpen }" />
+                <Icon
+                  name="material-symbols:keyboard-arrow-down"
+                  class="arrow"
+                  :class="{ open: isOpen }"
+                />
               </div>
 
-
               <ul v-if="isOpen" class="select-option">
-                <li v-for="option in sortOptions" :key="option.value" :class="{ active: option.value === selectedSort }"
-                  @mousedown.stop="selectOption(option)">
+                <li
+                  v-for="option in sortOptions"
+                  :key="option.value"
+                  :class="{ active: option.value === selectedSort }"
+                  @mousedown.stop="selectOption(option)"
+                >
                   <span>{{ option.label }}</span>
-                  <Icon v-if="option.value === selectedSort" name="material-symbols:check" class="check-icon" />
+                  <Icon
+                    v-if="option.value === selectedSort"
+                    name="material-symbols:check"
+                    class="check-icon"
+                  />
                 </li>
               </ul>
             </div>
@@ -271,27 +323,28 @@ const sortedProducts = computed(() => {
             :price="product.price"
             :qty="product.qty"
             :image="product.image"
-            @update-qty="product.qty = $event" />
+            @update-qty="product.qty = $event"
+          />
         </div>
       </main>
     </div>
-    <footer style="background-color: #6ACC91; width: 100%; height: 500px;">
-    </footer>
+    <footer
+      style="background-color: #6acc91; width: 100%; height: 500px"
+    ></footer>
   </div>
 </template>
 <style>
 body {
   margin: 0;
   padding: 0;
-  background-color: #F6F6F6;
-  font-family: 'Prompt', sans-serif;
+  background-color: #f6f6f6;
+  font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
 </style>
 <style scoped>
-
 :root {
-  --accent: #6ACC91;
+  --accent: #6acc91;
   --accent-dark: #57b97b;
   --accent-text: #111827;
   --panel-gap: 12px;
@@ -301,7 +354,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #F6F6F6;
+  background-color: #f6f6f6;
 }
 .accent-strip {
   width: 50px;
@@ -332,7 +385,7 @@ body {
   justify-content: center;
 }
 .accent-btn.open {
-  color: #EFF1F3; /* white when open as requested */
+  color: #eff1f3; /* white when open as requested */
 }
 /* Sidebar */
 .panel {
@@ -340,7 +393,7 @@ body {
   top: 0;
   min-height: 100vh;
   scrollbar-width: none;
-  background: #F6F6F6;
+  background: #f6f6f6;
   box-shadow: none;
   width: 0; /* collapsed */
   margin-top: 50px;
@@ -348,7 +401,7 @@ body {
   flex-direction: column;
   transition: width 300ms ease;
   z-index: 1150;
-  flex: 1;             /* makes aside take full height of its wrapper */
+  flex: 1; /* makes aside take full height of its wrapper */
   overflow-y: auto;
 }
 
@@ -362,17 +415,16 @@ body {
   align-items: center;
   width: 240px;
   padding: 0;
-  background-color: #F6F6F6;
-;
+  background-color: #f6f6f6;
 }
 
 /* All product filter button */
 .all-button {
-  font-family: 'Prompt', sans-serif;
+  font-family: "Prompt", sans-serif;
   width: var(--btn-width);
   height: 45px;
-  background-color: #F6F6F6 ;
-  border: 4px solid #6ACC91;
+  background-color: #f6f6f6;
+  border: 4px solid #6acc91;
   border-top-right-radius: 20px;
   border-top-left-radius: 0;
   border-bottom-right-radius: 0;
@@ -382,7 +434,8 @@ body {
   font-weight: 400;
   text-align: center;
   cursor: pointer;
-  transition: background-color 300ms ease-out, color 300ms ease-out, font-weight 200ms;
+  transition: background-color 300ms ease-out, color 300ms ease-out,
+    font-weight 200ms;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -391,13 +444,13 @@ body {
 
 /* hover -> background to accent */
 .all-button:hover {
-  background-color: #6ACC91;
+  background-color: #6acc91;
   color: #111827;
 }
 /* pressed/active -> text white + bold */
 .all-button.active,
 .all-button:active {
-  background-color: #6ACC91;
+  background-color: #6acc91;
   color: #fff;
   font-weight: 700;
 }
@@ -421,7 +474,7 @@ body {
   gap: 6px;
   align-items: flex-start;
   width: 201px; /* item width depends on this, as requested */
-  margin-top: 8px ; /* centered */
+  margin-top: 8px; /* centered */
 }
 
 /* Category item styles */
@@ -441,13 +494,13 @@ body {
   /* create only top-right & bottom-right radius on hover */
 }
 .category-item:hover {
-  background: #6ACC91;
+  background: #6acc91;
   color: #111827;
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;
 }
 .category-item.active {
-  background: #6ACC91;
+  background: #6acc91;
   color: #fff;
   font-weight: 700;
   border-top-right-radius: 12px;
@@ -498,12 +551,12 @@ body {
   cursor: pointer;
 }
 .radio-row input[type="radio"] {
-  appearance: none;        /* remove default browser radio */
+  appearance: none; /* remove default browser radio */
   -webkit-appearance: none;
   -moz-appearance: none;
   width: 17px;
   height: 17px;
-  border: 2px solid #6ACC91;  /* ring color when unchecked */
+  border: 2px solid #6acc91; /* ring color when unchecked */
   border-radius: 50%;
   cursor: pointer;
   position: relative;
@@ -515,7 +568,7 @@ body {
   content: "";
   width: 9px;
   height: 9px;
-  background: #6ACC91;   /* inner dot color */
+  background: #6acc91; /* inner dot color */
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -528,8 +581,6 @@ body {
 .radio-row input[type="radio"]:checked::after {
   transform: translate(-50%, -50%) scale(1);
 }
-
-
 
 /* Main content */
 .content {
@@ -555,11 +606,10 @@ body {
   display: flex;
   gap: 136px;
   list-style: none;
-
 }
 .nav-links li a {
   text-decoration: none;
-  color: #6ACC91;
+  color: #6acc91;
   cursor: pointer;
 }
 #current {
@@ -594,7 +644,7 @@ body {
 }
 .search-bar input {
   width: 100%;
-  background-color: #ECECEC;
+  background-color: #ececec;
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   border: 0px solid transparent;
@@ -625,7 +675,7 @@ body {
 
 .select-wrapper {
   position: relative;
-  background-color: #FAFAF5;
+  background-color: #fafaf5;
   border-radius: 9px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   cursor: pointer;
@@ -641,7 +691,7 @@ body {
 
 .arrow {
   margin-right: 12px;
-  color: #6ACC91;
+  color: #6acc91;
   pointer-events: none;
   width: 1.5em;
   height: 1.5rem;
@@ -660,10 +710,10 @@ body {
   margin: 4px 0 0;
   padding: 0;
   list-style: none;
-  background: #FAFAF5;
+  background: #fafaf5;
   border-radius: 9px;
   font-weight: 100;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   z-index: 20;
 }
 
@@ -684,10 +734,10 @@ body {
 }
 .select-option li.active {
   font-weight: 500;
-  background: #EAEAE7;
+  background: #eaeae7;
 }
 .check-icon {
-  color: #6ACC91;
+  color: #6acc91;
   width: 1rem;
   height: 1.5rem;
 }

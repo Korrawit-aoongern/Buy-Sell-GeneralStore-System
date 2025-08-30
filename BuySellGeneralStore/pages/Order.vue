@@ -1,70 +1,75 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
+import Navbar from "~/components/UI/Navber.vue";
 
-const orderCode = ref('')
-const showModal = ref(false)           // Modal เตือนกรอกรหัส
-const confirmCancelModal = ref(false)  // Modal ยืนยันยกเลิกออเดอร์
-const foundOrder = ref(null)
+const orderCode = ref("");
+const showModal = ref(false); // Modal เตือนกรอกรหัส
+const confirmCancelModal = ref(false); // Modal ยืนยันยกเลิกออเดอร์
+const foundOrder = ref(null);
 
 const orders = {
-  '123456': {
-    name: 'สมศักดิ์',
-    surname: 'นามสกุล',
-    address: '19 หมู่ 2 เมืองพัทยา พัทยา',
-    phone: '056687641',
+  123456: {
+    name: "สมศักดิ์",
+    surname: "นามสกุล",
+    address: "19 หมู่ 2 เมืองพัทยา พัทยา",
+    phone: "056687641",
     items: [
-      { name: 'ปากกาก', price: 10.0, qty: 5, image: new URL('~/assets/images/pen.jpg', import.meta.url).href},
-      { name: 'สายแลน', price: 299.0, originalPrice: 199.0, qty: 2, image: new URL('~/assets/images/Lan.jpg', import.meta.url).href}
-    ]
-  }
-}
+      {
+        name: "ปากกาก",
+        price: 10.0,
+        qty: 5,
+        image: new URL("~/assets/images/pen.jpg", import.meta.url).href,
+      },
+      {
+        name: "สายแลน",
+        price: 299.0,
+        originalPrice: 199.0,
+        qty: 2,
+        image: new URL("~/assets/images/Lan.jpg", import.meta.url).href,
+      },
+    ],
+  },
+};
 
 const checkOrder = () => {
   if (!orderCode.value.trim()) {
-    showModal.value = true
-    return
+    showModal.value = true;
+    return;
   }
 
-  const order = orders[orderCode.value.trim()]
+  const order = orders[orderCode.value.trim()];
   if (order) {
-    foundOrder.value = order
+    foundOrder.value = order;
   } else {
-    foundOrder.value = null
-    alert('ไม่พบรหัสรายการนี้')
+    foundOrder.value = null;
+    alert("ไม่พบรหัสรายการนี้");
   }
-}
+};
 
 // เรียก modal ยืนยันยกเลิก
 const promptCancelOrder = () => {
-  confirmCancelModal.value = true
-}
+  confirmCancelModal.value = true;
+};
 
 // ยืนยันยกเลิกออเดอร์จริงๆ
 const cancelOrder = () => {
-  orderCode.value = ''
-  foundOrder.value = null
-  confirmCancelModal.value = false
-}
+  orderCode.value = "";
+  foundOrder.value = null;
+  confirmCancelModal.value = false;
+};
 
 // ปิด modal ยืนยันโดยไม่ยกเลิก
 const closeCancelModal = () => {
-  confirmCancelModal.value = false
-}
+  confirmCancelModal.value = false;
+};
 </script>
 
 <template>
-    <nav class="navbar">
-      <div class="spacer"></div>
-      <ul class="nav-links">
-        <li><router-link to="/" active-class="active">Home</router-link></li>
-        <li><router-link to="/Product-Listing" active-class="active">Product</router-link></li>
-        <li><router-link to="/order" active-class="active">Order</router-link></li>
-      </ul>
-      <div class="cart-icon">
-        <i class="fas fa-shopping-cart"></i>
-      </div>
-    </nav>
-    
+  <div>
+    <Navbar />
+    <router-view />
+  </div>
+
   <div>
     <div class="order-tracking-page">
       <h1 class="tracking-title">Order Tracking</h1>
@@ -87,28 +92,37 @@ const closeCancelModal = () => {
     <p><strong>เบอร์โทร:</strong> {{ foundOrder.phone }}</p>
 
     <div v-for="item in foundOrder.items" :key="item.name" class="order-item">
-  <img :src="item.image" alt="" width="50" />
-  <div>
-    <strong>{{ item.name }}</strong><br />
+      <img :src="item.image" alt="" width="50" />
+      <div>
+        <strong>{{ item.name }}</strong
+        ><br />
 
-    <!-- ✅ แสดงราคาปัจจุบัน + ราคาปกติแนวตั้ง -->
-    <div class="price-stack" v-if="item.originalPrice">
-      <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
-      <span class="original-price">{{ item.originalPrice.toFixed(2) }} บาท</span>
+        <!-- ✅ แสดงราคาปัจจุบัน + ราคาปกติแนวตั้ง -->
+        <div class="price-stack" v-if="item.originalPrice">
+          <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
+          <span class="original-price"
+            >{{ item.originalPrice.toFixed(2) }} บาท</span
+          >
+        </div>
+
+        <!-- 🔹 หากไม่มีราคาปกติ -->
+        <div class="price-stack" v-else>
+          <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
+        </div>
+
+        จำนวน: {{ item.qty }}
+      </div>
     </div>
-
-    <!-- 🔹 หากไม่มีราคาปกติ -->
-    <div class="price-stack" v-else>
-      <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
-    </div>
-
-    จำนวน: {{ item.qty }}
-  </div>
-</div>
   </div>
 
   <!-- ปุ่มยกเลิกออเดอร์ เพิ่มคลาส large เพื่อให้อยู่ตรงกลาง -->
-  <button v-if="foundOrder" class="cancel-button large" @click="promptCancelOrder">ยกเลิกออเดอร์</button>
+  <button
+    v-if="foundOrder"
+    class="cancel-button large"
+    @click="promptCancelOrder"
+  >
+    ยกเลิกออเดอร์
+  </button>
 
   <!-- Modal เตือนเมื่อไม่กรอก -->
   <div v-if="showModal" class="modal-overlay">
@@ -118,7 +132,9 @@ const closeCancelModal = () => {
         <div class="modal-icon">!</div>
         <p class="modal-text">กรุณากรอกรหัสรายการก่อน</p>
         <div class="modal-actions">
-          <button class="confirm-button" @click="showModal = false">ตกลง</button>
+          <button class="confirm-button" @click="showModal = false">
+            ตกลง
+          </button>
         </div>
       </div>
     </div>
@@ -129,11 +145,19 @@ const closeCancelModal = () => {
     <div class="modal-box">
       <button class="close-button" @click="closeCancelModal">✕</button>
       <div class="modal-content">
-        <div class="modal-icon" style="color: red; border-color: red;">!</div>
-        <p class="modal-text" style="color: red; font-weight: bold;">คุณต้องการยกเลิกออเดอร์ใช่หรือไม่</p>
-        <div class="modal-actions" style="gap: 1rem;">
+        <div class="modal-icon" style="color: red; border-color: red">!</div>
+        <p class="modal-text" style="color: red; font-weight: bold">
+          คุณต้องการยกเลิกออเดอร์ใช่หรือไม่
+        </p>
+        <div class="modal-actions" style="gap: 1rem">
           <button class="confirm-button" @click="cancelOrder">ใช่</button>
-          <button class="cancel-button" @click="closeCancelModal" style="background-color: #eee; color: #555; border:none;">ยกเลิก</button>
+          <button
+            class="cancel-button"
+            @click="closeCancelModal"
+            style="background-color: #eee; color: #555; border: none"
+          >
+            ยกเลิก
+          </button>
         </div>
       </div>
     </div>
@@ -142,38 +166,6 @@ const closeCancelModal = () => {
 
 <style scoped>
 /* ===== Navbar & Layout ===== */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fdfdf7;
-  padding: 1rem 2rem;
-  border-bottom: 1px solid #ccc;
-}
-.spacer {
-  width: 90px;
-}
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 3rem;
-  margin: 0 auto;
-  padding: 0;
-}
-.nav-links li a {
-  color: #3cb371;
-  text-decoration: none;
-}
-.nav-links li a.active {
-  font-weight: bold;
-}
-.cart-icon {
-  font-size: 24px;
-  color: #000;
-  width: 100px;
-  display: flex;
-  justify-content: flex-end;
-}
 
 /* ===== Page Content ===== */
 .order-tracking-page {
@@ -279,8 +271,8 @@ const closeCancelModal = () => {
 
 .confirm-button,
 .cancel-button {
-  flex: 1;               /* ให้ปุ่มทั้งสองกินพื้นที่เท่า ๆ กัน */
-  padding: 0.75rem 0;    /* ความสูงเท่ากัน */
+  flex: 1; /* ให้ปุ่มทั้งสองกินพื้นที่เท่า ๆ กัน */
+  padding: 0.75rem 0; /* ความสูงเท่ากัน */
   font-weight: bold;
   font-size: 1.1rem;
   border-radius: 6px;
@@ -288,7 +280,7 @@ const closeCancelModal = () => {
   border: none;
   text-align: center;
   transition: background-color 0.3s ease;
-  display: flex;          /* จัดข้อความตรงกลางแนวตั้งและแนวนอน */
+  display: flex; /* จัดข้อความตรงกลางแนวตั้งและแนวนอน */
   justify-content: center;
   align-items: center;
 }
@@ -322,14 +314,14 @@ const closeCancelModal = () => {
   padding: 0.75rem;
   font-size: 1.1rem;
   text-align: center;
-  background-color: #e53935;   /* สีแดง */
+  background-color: #e53935; /* สีแดง */
   color: white;
   border: none;
   transition: background-color 0.3s ease;
 }
 
 .cancel-button.large:hover {
-  background-color: #b52a24;  /* สีแดงเข้มเมื่อ hover */
+  background-color: #b52a24; /* สีแดงเข้มเมื่อ hover */
 }
 
 /* ปุ่มยกเลิกสีแดงใน modal */
@@ -394,6 +386,4 @@ const closeCancelModal = () => {
   font-size: 0.85rem;
   margin-top: 2px;
 }
-
-
 </style>
