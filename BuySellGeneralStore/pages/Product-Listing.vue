@@ -593,28 +593,6 @@ body {
   margin-left: 280px;
 }
 
-/* Navbar */
-.navbar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fdfdf7;
-  margin: 1rem 2rem;
-  padding: 1rem 2rem;
-}
-.nav-links {
-  display: flex;
-  gap: 136px;
-  list-style: none;
-}
-.nav-links li a {
-  text-decoration: none;
-  color: #6acc91;
-  cursor: pointer;
-}
-#current {
-  font-weight: bold;
-}
 .cart-icon {
   position: absolute;
   right: 0;
@@ -627,9 +605,9 @@ body {
 .top-bar {
   display: flex;
   justify-content: flex-end;
-  padding: 1rem 2rem;
+  padding: 79px 1.7rem 35px 216px;
   align-items: flex-end;
-  gap: 24px;
+  gap: 48px;
 }
 .search-bar {
   background-color: #fff;

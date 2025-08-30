@@ -33,6 +33,9 @@ import { RouterLink } from "vue-router";
   display: flex;
   gap: 136px;
   list-style: none;
+  position: absolute;
+  right: 34%;
+  top: 5%
 }
 .nav-links li a {
   text-decoration: none;
@@ -48,6 +51,7 @@ import { RouterLink } from "vue-router";
 .cart-icon {
   position: absolute;
   right: 0;
+  top: 5%;
   margin-right: 166px;
   font-size: 24px;
   color: #111827;
