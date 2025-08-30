@@ -39,7 +39,6 @@ export default {
 .product-card {
   width: 200px;
   border-radius: 16px;
-  border: 2px solid #d3b1f6;
   padding: 16px;
   background-color: white;
   text-align: center;

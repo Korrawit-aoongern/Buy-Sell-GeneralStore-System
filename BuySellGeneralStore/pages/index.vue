@@ -4,7 +4,7 @@ import ProductCard from "~/components/Product/Product Card.vue";
 import ProductCardSell from "~/components/Product/Product CardSell.vue";
 import SoldoutCard from "~/components/Product/Sold out Card.vue";
 import Producthot from "~/components/Product/Producthot.vue";
-import Navbar from "~/components/UI/Navber.vue";
+import Navbar from "~/components/UI/Navbar.vue";
 
 const activePage = ref("Home");
 
@@ -127,17 +127,27 @@ const normalProducts = computed(() =>
   <!-- 🔚 End wrapper -->
 </template>
 
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #FAFAF5;
+  font-family: "Prompt", sans-serif;
+  min-height: 100vh;
+}
+</style>
+
 <style scoped>
 
 .title {
   font-size: 1.8rem;
-  color: #000000;
+  color: #111827;
   margin-bottom: 1rem;
 }
 
 .description {
   font-size: 1.1rem;
-  color: #333;
+  color: #111827;
 }
 
 .product-list {

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import Navbar from "~/components/UI/Navber.vue";
+import Navbar from "~/components/UI/Navbar.vue";
 
 const orderCode = ref("");
 const showModal = ref(false); // Modal เตือนกรอกรหัส
@@ -224,9 +224,17 @@ const closeCancelModal = () => {
   </div>
 </template>
 
-<style scoped>
-/* ===== Navbar & Layout ===== */
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #FAFAF5;
+  font-family: "Prompt", sans-serif;
+  min-height: 100vh;
+}
+</style>
 
+<style scoped>
 /* ===== Page Content ===== */
 .order-tracking-page {
   padding: 2rem;

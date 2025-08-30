@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
-import Navbar from "~/components/UI/Navber.vue";
+import Navbar from "~/components/UI/Navbar.vue";
 
 const accentColor = "#6ACC91";
 const btnWidth = 220;
@@ -337,7 +337,7 @@ const sortedProducts = computed(() => {
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
@@ -354,7 +354,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
 }
 .accent-strip {
   width: 50px;
@@ -593,28 +593,6 @@ body {
   margin-left: 280px;
 }
 
-/* Navbar */
-.navbar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fdfdf7;
-  margin: 1rem 2rem;
-  padding: 1rem 2rem;
-}
-.nav-links {
-  display: flex;
-  gap: 136px;
-  list-style: none;
-}
-.nav-links li a {
-  text-decoration: none;
-  color: #6acc91;
-  cursor: pointer;
-}
-#current {
-  font-weight: bold;
-}
 .cart-icon {
   position: absolute;
   right: 0;
@@ -627,9 +605,9 @@ body {
 .top-bar {
   display: flex;
   justify-content: flex-end;
-  padding: 1rem 2rem;
+  padding: 79px 1.7rem 35px 216px;
   align-items: flex-end;
-  gap: 24px;
+  gap: 48px;
 }
 .search-bar {
   background-color: #fff;

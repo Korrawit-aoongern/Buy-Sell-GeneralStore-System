@@ -1,3 +1,7 @@
+<script setup lang="ts">
+import { RouterLink } from "vue-router";
+</script>
+
 <template>
   <nav class="navbar">
     <ul class="nav-links">
@@ -6,10 +10,12 @@
       <li><router-link to="/Order">Order</router-link></li>
     </ul>
     <div class="cart-icon">
-      <Icon
-        name="material-symbols:shopping-cart-outline"
-        style="color: black; width: 45px; height: 45px"
-      />
+      <router-link to="/cart">
+        <Icon
+          name="material-symbols:shopping-cart-outline"
+          style="color: black; width: 45px; height: 45px"
+        />
+      </router-link>
     </div>
   </nav>
 </template>
@@ -19,7 +25,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #fdfdf7;
+  background-color: transparent;
   margin: 1rem 2rem;
   padding: 1rem 2rem;
 }
@@ -27,6 +33,9 @@
   display: flex;
   gap: 136px;
   list-style: none;
+  position: absolute;
+  right: 34%;
+  top: 5%
 }
 .nav-links li a {
   text-decoration: none;
@@ -42,6 +51,7 @@
 .cart-icon {
   position: absolute;
   right: 0;
+  top: 5%;
   margin-right: 166px;
   font-size: 24px;
   color: #111827;
