@@ -10,3 +10,12 @@ import Navbar from "~/components/UI/Navbar.vue";
     </div>
   </div>
 </template>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f6f6f6;
+  font-family: "Prompt", sans-serif;
+  min-height: 100vh;
+}
+</style>
