@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import Navbar from "~/components/UI/Navber.vue";
+import Navbar from "~/components/UI/Navbar.vue";
 
 const orderCode = ref("");
 const showModal = ref(false); // Modal เตือนกรอกรหัส

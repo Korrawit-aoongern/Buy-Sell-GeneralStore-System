@@ -4,7 +4,7 @@ import ProductCard from "~/components/Product/Product Card.vue";
 import ProductCardSell from "~/components/Product/Product CardSell.vue";
 import SoldoutCard from "~/components/Product/Sold out Card.vue";
 import Producthot from "~/components/Product/Producthot.vue";
-import Navbar from "~/components/UI/Navber.vue";
+import Navbar from "~/components/UI/Navbar.vue";
 
 const activePage = ref("Home");
 

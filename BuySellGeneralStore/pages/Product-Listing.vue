@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
-import Navbar from "~/components/UI/Navber.vue";
+import Navbar from "~/components/UI/Navbar.vue";
 
 const accentColor = "#6ACC91";
 const btnWidth = 220;
