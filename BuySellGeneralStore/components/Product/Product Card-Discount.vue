@@ -1,11 +1,5 @@
 <template>
   <div class="product-card">
-    <img 
-      v-if="type === 'hot'" 
-      class="badge" 
-      src="/Image/Best-Seller-Badge.svg" 
-      alt="Best-Seller-Badge"
-    />
     <div class="product-wrapper">
       <div class="product-image">
         <img :src="image" alt="product"/>
@@ -13,17 +7,23 @@
           <span class="sold-out-text">SOLD OUT</span>
         </div>
       </div>
-
       <div class="product-details">
         <h3 class="product-name">{{ name }}</h3>
-        <div class="product-meta">
-          <span class="product-price">{{ price.toFixed(2) }} บาท</span>
+        <p
+          class="product-price-original"
+          :class="{ 'no-discount': originalPrice <= price }"
+        >
+          {{ originalPrice.toFixed(2) }}
+        </p>
+        <div class="product-bottom-info">
+          <span class="product-price-sale">
+            {{ price.toFixed(2) }} บาท
+          </span>
           <p class="product-qty" :class="{ 'zero-qty': localQty === 0 }">
             {{ localQty }} Qty.
           </p>
         </div>
       </div>
-
       <button 
         class="add-to-cart" 
         :disabled="localQty === 0" 
@@ -44,6 +44,10 @@ const props = defineProps({
       default: 'ชื่อสินค้า'
     },
     price: {
+      type: Number,
+      default: 0
+    },
+    originalPrice: {
       type: Number,
       default: 0
     },
@@ -98,44 +102,6 @@ function addToCart() {
   flex-direction: column;
   gap: 14px;
 }
-.product-image {
-  position: relative; /* ต้องมี เพื่อให้ overlay ทำงาน */
-  height: 169px;
-  width: 225px;
-  border-radius: 20px;
-  overflow: hidden;
-  align-self: center;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.sold-out-overlay {
-  background-color: rgba(255, 255, 255, 0.5);
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-}
-.sold-out-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    color: red;
-    font-weight: normal;
-    font-size: 36px;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    pointer-events: none;
-    user-select: none;
-    white-space: nowrap;
-    z-index: 1000;
-    text-shadow: 0px 0px 2px rgba(100, 100, 100, 100);
-  }
-
 .product-name {
   font-size: 20px;
   font-weight: bold;
@@ -153,17 +119,33 @@ function addToCart() {
   width: 255px;
 }
 
-.product-meta {
+.product-price-original {
+  text-decoration: line-through;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  padding-left: 16px;
+  margin: 0;
+}
+
+.product-price-original.no-discount {
+  text-decoration: none;
+  color: #111827;
+}
+
+.product-bottom-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
 }
 
-.product-price {
+.product-price-sale {
+  color: #E73B3B;
   font-weight: 600;
   padding-left: 16px;
-  color: #111827;
+  margin: 0;
 }
 
 .product-qty {
@@ -204,11 +186,42 @@ function addToCart() {
   cursor: not-allowed;
   color: #EFF1F3;
 }
-.badge {
-  z-index: 10;
-  width: 77px;
-  position: absolute;
-  right: -25px;
-  top: -20px;
+
+.product-image {
+  position: relative; /* ต้องมี เพื่อให้ overlay ทำงาน */
+  height: 169px;
+  width: 225px;
+  border-radius: 20px;
+  overflow: hidden;
+  align-self: center;
 }
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sold-out-overlay {
+  background-color: rgba(255, 255, 255, 0.5);
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+}
+.sold-out-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    color: red;
+    font-weight: normal;
+    font-size: 36px;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+    z-index: 1000;
+    text-shadow: 0px 0px 2px rgba(100, 100, 100, 100);
+  }
 </style>
