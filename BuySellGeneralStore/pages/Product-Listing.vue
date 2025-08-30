@@ -337,7 +337,7 @@ const sortedProducts = computed(() => {
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
@@ -354,7 +354,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
 }
 .accent-strip {
   width: 50px;

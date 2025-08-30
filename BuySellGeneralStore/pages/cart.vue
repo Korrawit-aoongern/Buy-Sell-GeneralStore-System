@@ -119,7 +119,7 @@ function goNext() {
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }

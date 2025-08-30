@@ -5,31 +5,55 @@ import Navbar from "~/components/UI/Navbar.vue";
 const orderCode = ref("");
 const showModal = ref(false); // Modal เตือนกรอกรหัส
 const confirmCancelModal = ref(false); // Modal ยืนยันยกเลิกออเดอร์
+const orderCodeErrorMessage = ref('กรุณากรอกรหัสรายการก่อน'); // ข้อความ error
 const foundOrder = ref(null);
 
 const orders = {
-  123456: {
-    name: "สมศักดิ์",
-    surname: "นามสกุล",
+  1: {
+    name: "Chathai",
+    surname: "Mino",
     address: "19 หมู่ 2 เมืองพัทยา พัทยา",
     phone: "056687641",
+     status: "processing", // สถานะที่เสร็จสิ้น
     items: [
       {
         name: "ปากกาก",
         price: 10.0,
         qty: 5,
-        image: new URL("~/assets/images/pen.jpg", import.meta.url).href,
+        image: "/Image/pen.jpg"
       },
       {
         name: "สายแลน",
         price: 299.0,
         originalPrice: 199.0,
         qty: 2,
-        image: new URL("~/assets/images/Lan.jpg", import.meta.url).href,
+        image: "/Image/Lan.jpg"
+      },
+    ],
+  },
+  "2": {
+    name: "สมนึก",
+    surname: "สุขเกษม",
+    address: "19 หมู่ 2 เมืองพัทยา พัทยา",
+    phone: "056687641",
+    status: "completed", // สถานะที่กำลังดำเนินการ
+    items: [
+      {
+        name: "ไข่เบอร์ 1",
+        price: 4.70,
+        qty: 10,
+        image: "/Image/egg.jpg"
+      },
+      {
+        name: "บะหมี่กึ่งสำเร็จรูป",
+        price: 12.00,
+        qty: 2,
+        image: "/Image/noodle.jpg"
       },
     ],
   },
 };
+
 
 const checkOrder = () => {
   if (!orderCode.value.trim()) {
@@ -41,10 +65,13 @@ const checkOrder = () => {
   if (order) {
     foundOrder.value = order;
   } else {
+    orderCodeErrorMessage.value = 'ไม่พบรหัสรายการนี้'; // เมื่อไม่พบรหัสออเดอร์
     foundOrder.value = null;
-    alert("ไม่พบรหัสรายการนี้");
+    showModal.value = true;
   }
 };
+
+
 
 // เรียก modal ยืนยันยกเลิก
 const promptCancelOrder = () => {
@@ -70,12 +97,9 @@ const closeCancelModal = () => {
     <router-view />
   </div>
 
-  <div>
-    <div class="order-tracking-page">
-      <h1 class="tracking-title">Order Tracking</h1>
-    </div>
+  <div class="order-tracking-page">
+    <h1 class="tracking-title">Order Tracking</h1>
   </div>
-  <!-- ... ส่วน navbar กับฟอร์มเหมือนเดิม ... -->
 
   <div class="tracking-form-container">
     <h2 class="form-title">โปรดใส่รหัสรายการ</h2>
@@ -84,45 +108,64 @@ const closeCancelModal = () => {
     <button class="check-button" @click="checkOrder">ตรวจสอบ</button>
   </div>
 
-  <div v-if="foundOrder" class="order-details">
-    <h2>รายละเอียด</h2>
-    <p><strong>ชื่อ:</strong> {{ foundOrder.name }}</p>
-    <p><strong>นามสกุล:</strong> {{ foundOrder.surname }}</p>
-    <p><strong>ที่อยู่:</strong> {{ foundOrder.address }}</p>
-    <p><strong>เบอร์โทร:</strong> {{ foundOrder.phone }}</p>
+   <div v-if="foundOrder" class="order-details">
+    <div class="order-detail">
+      <span class="order-label">รหัสรายการ: </span>
+      <span class="order-value">{{ orderCode }}</span>
+    </div>
+
+    <div class="order-detail">
+  <span class="order-label">สถานะ: </span>
+  <!-- ใช้เงื่อนไขเพื่อตรวจสอบสถานะ -->
+  <span class="order-value">
+    {{ foundOrder.status === 'completed' ? 'เสร็จสิ้น' : 'กำลังดำเนินการ' }}
+  </span>
+</div>
+
+    <div class="order-detail">
+      <span class="order-label">ชื่อ: </span>
+      <span class="order-value">{{ foundOrder.name }}</span>
+    </div>
+
+    <div class="order-detail">
+      <span class="order-label">นามสกุล: </span>
+      <span class="order-value">{{ foundOrder.surname }}</span>
+    </div>
+
+    <div class="order-detail">
+      <span class="order-label">ที่อยู่: </span>
+      <span class="order-value">{{ foundOrder.address }}</span>
+    </div>
+
+    <div class="order-detail">
+      <span class="order-label">เบอร์โทร: </span>
+      <span class="order-value">{{ foundOrder.phone }}</span>
+    </div>
 
     <div v-for="item in foundOrder.items" :key="item.name" class="order-item">
       <img :src="item.image" alt="" width="50" />
       <div>
-        <strong>{{ item.name }}</strong
-        ><br />
-
-        <!-- ✅ แสดงราคาปัจจุบัน + ราคาปกติแนวตั้ง -->
+        <strong>{{ item.name }}</strong><br />
         <div class="price-stack" v-if="item.originalPrice">
           <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
-          <span class="original-price"
-            >{{ item.originalPrice.toFixed(2) }} บาท</span
-          >
+          <span class="original-price">{{ item.originalPrice.toFixed(2) }} บาท</span>
         </div>
-
-        <!-- 🔹 หากไม่มีราคาปกติ -->
         <div class="price-stack" v-else>
           <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
         </div>
-
-        จำนวน: {{ item.qty }}
       </div>
+      <div class="item-quantity">จำนวน: {{ item.qty }}</div>
     </div>
   </div>
 
   <!-- ปุ่มยกเลิกออเดอร์ เพิ่มคลาส large เพื่อให้อยู่ตรงกลาง -->
-  <button
-    v-if="foundOrder"
-    class="cancel-button large"
-    @click="promptCancelOrder"
-  >
-    ยกเลิกออเดอร์
-  </button>
+ <button
+  v-if="foundOrder && foundOrder.status === 'processing'"
+  class="cancel-button large"
+  @click="promptCancelOrder"
+>
+  ยกเลิกออเดอร์
+</button>
 
   <!-- Modal เตือนเมื่อไม่กรอก -->
   <div v-if="showModal" class="modal-overlay">
@@ -162,13 +205,30 @@ const closeCancelModal = () => {
       </div>
     </div>
   </div>
+
+  <div v-if="showModal" class="modal-overlay">
+    <div class="modal-box">
+      <button class="close-button" @click="showModal = false">✕</button>
+      <div class="modal-content">
+        <div class="modal-icon">!</div>
+        <p class="modal-text">
+          {{ orderCodeErrorMessage }}
+        </p>
+        <div class="modal-actions">
+          <button class="confirm-button" @click="showModal = false">
+            ตกลง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style>
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
@@ -366,13 +426,32 @@ body {
   padding: 1.5rem;
   background: #f9f9f9;
   border-radius: 10px;
+  font-size: 1.1rem;
 }
+.order-label {
+  font-weight: bold;
+  color: #3cb371; /* Green color for labels */
+}
+.order-value {
+  color: #111827;  /* สีเข้มสำหรับค่า */
+  display: block;  /* ให้ข้อมูลอยู่บรรทัดใหม่ */
+}
+
+
 .order-item {
   display: flex;
-  gap: 1rem;
+  align-items: center;
   padding: 1rem 0;
   border-bottom: 1px solid #ccc;
 }
+
+.item-quantity {
+  font-size: 1rem;
+  color: #111827;
+  font-weight: bold;
+  margin-left: auto; /* Aligns the quantity to the right */
+}
+
 /* ราคาที่ลดแล้ว กับ ราคาปกติในบรรทัดเดียว */
 .price-stack {
   display: flex;

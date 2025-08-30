@@ -1,9 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
-import ProductCardSell from "~/components/Product/Product CardSell.vue";
-import SoldoutCard from "~/components/Product/Sold out Card.vue";
-import Producthot from "~/components/Product/Producthot.vue";
+import ProductCardDiscount from "~/components/Product/Product Card-Discount.vue";
 import Navbar from "~/components/UI/Navbar.vue";
 
 const activePage = ref("Home");
@@ -77,111 +75,118 @@ const normalProducts = computed(() =>
 
 <template>
   <div>
-    <!-- ✅ Wrapper element -->
-    <!-- Navbar -->
     <div>
       <Navbar />
       <router-view />
     </div>
 
-    <!-- ขายดี -->
-    <div class="text-block"><h2 class="title">สินค้าขายดี</h2></div>
-    <div class="product-list">
-      <Producthot
-        v-for="(product, index) in hotProducts"
-        :key="index"
-        :name="product.name"
-        :price="product.price"
-        :qty="product.qty"
-        :image="product.image"
-      />
+    <div style="display: flex; flex-direction: column;">
+    <div class="shop-banner">
+      <img src="/Image/Banner.svg" alt="shop-banner">
     </div>
+    <section id="Feature-Wrapper">
+     <!-- ขายดี -->
+      <div class="Feature-Section">
+        <span class="title">สินค้าขายดี</span>
+        <div class="product-list">
+          <ProductCard
+            v-for="(product, index) in hotProducts"
+            :key="index"
+            :name="product.name"
+            :price="product.price"
+            :qty="product.qty"
+            :image="product.image"
+            :type="product.type"
+          />
+        </div>
+      </div>
+
 
     <!-- ลดราคา -->
-    <div class="text-block1"><h2 class="title">สินค้าลดราคา</h2></div>
-    <div class="product-list">
-      <ProductCardSell
-        v-for="(product, index) in sellProducts"
-        :key="index"
-        :name="product.name"
-        :price="product.price"
-        :originalPrice="product.originalPrice"
-        :qty="product.qty"
-        :image="product.image"
-      />
-    </div>
+      <div class="Feature-Section">
+        <span class="title">สินค้าลดราคา</span>
+        <div class="product-list">
+          <ProductCardDiscount
+            v-for="(product, index) in sellProducts"
+            :key="index"
+            :name="product.name"
+            :price="product.price"
+            :originalPrice="product.originalPrice"
+            :qty="product.qty"
+            :image="product.image"
+            :type="product.type"
+          />
+        </div>
+      </div>
 
     <!-- ปกติ -->
-    <div class="text-block1"><h2 class="title">สินค้าปกติ</h2></div>
-    <div class="product-list">
-      <ProductCard
-        v-for="(product, index) in normalProducts"
-        :key="index"
-        :name="product.name"
-        :price="product.price"
-        :qty="product.qty"
-        :image="product.image"
-      />
+      <div class="Feature-Section">
+        <span class="title">สินค้าปกติ</span>
+        <div class="product-list">
+          <ProductCard
+            v-for="(product, index) in normalProducts"
+            :key="index"
+            :name="product.name"
+            :price="product.price"
+            :qty="product.qty"
+            :image="product.image"
+            :type="product.type"
+          />
+        </div>
+      </div>
+    </section>
+    <footer style="background-color: #6acc91; width: 100%; height: 500px; margin-top: 12em;"></footer>
     </div>
   </div>
-  <!-- 🔚 End wrapper -->
 </template>
 
 <style>
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f6f6;
+  background-color: #FAFAF5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
 </style>
 
 <style scoped>
-
-.title {
-  font-size: 1.8rem;
-  color: #000000;
-  margin-bottom: 1rem;
+#Feature-Wrapper {
+  display: flex;
+  flex-direction: column; 
+  margin-top: 46px;
+  margin-left: 2rem;
+  gap: 112px;
+}
+.Feature-Section {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+  gap: 15px;
+  margin-left: 2rem;
+}
+.shop-banner {
+  width: 100vw;
+  margin-top: 60px;
+}
+.shop-banner img {
+  width: 100vw;
+  object-fit: fill;
 }
 
-.description {
-  font-size: 1.1rem;
-  color: #333;
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #111827;
 }
 
 .product-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
-  margin: 2rem;
+  gap: 57px;
+  margin-left: 2rem;
 }
-.cart {
-  position: fixed;
-  bottom: 20px; /* เปลี่ยนจาก top เป็น bottom */
-  right: 20px;
-  top: auto; /* ป้องกัน top ทับซ้อน */
-  background-color: white;
-  padding: 8px;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  z-index: 1000;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #3cb371;
-  transition: background-color 0.2s ease;
-}
-
-.cart:hover {
-  background-color: #d3f5e0;
-}
-
-.cart svg {
-  width: 24px;
-  height: 24px;
+footer {
+  flex-shrink: 0;
 }
 </style>
