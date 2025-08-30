@@ -337,7 +337,7 @@ const sortedProducts = computed(() => {
 body {
   margin: 0;
   padding: 0;
-  background-color: #FAFAF5;
+  background-color: #fafaf5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
@@ -354,7 +354,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #FAFAF5;
+  background-color: #fafaf5;
 }
 .accent-strip {
   width: 50px;
@@ -370,12 +370,12 @@ body {
   z-index: 1200;
 }
 .accent-btn {
-  margin-top: 20px; /* aligns reasonably with navbar area; adjust if needed */
+  margin-top: 20px;
   width: 28px;
   height: 28px;
   border: none;
   background: transparent;
-  color: #111827; /* black by default */
+  color: #111827;
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
@@ -385,28 +385,28 @@ body {
   justify-content: center;
 }
 .accent-btn.open {
-  color: #eff1f3; /* white when open as requested */
+  color: #eff1f3;
 }
 /* Sidebar */
 .panel {
-  left: 50px; /* directly adjacent to accent */
+  left: 50px;
   top: 0;
   min-height: 100vh;
   scrollbar-width: none;
   background: #f6f6f6;
   box-shadow: none;
-  width: 0; /* collapsed */
+  width: 0;
   margin-top: 50px;
   display: flex;
   flex-direction: column;
   transition: width 300ms ease;
   z-index: 1150;
-  flex: 1; /* makes aside take full height of its wrapper */
+  flex: 1;
   overflow-y: auto;
 }
 
 .panel.open {
-  width: calc(var(--btn-width) + 20px); /* expand smoothly */
+  width: calc(var(--btn-width) + 20px);
 }
 
 /* Panel top area holds the All product button */
@@ -521,9 +521,8 @@ body {
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 11px solid #cfcfcf; /* upside-down grey triangle */
-  transform: rotate(0deg); /* rotate to look upside down if needed */
-  /* you asked upside down 11x11 grey triangle; the above creates a small triangle */
+  border-top: 11px solid #cfcfcf;
+  transform: rotate(0deg); 
 }
 .group-head-text {
   font-size: 16px;
@@ -551,12 +550,12 @@ body {
   cursor: pointer;
 }
 .radio-row input[type="radio"] {
-  appearance: none; /* remove default browser radio */
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   width: 17px;
   height: 17px;
-  border: 2px solid #6acc91; /* ring color when unchecked */
+  border: 2px solid #6acc91;
   border-radius: 50%;
   cursor: pointer;
   position: relative;
@@ -568,7 +567,7 @@ body {
   content: "";
   width: 9px;
   height: 9px;
-  background: #6acc91; /* inner dot color */
+  background: #6acc91;
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -676,7 +675,7 @@ body {
   transition: transform 0.3s ease;
 }
 .arrow.open {
-  transform: rotate(90deg); /* rotate when dropdown is open */
+  transform: rotate(90deg);
 }
 
 /* fake dropdown list */
@@ -697,7 +696,7 @@ body {
 
 .select-option li {
   display: flex;
-  justify-content: space-between; /* pushes tick to the right */
+  justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
   font-size: 12px;

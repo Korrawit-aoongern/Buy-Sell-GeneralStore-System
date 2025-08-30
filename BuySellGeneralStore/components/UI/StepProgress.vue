@@ -72,6 +72,7 @@ export default {
   color: #55c198;
   background-color: transparent;
   font-weight: bold;
+  font-size: 30px;
   transition: all 0.3s ease;
 }
 
@@ -86,10 +87,11 @@ export default {
 }
 
 .line {
-  width: 40px;
+  width: 60px;
   height: 2px;
-  background-color: #cce6dc;
+  background-color: #55c198;
   transition: background-color 0.3s ease;
+  margin-bottom: 25px;
 }
 
 .line.active {
