@@ -2,7 +2,9 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
 import Navbar from "~/components/UI/Navbar.vue";
+import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
 
+const { addToCart } = useCart(); // ✅ ใช้งาน addToCart ได้เลย
 const accentColor = "#6ACC91";
 const btnWidth = 220;
 
@@ -121,22 +123,22 @@ const filteredProducts = computed(() => {
 });
 
 const productList = ref([
-  { name: "ปากกา 1", price: 12, qty: 101, image: "/Image/pen.jpg" },
-  { name: "ปากกา 2", price: 15, qty: 0, image: "/Image/Lan.jpg" },
-  { name: "ปากกา 3", price: 10, qty: 8, image: "/Image/R.jpg" },
-  { name: "ปากกา 4", price: 13, qty: 1, image: "/Image/pen.jpg" },
-  { name: "ปากกา 5", price: 11, qty: 0, image: "/Image/pen.jpg" },
-  { name: "ปากกา 6", price: 14, qty: 75, image: "/Image/pen.jpg" },
-  { name: "ปากกา 7", price: 12, qty: 100, image: "/Image/pen.jpg" },
-  { name: "ปากกา 8", price: 16, qty: 80, image: "/Image/pen.jpg" },
-  { name: "ปากกา 9", price: 10, qty: 0, image: "/Image/pen.jpg" },
-  { name: "ปากกา 10", price: 15, qty: 92, image: "/Image/pen.jpg" },
-  { name: "ปากกา 11", price: 13, qty: 105, image: "/Image/pen.jpg" },
-  { name: "ปากกา 12", price: 14, qty: 90, image: "/Image/pen.jpg" },
-  { name: "ปากกา 13", price: 11, qty: 60, image: "/Image/pen.jpg" },
-  { name: "ปากกา 14", price: 12, qty: 120, image: "/Image/pen.jpg" },
-  { name: "ปากกา 15", price: 13, qty: 70, image: "/Image/pen.jpg" },
-]);
+  { id: 1, name: "ปากกา 1", price: 12, qty: 101, image: "/Image/pen.jpg" },
+  { id: 2, name: "ปากกา 2", price: 15, qty: 0, image: "/Image/Lan.jpg" },
+  { id: 3, name: "ปากกา 3", price: 10, qty: 8, image: "/Image/R.jpg" },
+  { id: 4, name: "ปากกา 4", price: 13, qty: 1, image: "/Image/pen.jpg" },
+  { id: 5, name: "ปากกา 5", price: 11, qty: 0, image: "/Image/pen.jpg" },
+  { id: 6, name: "ปากกา 6", price: 14, qty: 75, image: "/Image/pen.jpg" },
+  { id: 7, name: "ปากกา 7", price: 12, qty: 100, image: "/Image/pen.jpg" },
+  { id: 8, name: "ปากกา 8", price: 16, qty: 80, image: "/Image/pen.jpg" },
+  { id: 9, name: "ปากกา 9", price: 10, qty: 0, image: "/Image/pen.jpg" },
+  { id: 10, name: "ปากกา 10", price: 15, qty: 92, image: "/Image/pen.jpg" },
+  { id: 11, name: "ปากกา 11", price: 13, qty: 105, image: "/Image/pen.jpg" },
+  { id: 12, name: "ปากกา 12", price: 14, qty: 90, image: "/Image/pen.jpg" },
+  { id: 13, name: "ปากกา 13", price: 11, qty: 60, image: "/Image/pen.jpg" },
+  { id: 14, name: "ปากกา 14", price: 12, qty: 120, image: "/Image/pen.jpg" },
+  { id: 15, name: "ปากกา 15", price: 13, qty: 70, image: "/Image/pen.jpg" },
+])
 
 // ✅ จัดเรียงตามที่เลือก
 const sortedProducts = computed(() => {
@@ -318,12 +320,14 @@ const sortedProducts = computed(() => {
         <div class="product-list">
           <ProductCard
             v-for="(product, index) in productList"
+            :id="product.id"
             :key="index"
             :name="product.name"
             :price="product.price"
             :qty="product.qty"
             :image="product.image"
             @update-qty="product.qty = $event"
+            @add-to-cart="addToCart(product)" 
           />
         </div>
       </main>

@@ -2,11 +2,12 @@
   <div class="product-card">
     <div class="product-wrapper">
       <div class="product-image">
-        <img :src="image" alt="product"/>
+        <img :src="image" alt="product" />
         <div v-if="localQty === 0" class="sold-out-overlay">
           <span class="sold-out-text">SOLD OUT</span>
         </div>
       </div>
+
       <div class="product-details">
         <h3 class="product-name">{{ name }}</h3>
         <p
@@ -24,10 +25,11 @@
           </p>
         </div>
       </div>
+
       <button 
         class="add-to-cart" 
         :disabled="localQty === 0" 
-        @click="addToCart"
+        @click="handleAddToCart"
       >
         เพิ่มลงตะกร้า
       </button>
@@ -36,53 +38,65 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
-    name: {
-      type: String,
-      default: 'ชื่อสินค้า'
-    },
-    price: {
-      type: Number,
-      default: 0
-    },
-    originalPrice: {
-      type: Number,
-      default: 0
-    },
-    qty: {
-      type: Number,
-      default: 1
-    },
-    image: {
-      type : String,
-      default: null
-    },
-    type: {
-      type: String,
-      default: 'normal'
-    }
+  id: {
+    type: Number,
+    required: true,
+  },
+  name: {
+    type: String,
+    default: 'ชื่อสินค้า',
+  },
+  price: {
+    type: Number,
+    default: 0,
+  },
+  originalPrice: {
+    type: Number,
+    default: 0,
+  },
+  qty: {
+    type: Number,
+    default: 1,
+  },
+  image: {
+    type: String,
+    default: null,
+  },
+  type: {
+    type: String,
+    default: 'normal',
+  },
 })
 
+const emit = defineEmits(['update-qty', 'add-to-cart'])
 
-const emit = defineEmits(['update-qty'])
-
-// create a reactive copy of qty
 const localQty = ref(props.qty)
 
-// watch for prop changes to update localQty
 watch(() => props.qty, (newQty) => {
   localQty.value = newQty
 })
 
-function addToCart() {
+function handleAddToCart() {
   if (localQty.value > 0) {
     localQty.value -= 1
     emit('update-qty', localQty.value)
+
+    // ✅ ส่งข้อมูลสินค้าให้ parent component
+    emit('add-to-cart', {
+      id: props.id,
+      name: props.name,
+      price: props.price,
+      image: props.image,
+      type: props.type,
+      originalPrice: props.originalPrice
+    })
   }
 }
 </script>
+
 
 <style scoped>
 .product-card {

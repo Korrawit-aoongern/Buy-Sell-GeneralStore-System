@@ -1,163 +1,189 @@
 <script setup>
 import Navbar from "~/components/UI/Navbar.vue";
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
 import StepProgress from "~/components/UI/StepProgress.vue";
 import Summary from "~/components/UI/Summary.vue";
 
-const router = useRouter();
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useCartStore } from "~/stores/cart";
+
+// สเต็ปปัจจุบัน
 const currentStep = ref(1);
 
-// mock data
-const cart = ref([
-  {
-    id: 1,
-    name: "ไข่ไก่ เบอร์ 1",
-    price: 4.7,
-    qty: 1,
-    image: "/Image/pen.jpg",
-  },
-  {
-    id: 2,
-    name: "บะหมี่กึ่งสำเร็จรูป",
-    price: 10.0,
-    oldPrice: 12.0,
-    qty: 1,
-    image: "/Image/pen.jpg",
-  },
-]);
+// เรียกใช้ store
+const cartStore = useCartStore();
+const cart = cartStore.cart;
+const increase = cartStore.increase;
+const decrease = cartStore.decrease;
+const removeItem = cartStore.removeItem;  // เพิ่มฟังก์ชันลบสินค้า
+
+// รวมจำนวนสินค้า
+const totalQty = computed(() =>
+  cart.reduce((sum, item) => sum + item.qty, 0)
+);
+
+// ใช้งาน router
+const router = useRouter();
+function cancelOrder() {
+  router.push('/');
+}
 </script>
 
 <template>
   <div>
-    <!-- Navbar -->
-    <div>
-      <Navbar />
-    </div>
+    <Navbar />
 
     <div class="cart-container">
-      <!-- Progress bar -->
-      <div>
-        <StepProgress :currentStep="currentStep" />
-      </div>
+      <StepProgress :currentStep="currentStep" />
 
       <h2>Order</h2>
+      <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
+
       <div class="cart-content">
-        <!-- สินค้า -->
         <div class="order-list">
           <div v-for="item in cart" :key="item.id" class="order-item">
+
             <img :src="item.image" class="item-img" />
+
             <div class="item-info">
               <div class="item-name">{{ item.name }}</div>
               <div class="item-price">
                 <span v-if="item.oldPrice" class="old-price">
-                  {{ item.oldPrice.toFixed(2) }} บาท
+                  {{ (item.oldPrice * item.qty).toFixed(2) }} บาท
                 </span>
               </div>
               <div>
                 <span :class="item.oldPrice ? 'discounted' : ''">
-                  {{ item.price.toFixed(2) }} บาท
+                  {{ (item.price * item.qty).toFixed(2) }} บาท
                 </span>
               </div>
             </div>
+
             <div class="quantity-control">
               <button @click="decrease(item)">-</button>
               <span>{{ item.qty }}</span>
               <button @click="increase(item)">+</button>
             </div>
+
+            <!-- ปุ่มลบสินค้า -->
+            <button class="remove-item-btn" @click="removeItem(item)">×</button>
           </div>
         </div>
-
-        <!-- ส่วนลด / รวม -->
-        <div class="summary1">
-          <Summary :cart="cart" :currentStep="currentStep" />
+        
+          <div class="summary1">
+            <Summary :cart="cart" :currentStep="currentStep" />
+            <div class="buttons">
+              
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+
 </template>
 
-<style>
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #fafaf5;
-  font-family: "Prompt", sans-serif;
-  min-height: 100vh;
-}
+<style scoped>
+
 .cart-container {
-  max-width: 900px;
-  margin: auto;
-  margin-top: 4rem;
-  font-family: sans-serif;
+  padding: 2rem;
+}
+
+.total-qty {
+  font-size: 18px;
+  color: #2e8b57;
+  margin: 0.5rem 0 1.5rem;
 }
 
 .cart-content {
   display: flex;
-  gap: 6rem;
-  margin-top: 0.5rem;
+  justify-content: space-between;
+  gap: 2rem;
 }
 
 .order-list {
   flex: 2;
 }
+
 .order-item {
   display: flex;
+  gap: 1rem;
   align-items: center;
   margin-bottom: 1rem;
-  background: #fff;
+  padding: 1rem;
+  border: 1px solid #eee;
   border-radius: 8px;
-  padding: 0.5rem 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-family: "Prompt", sans-serif;
+  background: white;
+  position: relative;
+  /* เพื่อให้ปุ่มลบจัดตำแหน่งได้ */
 }
+
 .item-img {
-  width: 60px;
-  height: 60px;
-  margin-right: 1rem;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
 }
+
 .item-info {
   flex: 1;
 }
+
 .item-name {
   font-weight: bold;
+  margin-bottom: 0.25rem;
 }
-.item-price {
-  font-size: 0.7rem;
-  font-family: "Prompt", sans-serif;
-}
-.old-price {
+
+.item-price .old-price {
   text-decoration: line-through;
-  color: #888;
-  margin-right: 5px;
+  color: gray;
+  font-size: 14px;
 }
+
 .discounted {
   color: red;
   font-weight: bold;
+  font-size: 16px;
 }
 
 .quantity-control {
   display: flex;
-  margin-top: 30px;
+  gap: 10px;
+  align-items: center;
 }
+
 .quantity-control button {
-  width: 30px;
-  height: 30px;
-  font-size: 18px;
-  background: none;
+  padding: 4px 10px;
+  font-size: 16px;
+  background-color: #6acc91;
   border: none;
+  border-radius: 4px;
+  color: white;
   cursor: pointer;
 }
-.quantity-control span {
-  margin: 0 8px;
-  font-size: 16px;
-  font-family: "Prompt", sans-serif;
+
+.quantity-control button:hover {
+  background-color: #55b27d;
 }
-h2 {
-  font-family: "Prompt", sans-serif;
-  margin: 20px;
-  padding: 0px;
+
+/* ปุ่มลบสินค้า */
+.remove-item-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #ff4d4f;
+  margin-left: 1rem;
+  align-self: flex-start;
+  line-height: 1;
+  user-select: none;
+  padding: 0 8px;
+  transition: color 0.2s ease-in-out;
 }
+
+.remove-item-btn:hover {
+  color: #d9363e;
+}
+
 .summary1 {
   flex: 1;
 }

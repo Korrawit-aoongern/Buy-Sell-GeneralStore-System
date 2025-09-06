@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-
+ 
 const props = defineProps({
   cart: {
     type: Array,
@@ -12,9 +12,9 @@ const props = defineProps({
     required: true,
   },
 });
-
+ 
 const router = useRouter();
-
+ 
 const discount = computed(() => {
   return props.cart.reduce((sum, item) => {
     if (item.oldPrice) {
@@ -23,37 +23,58 @@ const discount = computed(() => {
     return sum;
   }, 0);
 });
-
+ 
 const total = computed(() => {
   return props.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 });
-
+ 
 function goNext() {
   // ในนี้เปลี่ยนแค่ route ส่วน currentStep ควรเปลี่ยนใน parent
   router.push("/details");
 }
+ 
+function cancel() {
+  router.push("/");
+}
+ 
+function goBack() {
+  router.back();
+}
 </script>
-
+ 
 <template>
-  <!-- ส่วนลด / รวม -->
-  <div class="summary">
-    <div class="row">
-      <span>ส่วนลด</span>
-      <span
-        ><strong>{{ discount.toFixed(2) }}</strong></span
-      >
-    </div>
-    <div class="row total">
-      <span>ราคารวม</span>
-      <span
-        ><strong>{{ total.toFixed(2) }}</strong></span
-      >
-    </div>
+<div class="summary">
+<div class="row">
+<span>ส่วนลด</span>
+<span><strong>{{ discount.toFixed(2) }}</strong></span>
+</div>
+<div class="row total">
+<span>ราคารวม</span>
+<span><strong>{{ total.toFixed(2) }}</strong></span>
+</div>
+ 
     <div class="buttons">
-      <button class="cancel">ยกเลิก</button>
+<!-- ถ้าอยู่ step 1 = แสดง "ยกเลิก" -->
+<button
+        v-if="currentStep === 1"
+        class="cancel"
+        @click="cancel"
+>
+        ยกเลิก
+</button>
+ 
+      <!-- ถ้า step > 1 = แสดง "ย้อนกลับ" -->
+<button
+        v-else
+        class="cancel"
+        @click="goBack"
+>
+        ย้อนกลับ
+</button>
+ 
       <button class="next" @click="goNext">ต่อไป</button>
-    </div>
-  </div>
+</div>
+</div>
 </template>
 <style>
 .summary {

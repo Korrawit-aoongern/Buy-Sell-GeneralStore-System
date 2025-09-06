@@ -4,6 +4,9 @@ import ProductCard from "~/components/Product/Product Card.vue";
 import ProductCardDiscount from "~/components/Product/Product Card-Discount.vue";
 import Navbar from "~/components/UI/Navbar.vue";
 
+import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
+
+const { addToCart } = useCart(); // ✅ ใช้งาน addToCart ได้เลย
 const activePage = ref("Home");
 
 const setActive = (page) => {
@@ -12,13 +15,15 @@ const setActive = (page) => {
 
 const productList = ref([
   {
+    id: 1,
     name: "ปากกา 1",
     price: 12,
-    qty: 0,
+    qty: 1,
     type: "hot",
-    image: "/Image/pen.jpg",
+    image: "/Image/R.jpg",
   },
   {
+    id: 2,
     name: "ปากกา 1",
     price: 12,
     qty: 100,
@@ -26,6 +31,7 @@ const productList = ref([
     image: "/Image/pen.jpg",
   },
   {
+    id: 3,
     name: "ปากกา 2",
     price: 10,
     originalPrice: 15, // ✅ ราคาก่อนลด
@@ -34,6 +40,7 @@ const productList = ref([
     image: "/Image/R.jpg",
   },
   {
+    id: 4,
     name: "ปากกา 2",
     price: 10,
     originalPrice: 15, // ✅ ราคาก่อนลด
@@ -42,6 +49,7 @@ const productList = ref([
     image: "/Image/R.jpg",
   },
   {
+    id: 5,
     name: "ปากกา 3",
     price: 15,
     qty: 0,
@@ -49,6 +57,7 @@ const productList = ref([
     image: "/Image/R.jpg",
   },
   {
+    id: 6,
     name: "ปากกา 3",
     price: 15,
     qty: 10,
@@ -91,12 +100,14 @@ const normalProducts = computed(() =>
         <div class="product-list">
           <ProductCard
             v-for="(product, index) in hotProducts"
+            :id="product.id"
             :key="index"
             :name="product.name"
             :price="product.price"
             :qty="product.qty"
             :image="product.image"
             :type="product.type"
+            @add-to-cart="addToCart(product)" 
           />
         </div>
       </div>
@@ -115,6 +126,7 @@ const normalProducts = computed(() =>
             :qty="product.qty"
             :image="product.image"
             :type="product.type"
+            @add-to-cart="addToCart(product)" 
           />
         </div>
       </div>
@@ -124,13 +136,14 @@ const normalProducts = computed(() =>
         <span class="title">สินค้าปกติ</span>
         <div class="product-list">
           <ProductCard
-            v-for="(product, index) in normalProducts"
+            v-for="(product, index) in hotProducts"
             :key="index"
             :name="product.name"
             :price="product.price"
             :qty="product.qty"
             :image="product.image"
             :type="product.type"
+            @add-to-cart="addToCart(product)"  
           />
         </div>
       </div>
