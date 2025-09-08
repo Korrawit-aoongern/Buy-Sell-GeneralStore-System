@@ -1,7 +1,7 @@
 <template>
   <div class="product-card">
     <img 
-      v-if="type === 'hot'" 
+      v-if="promotype === 'hot'" 
       class="badge" 
       src="/Image/Best-Seller-Badge.svg" 
       alt="Best-Seller-Badge"
@@ -44,8 +44,7 @@ const props = defineProps({
   price: Number,
   qty: Number,
   image: String,
-  type: String,
-  originalPrice: Number
+  promotype: String,
 })
 
 const emit = defineEmits(['update-qty', 'add-to-cart'])
@@ -67,8 +66,7 @@ function handleAddToCart() {
       name: props.name,
       price: props.price,
       image: props.image,
-      type: props.type,
-      originalPrice: props.originalPrice ?? null
+      promotype: props.promotype,
     })
   }
 }
