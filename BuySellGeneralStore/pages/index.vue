@@ -1,12 +1,14 @@
 <script setup>
-import { ref } from "vue";
-import ProductCard from "~/components/Product/Product Card.vue";
+import { ref, computed, onMounted } from "vue";
+import { createClient } from "@supabase/supabase-js";
 import Navbar from "~/components/UI/Navbar.vue";
+import ProductCard from "~/components/Product/Product Card.vue";
+import { useCartStore } from "~/stores/cart";
 
-import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
-import { createClient } from "@supabase/supabase-js"
+const cartStore = useCartStore();
+const addToCart = cartStore.addToCart;
 
-const { addToCart } = useCart(); // ✅ ใช้งาน addToCart ได้เลย
+const productList = ref([]);
 
 const config = useRuntimeConfig();
 const supabase = createClient(
@@ -14,51 +16,38 @@ const supabase = createClient(
   config.public.supabaseAnonKey
 );
 
-
-const productList = ref([])
-
-// โหลด product จาก DB
 onMounted(async () => {
-  const { data, error } = await supabase
-    .from("product")
-    .select("*")
-
+  const { data, error } = await supabase.from("product").select("*");
   if (error) {
-    console.error("Error loading products:", error)
+    console.error("Error loading products:", error);
   } else {
-    productList.value = data
+    productList.value = data;
   }
-})
+});
 
-// Computed filter
 const hotProducts = computed(() =>
   productList.value.filter((p) => p.promotype === "hot")
-)
+);
 const saleProducts = computed(() =>
   productList.value.filter((p) => p.promotype === "sale")
-)
+);
 const normalProducts = computed(() =>
   productList.value.filter((p) => p.promotype === "normal")
-)
+);
 </script>
 
 <template>
   <div>
-    <div>
-      <Navbar />
-      <router-view />
+    <Navbar />
+    <div class="shop-banner">
+      <img src="/Image/Banner.svg" alt="shop-banner" />
     </div>
 
-    <div style="display: flex; flex-direction: column;">
-      <div class="shop-banner">
-        <img src="/Image/Banner.svg" alt="shop-banner">
-      </div>
-      <section id="Feature-Wrapper">
-        <!-- ขายดี -->
-        <div class="Feature-Section">
-          <span class="title">สินค้าขายดี</span>
-          <div v-if="!productList.length">Loading products...</div>
-          <div v-else>
+    <section id="Feature-Wrapper">
+      <div class="Feature-Section">
+        <span class="title">สินค้าขายดี</span>
+        <div v-if="!productList.length">Loading products...</div>
+        <div v-else>
           <div class="product-list">
             <ProductCard
               v-for="(product, index) in hotProducts"
@@ -70,17 +59,16 @@ const normalProducts = computed(() =>
               :qty="product.stock"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
-              @add-to-cart="addToCart(product)"
+              @add-to-cart="() => addToCart(product)"
             />
           </div>
-          </div>
         </div>
+      </div>
 
-        <!-- สินค้าลดราคา -->
-        <div class="Feature-Section">
-          <span class="title">สินค้าลดราคา</span>
-          <div v-if="!productList.length">Loading products...</div>
-          <div v-else>
+      <div class="Feature-Section">
+        <span class="title">สินค้าลดราคา</span>
+        <div v-if="!productList.length">Loading products...</div>
+        <div v-else>
           <div class="product-list">
             <ProductCard
               v-for="(product, index) in saleProducts"
@@ -92,17 +80,16 @@ const normalProducts = computed(() =>
               :qty="product.stock"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
-              @add-to-cart="addToCart(product)"
+              @add-to-cart="() => addToCart(product)"
             />
           </div>
-          </div>
         </div>
+      </div>
 
-        <!-- สินค้าปกติ -->
-        <div class="Feature-Section">
-          <span class="title">สินค้าปกติ</span>
-          <div v-if="!productList.length">Loading products...</div>
-          <div v-else>
+      <div class="Feature-Section">
+        <span class="title">สินค้าปกติ</span>
+        <div v-if="!productList.length">Loading products...</div>
+        <div v-else>
           <div class="product-list">
             <ProductCard
               v-for="(product, index) in normalProducts"
@@ -114,16 +101,17 @@ const normalProducts = computed(() =>
               :saleprice="product.saleprice"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
-              @add-to-cart="addToCart(product)"
+              @add-to-cart="() => addToCart(product)"
             />
           </div>
-          </div>
         </div>
-      </section>
-      <footer style="background-color: #6acc91; width: 100%; height: 500px; margin-top: 12em;"></footer>
-    </div>
+      </div>
+    </section>
+
+    <footer style="background-color: #6acc91; width: 100%; height: 500px; margin-top: 12em;"></footer>
   </div>
 </template>
+
 
 <style>
 body {

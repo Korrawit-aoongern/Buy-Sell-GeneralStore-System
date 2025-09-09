@@ -2,36 +2,43 @@
 import Navbar from "~/components/UI/Navbar.vue";
 import StepProgress from "~/components/UI/StepProgress.vue";
 import Summary from "~/components/UI/Summary.vue";
+import Toast from "~/components/UI/Toast.vue";
 
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "~/stores/cart";
+import { useToast } from "~/composables/useToast";
 
-// สเต็ปปัจจุบัน
 const currentStep = ref(1);
 
-// เรียกใช้ store
 const cartStore = useCartStore();
 const cart = cartStore.cart;
-const increase = cartStore.increase;
 const decrease = cartStore.decrease;
-const removeItem = cartStore.removeItem;  // เพิ่มฟังก์ชันลบสินค้า
+const removeItem = cartStore.removeItem;
 
-// รวมจำนวนสินค้า
+const { showToast } = useToast();
+
 const totalQty = computed(() =>
   cart.reduce((sum, item) => sum + item.qty, 0)
 );
 
-// ใช้งาน router
 const router = useRouter();
 function cancelOrder() {
   router.push('/');
+}
+
+function increaseWithCheck(item) {
+  const success = cartStore.increase(item)
+  if (!success) {
+    showToast('สินค้าหมดแล้ว ไม่สามารถเพิ่มได้')
+  }
 }
 </script>
 
 <template>
   <div>
     <Navbar />
+    <Toast />
 
     <div class="cart-container">
       <StepProgress :currentStep="currentStep" />
@@ -42,7 +49,6 @@ function cancelOrder() {
       <div class="cart-content">
         <div class="order-list">
           <div v-for="item in cart" :key="item.id" class="order-item">
-
             <img :src="item.image" class="item-img" />
 
             <div class="item-info">
@@ -62,25 +68,22 @@ function cancelOrder() {
             <div class="quantity-control">
               <button @click="decrease(item)">-</button>
               <span>{{ item.qty }}</span>
-              <button @click="increase(item)">+</button>
+              <button @click="increaseWithCheck(item)">+</button>
             </div>
 
-            <!-- ปุ่มลบสินค้า -->
             <button class="remove-item-btn" @click="removeItem(item)">×</button>
           </div>
         </div>
-        
-          <div class="summary1">
-            <Summary :cart="cart" :currentStep="currentStep" />
-            <div class="buttons">
-              
-            </div>
-          </div>
+
+        <div class="summary1">
+          <Summary :cart="cart" :currentStep="currentStep" />
         </div>
       </div>
     </div>
-
+  </div>
 </template>
+
+
 
 <style scoped>
 

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
 import Navbar from "~/components/UI/Navbar.vue";
-import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
+import { useCartStore } from "~/stores/cart"; // เปลี่ยนมาใช้ store
 
 import { createClient } from "@supabase/supabase-js"
 
@@ -13,7 +13,7 @@ const supabase = createClient(
   config.public.supabaseAnonKey
 );
 
-const { addToCart } = useCart(); // ✅ ใช้งาน addToCart ได้เลย
+const cartStore = useCartStore(); // เรียกใช้ store ตรงนี้
 const accentColor = "#6ACC91";
 const btnWidth = 220;
 
@@ -123,14 +123,11 @@ const togglePanel = () => {
 
 // โหลด product จาก DB
 onMounted(async () => {
-  const { data, error } = await supabase
-    .from("product")
-    .select("*")
-
+  const { data, error } = await supabase.from("product").select("*");
   if (error) {
-    console.error("Error loading products:", error)
+    console.error("Error loading products:", error);
   } else {
-    productList.value = data
+    productList.value = data;
   }
 })
 
@@ -237,17 +234,39 @@ onMounted(async () => {
         </div>
         <!-- Product list -->
         <div class="product-list">
-          <ProductCard v-for="(product, index) in sortedProducts"
-          :id="product.productid"
-          :key="index"
-          :name="product.nameproduct"
-          :price="product.promotype === 'sale' ? product.saleprice : product.baseprice"
-          :originalprice="product.baseprice"
-          :saleprice="product.saleprice"
-          :qty="product.stock"
-          :image="`Image/${product.imgurl}`"
-          :promotype="product.promotype"
-          @add-to-cart="addToCart(product)" />
+          <ProductCard
+              v-for="(product, index) in normalProducts"
+              :key="index"
+              :id="product.productid"
+              :name="product.nameproduct"
+              :price="product.baseprice"
+              :qty="product.stock"
+              :image="`Image/${product.imgurl}`"
+              :promotype="product.promotype"
+              @add-to-cart="addToCart(product)"
+            />
+            <ProductCard
+              v-for="(product, index) in saleProducts"
+              :key="index"
+              :id="product.productid"
+              :name="product.nameproduct"
+              :price="product.baseprice"
+              :qty="product.stock"
+              :image="`Image/${product.imgurl}`"
+              :promotype="product.promotype"
+              @add-to-cart="() => cartStore.addToCart(product)"
+            />
+            <ProductCard
+              v-for="(product, index) in normalProducts"
+              :key="index"
+              :id="product.productid"
+              :name="product.nameproduct"
+              :price="product.baseprice"
+              :qty="product.stock"
+              :image="`Image/${product.imgurl}`"
+              :promotype="product.promotype"
+              @add-to-cart="addToCart(product)"
+            />
         </div>
       </main>
     </div>

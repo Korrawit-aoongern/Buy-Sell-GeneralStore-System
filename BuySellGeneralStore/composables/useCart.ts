@@ -24,6 +24,7 @@ export function useCart() {
     }
   }
 
+
   function resetCart() {
     cartStore.cart = []
   }
