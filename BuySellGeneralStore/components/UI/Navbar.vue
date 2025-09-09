@@ -10,6 +10,7 @@ const { cartCount } = useCart()
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/Product-Listing">Product</router-link></li>
       <li><router-link to="/Order">Order</router-link></li>
+
     </ul>
     <div class="cart-icon">
       <router-link to="/cart">

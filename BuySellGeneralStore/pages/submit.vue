@@ -2,10 +2,10 @@
 import { ref } from "vue";
 import Summary from "~/components/UI/Summary.vue";
 import Navbar from "~/components/UI/Navbar.vue";
+import ProgressStep from "~/components/UI/StepProgress.vue";
+const step = ref(2); // เริ่มที่หน้า Submit เลย
 
-const step = ref(1); // 1 = summary, 2 = submit
-
-// ข้อมูลตัวอย่าง (จริงๆ เอาจาก store หรือ props)
+// ข้อมูลตัวอย่าง
 const cart = [
   { id: 1, name: "ข้าวหอมมะลิ 5 กก.", price: 250, qty: 1 }
 ];
@@ -18,10 +18,6 @@ const userInfo = {
   paymentMethod: "PromptPay"
 }
 
-function goToSubmit() {
-  step.value = 2;
-}
-
 function goBackToSummary() {
   step.value = 1;
 }
@@ -32,36 +28,51 @@ function goHome() {
 }
 </script>
 
-<template v-else-if="step === 2">
-  <div class="submit-page">
-    <div class="left-section">
-      <h2>รายละเอียด</h2>
-      <div class="info-row"><span class="label">ชื่อ</span><span>{{ userInfo.name }}</span></div>
-      <div class="info-row"><span class="label">นามสกุล</span><span>{{ userInfo.surname }}</span></div>
-      <div class="info-row"><span class="label">ที่อยู่</span><span>{{ userInfo.address }}</span></div>
-      <div class="info-row"><span class="label">เบอร์โทร</span><span>{{ userInfo.phone }}</span></div>
-      <div class="info-row"><span class="label">วิธีการชำระเงิน</span><span>{{ userInfo.paymentMethod }}</span></div>
+<template>
+  <Navbar />
 
-      <h2>รายการ</h2>
-      <ul class="item-list">
-        <li v-for="item in cart" :key="item.id" class="item">
-          <img src="https://via.placeholder.com/80" alt="product" class="item-img" />
-          <div class="item-info">
-            <p class="item-name">{{ item.name }}</p>
-            <p class="item-price">{{ item.price.toFixed(2) }} บาท</p>
-          </div>
-          <div class="item-qty">{{ item.qty }}</div>
-        </li>
-      </ul>
+  <div v-if="step === 1">
+    <p>หน้านี้ยังไม่ได้ใส่เนื้อหา summary นะครับ</p>
+    <button @click="step = 2">ไปหน้า Submit</button>
+  </div>
+
+  <div v-else-if="step === 2">
+    <!-- ✅ ProgressStep กลางจอ -->
+    <div class="step-container">
+      <ProgressStep :currentStep="step" />
     </div>
 
-    <!-- ✅ ใช้ Summary Component -->
-    <div class="right-section">
-      <Summary :cart="cart" :currentStep="2" @back="goBackToSummary" @next="goHome" />
+    <!-- ✅ เนื้อหา Submit -->
+    <div class="submit-page">
+      <div class="left-section">
+        <h2>รายละเอียด</h2>
+        <div class="info-row"><span class="label">ชื่อ</span><span>{{ userInfo.name }}</span></div>
+        <div class="info-row"><span class="label">นามสกุล</span><span>{{ userInfo.surname }}</span></div>
+        <div class="info-row"><span class="label">ที่อยู่</span><span>{{ userInfo.address }}</span></div>
+        <div class="info-row"><span class="label">เบอร์โทร</span><span>{{ userInfo.phone }}</span></div>
+        <div class="info-row"><span class="label">วิธีการชำระเงิน</span><span>{{ userInfo.paymentMethod }}</span></div>
+
+        <h2>รายการ</h2>
+        <ul class="item-list">
+          <li v-for="item in cart" :key="item.id" class="item">
+            <img src="https://via.placeholder.com/80" alt="product" class="item-img" />
+            <div class="item-info">
+              <p class="item-name">{{ item.name }}</p>
+              <p class="item-price">{{ item.price.toFixed(2) }} บาท</p>
+            </div>
+            <div class="item-qty">{{ item.qty }}</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="right-section">
+        <Summary :cart="cart" :currentStep="2" @back="goBackToSummary" @next="goHome" />
+      </div>
     </div>
   </div>
-  
 </template>
+
+
 <style scoped>
 .container {
   max-width: 900px;
@@ -75,6 +86,16 @@ function goHome() {
   display: flex;
   gap: 3rem;
   align-items: flex-start;
+
+  
+}
+
+.step-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4rem;
 }
 
 /* Left side */
@@ -104,7 +125,7 @@ h2 {
   text-align: left;
 }
 
-.info-row > span:last-child {
+.info-row>span:last-child {
   font-weight: 500;
   color: #333;
   word-break: break-word;
@@ -166,6 +187,7 @@ h2 {
 /* Right side */
 .right-section {
   flex: 1;
+  margin-top: 7rem;
 }
 
 .summary-box {
