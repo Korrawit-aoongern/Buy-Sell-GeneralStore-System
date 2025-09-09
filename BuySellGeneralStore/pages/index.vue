@@ -1,14 +1,12 @@
 <script setup>
 import { ref } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
-import ProductCardDiscount from "~/components/Product/Product Card-Discount.vue";
 import Navbar from "~/components/UI/Navbar.vue";
 
 import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
 import { createClient } from "@supabase/supabase-js"
 
 const { addToCart } = useCart(); // ✅ ใช้งาน addToCart ได้เลย
-const activePage = ref("Home");
 
 const config = useRuntimeConfig();
 const supabase = createClient(
@@ -16,9 +14,6 @@ const supabase = createClient(
   config.public.supabaseAnonKey
 );
 
-const setActive = (page) => {
-  activePage.value = page;
-};
 
 const productList = ref([])
 
@@ -71,6 +66,7 @@ const normalProducts = computed(() =>
               :id="product.productid"
               :name="product.nameproduct"
               :price="product.baseprice"
+              :saleprice="product.saleprice"
               :qty="product.stock"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
@@ -86,12 +82,13 @@ const normalProducts = computed(() =>
           <div v-if="!productList.length">Loading products...</div>
           <div v-else>
           <div class="product-list">
-            <ProductCardDiscount
+            <ProductCard
               v-for="(product, index) in saleProducts"
               :key="index"
               :id="product.productid"
               :name="product.nameproduct"
-              :price="product.baseprice"
+              :originalprice="product.baseprice"
+              :saleprice="product.saleprice"
               :qty="product.stock"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
@@ -114,6 +111,7 @@ const normalProducts = computed(() =>
               :name="product.nameproduct"
               :price="product.baseprice"
               :qty="product.stock"
+              :saleprice="product.saleprice"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
               @add-to-cart="addToCart(product)"
