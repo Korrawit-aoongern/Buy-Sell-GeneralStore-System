@@ -121,7 +121,6 @@ const togglePanel = () => {
   showPanel.value = !showPanel.value;
 };
 
-// โหลด product จาก DB
 onMounted(async () => {
   const { data, error } = await supabase.from("product").select("*");
   if (error) {
@@ -129,7 +128,7 @@ onMounted(async () => {
   } else {
     productList.value = data;
   }
-})
+});
 
 </script>
 
@@ -234,39 +233,17 @@ onMounted(async () => {
         </div>
         <!-- Product list -->
         <div class="product-list">
-          <ProductCard
-              v-for="(product, index) in normalProducts"
-              :key="index"
-              :id="product.productid"
-              :name="product.nameproduct"
-              :price="product.baseprice"
-              :qty="product.stock"
-              :image="`Image/${product.imgurl}`"
-              :promotype="product.promotype"
-              @add-to-cart="addToCart(product)"
-            />
-            <ProductCard
-              v-for="(product, index) in saleProducts"
-              :key="index"
-              :id="product.productid"
-              :name="product.nameproduct"
-              :price="product.baseprice"
-              :qty="product.stock"
-              :image="`Image/${product.imgurl}`"
-              :promotype="product.promotype"
-              @add-to-cart="() => cartStore.addToCart(product)"
-            />
-            <ProductCard
-              v-for="(product, index) in normalProducts"
-              :key="index"
-              :id="product.productid"
-              :name="product.nameproduct"
-              :price="product.baseprice"
-              :qty="product.stock"
-              :image="`Image/${product.imgurl}`"
-              :promotype="product.promotype"
-              @add-to-cart="addToCart(product)"
-            />
+          <ProductCard v-for="(product, index) in sortedProducts"
+          :id="product.productid"
+          :key="index"
+          :name="product.nameproduct"
+          :price="product.promotype === 'sale' ? product.saleprice : product.baseprice"
+          :originalprice="product.baseprice"
+          :saleprice="product.saleprice"
+          :qty="product.stock"
+          :image="`Image/${product.imgurl}`"
+          :promotype="product.promotype"
+          @add-to-cart="() => cartStore.addToCart(product)"/>
         </div>
       </main>
     </div>
