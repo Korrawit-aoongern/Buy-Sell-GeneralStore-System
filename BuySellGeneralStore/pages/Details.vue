@@ -30,6 +30,8 @@ function cancelOrder() {
 
 function confirmOrder() {
   alert("ยืนยันคำสั่งซื้อแล้ว");
+   router.push("/submit");
+  
   // เช่น: router.push("/success");
 }
 </script>

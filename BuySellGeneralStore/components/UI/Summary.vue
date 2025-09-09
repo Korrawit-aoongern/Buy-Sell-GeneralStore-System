@@ -29,8 +29,11 @@ const total = computed(() => {
 });
  
 function goNext() {
-  // ในนี้เปลี่ยนแค่ route ส่วน currentStep ควรเปลี่ยนใน parent
-  router.push("/details");
+  if (props.currentStep === 1) {
+    router.push("/details");
+  } else if (props.currentStep === 2) {
+    router.push("/submit");
+  }
 }
  
 function cancel() {
