@@ -18,7 +18,7 @@ const totalPrice = cartStore.totalPrice;
 const name = ref("Alice");
 const surname = ref("Yoeta");
 const address = ref("1, Third Street, Lahti, Finland");
-const phone = ref("457853144");
+const phone = ref("457853144"); 
 const paymentMethod = ref("PromptPay");
 
 // ส่วนลดเฉพาะในหน้านี้
