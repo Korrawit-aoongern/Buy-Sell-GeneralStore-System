@@ -12,13 +12,13 @@
         <h3 class="product-name">{{ name }}</h3>
         <p
           class="product-price-original"
-          :class="{ 'no-discount': originalPrice <= price }"
+          :class="{ 'no-discount': originalprice <= saleprice }"
         >
-          {{ originalPrice.toFixed(2) }}
+          {{ originalprice.toFixed(2) }}
         </p>
         <div class="product-bottom-info">
           <span class="product-price-sale">
-            {{ price.toFixed(2) }} บาท
+            {{ saleprice.toFixed(2) }} บาท
           </span>
           <p class="product-qty" :class="{ 'zero-qty': localQty === 0 }">
             {{ localQty }} Qty.
@@ -49,11 +49,11 @@ const props = defineProps({
     type: String,
     default: 'ชื่อสินค้า',
   },
-  price: {
+  saleprice: {
     type: Number,
     default: 0,
   },
-  originalPrice: {
+  originalprice: {
     type: Number,
     default: 0,
   },
@@ -65,7 +65,7 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  type: {
+  promotype: {
     type: String,
     default: 'normal',
   },
@@ -88,10 +88,10 @@ function handleAddToCart() {
     emit('add-to-cart', {
       id: props.id,
       name: props.name,
-      price: props.price,
+      saleprice: props.saleprice,
+      originalprice: props.originalprice,
       image: props.image,
-      type: props.type,
-      originalPrice: props.originalPrice
+      promotype: props.promotype,
     })
   }
 }

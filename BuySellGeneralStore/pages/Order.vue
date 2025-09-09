@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from "vue";
 import Navbar from "~/components/UI/Navbar.vue";
+import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
+import { createClient } from "@supabase/supabase-js"
 
 const orderCode = ref("");
 const showModal = ref(false); // Modal เตือนกรอกรหัส
