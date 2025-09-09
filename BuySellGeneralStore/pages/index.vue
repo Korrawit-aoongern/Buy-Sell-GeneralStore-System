@@ -86,7 +86,7 @@ const normalProducts = computed(() =>
           <div v-if="!productList.length">Loading products...</div>
           <div v-else>
           <div class="product-list">
-            <ProductCard
+            <ProductCardDiscount
               v-for="(product, index) in saleProducts"
               :key="index"
               :id="product.productid"
