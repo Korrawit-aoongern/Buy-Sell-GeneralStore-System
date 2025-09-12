@@ -22,9 +22,9 @@ const totalQty = computed(() =>
 
 
 function increaseWithCheck(item) {
-  const success = cartStore.increase(item)
+  const success = cartStore.increase(item);
   if (!success) {
-    showToast('สินค้าหมดแล้ว ไม่สามารถเพิ่มได้')
+    showToast("สินค้าหมดแล้ว ไม่สามารถเพิ่มได้");
   }
 }
 </script>
@@ -37,13 +37,10 @@ function increaseWithCheck(item) {
     <div class="cart-container">
       <StepProgress :currentStep="currentStep" />
 
-      <h2>Order</h2>
-      <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
-
       <div class="cart-content">
-        <div class="order-list">
-          <div v-for="item in cart" :key="item.id" class="order-item">
-            <img :src="item.image" class="item-img" />
+        <div class="cart-detail">
+          <h2>Order</h2>
+          <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
 
             <div class="item-info">
               <div class="item-name">{{ item.name }}</div>
@@ -57,12 +54,10 @@ function increaseWithCheck(item) {
                   {{ (item.price * item.qty).toFixed(2) }} บาท
                 </span>
               </div>
-            </div>
 
-            <div class="quantity-control">
-              <button @click="decrease(item)">-</button>
-              <span>{{ item.qty }}</span>
-              <button @click="increaseWithCheck(item)">+</button>
+              <button class="remove-item-btn" @click="removeItem(item)">
+                ×
+              </button>
             </div>
 
             <button class="remove-item-btn" @click="cartStore.removeItem(item)">×</button>
@@ -77,12 +72,12 @@ function increaseWithCheck(item) {
   </div>
 </template>
 
-
-
 <style scoped>
-
 .cart-container {
-  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
+  margin-top: 4rem;
+  font-family: "Prompt", sans-serif;
 }
 
 .total-qty {
@@ -90,11 +85,13 @@ function increaseWithCheck(item) {
   color: #2e8b57;
   margin: 0.5rem 0 1.5rem;
 }
-
+.cart-detail {
+  flex: 2;
+}
 .cart-content {
   display: flex;
-  justify-content: space-between;
-  gap: 2rem;
+  gap: 4rem;
+  margin-top: 2rem;
 }
 
 .order-list {

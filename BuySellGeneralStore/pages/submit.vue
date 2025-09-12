@@ -24,35 +24,52 @@ onMounted(() => {
 function goBackToSummary() {
   step.value = 1;
 }
-
 </script>
 
 <template>
   <Navbar />
 
+  <!-- Step 1: หน้า summary (ยังไม่มีเนื้อหา) -->
   <div v-if="step === 1">
     <p>หน้านี้ยังไม่ได้ใส่เนื้อหา summary นะครับ</p>
     <button @click="step = 2">ไปหน้า Submit</button>
   </div>
 
+  <!-- Step 3: หน้าสรุปข้อมูลและ Summary -->
   <div v-else-if="step === 3">
     <div class="step-container">
       <ProgressStep :currentStep="step" />
     </div>
 
     <div class="submit-page">
+      <!-- ซ้าย -->
       <div class="left-section">
         <h2>รายละเอียด</h2>
-        <div class="info-row"><span class="label">ชื่อ</span><span>{{ userInfo.name }}</span></div>
-        <div class="info-row"><span class="label">นามสกุล</span><span>{{ userInfo.surname }}</span></div>
-        <div class="info-row"><span class="label">ที่อยู่</span><span>{{ userInfo.address }}</span></div>
-        <div class="info-row"><span class="label">เบอร์โทร</span><span>{{ userInfo.phone }}</span></div>
-        <div class="info-row"><span class="label">วิธีการชำระเงิน</span><span>{{ userInfo.paymentMethod }}</span></div>
+        <div class="info-row">
+          <span class="label">ชื่อ</span><span>{{ userInfo.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">นามสกุล</span><span>{{ userInfo.surname }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">ที่อยู่</span><span>{{ userInfo.address }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">เบอร์โทร</span><span>{{ userInfo.phone }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">วิธีการชำระเงิน</span>
+          <span>{{ userInfo.paymentMethod }}</span>
+        </div>
 
         <h2>รายการ</h2>
         <ul class="item-list">
           <li v-for="item in cart" :key="item.id" class="item">
-            <img :src="item.image || 'https://via.placeholder.com/80'" alt="product" class="item-img" />
+            <img
+              :src="item.image || 'https://via.placeholder.com/80'"
+              alt="product"
+              class="item-img"
+            />
             <div class="item-info">
               <p class="item-name">{{ item.name }}</p>
               <p class="item-price">{{ item.price.toFixed(2) }} บาท</p>
@@ -62,30 +79,49 @@ function goBackToSummary() {
         </ul>
       </div>
 
+      <!-- ขวา -->
       <div class="right-section">
-        <Summary :cart="cart" :currentStep="2" @back="goBackToSummary" @next="goHome" />
+        <Summary
+          :cart="cart"
+          :currentStep="2"
+          @back="goBackToSummary"
+          @next="goHome"
+        />
       </div>
+    </div>
+  </div>
+
+  <!-- Step 2: หน้ายืนยันเสร็จ -->
+  <div v-else-if="step === 2">
+    <div class="step-container">
+      <ProgressStep :currentStep="step" />
+    </div>
+
+    <div class="confirm-page">
+      <h2>✅ การสั่งซื้อเสร็จสมบูรณ์</h2>
+      <p>ขอบคุณที่สั่งซื้อกับเรา</p>
+      <button @click="step = 1">กลับไปหน้าแรก</button>
     </div>
   </div>
 </template>
 
-
-
 <style scoped>
-.container {
-  max-width: 900px;
+.submit-page {
+  display: flex;
+  gap: 4rem;
+  align-items: flex-start;
+  max-width: 1000px;
   margin: auto;
-  padding: 2rem;
+  margin-top: 2rem;
   font-family: "Prompt", sans-serif;
 }
 
-/* layout split left and right */
-.submit-page {
-  display: flex;
-  gap: 3rem;
-  align-items: flex-start;
+.left-section {
+  flex: 2;
+}
 
-  
+.right-section {
+  flex: 1;
 }
 
 .step-container {
@@ -94,11 +130,6 @@ function goBackToSummary() {
   justify-content: center;
   align-items: center;
   margin-top: 4rem;
-}
-
-/* Left side */
-.left-section {
-  flex: 3;
 }
 
 h2 {
@@ -123,7 +154,7 @@ h2 {
   text-align: left;
 }
 
-.info-row>span:last-child {
+.info-row > span:last-child {
   font-weight: 500;
   color: #333;
   word-break: break-word;
@@ -182,65 +213,4 @@ h2 {
   text-align: center;
 }
 
-/* Right side */
-.right-section {
-  flex: 1;
-  margin-top: 7rem;
-}
-
-.summary-box {
-  background: white;
-  padding: 1.8rem 2rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 8px rgb(0 0 0 / 0.1);
-  font-size: 0.95rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1.2rem;
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.summary-row.total {
-  font-weight: 900;
-  font-size: 1.3rem;
-  border-top: 1px solid #ddd;
-  padding-top: 1rem;
-  margin-top: 1rem;
-}
-
-button {
-  width: 100%;
-  padding: 0.75rem 0;
-  border-radius: 8px;
-  cursor: pointer;
-  border: none;
-  font-weight: 700;
-  margin-top: 1rem;
-  font-family: "Prompt", sans-serif;
-  transition: background-color 0.3s ease;
-}
-
-.btn-cancel {
-  background-color: #e63946;
-  color: white;
-}
-
-.btn-cancel:hover {
-  background-color: #c52839;
-}
-
-.btn-confirm {
-  background-color: #6acc91;
-  color: white;
-}
-
-.btn-confirm:hover {
-  background-color: #54a573;
-}
 </style>
