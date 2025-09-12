@@ -3,6 +3,7 @@ import { ref } from "vue";
 import Summary from "~/components/UI/Summary.vue";
 import Navbar from "~/components/UI/Navbar.vue";
 import ProgressStep from "~/components/UI/StepProgress.vue";
+
 const step = ref(2); // เริ่มที่หน้า Submit เลย
 
 // ข้อมูลตัวอย่าง
@@ -16,15 +17,14 @@ const userInfo = {
   address: "1, Third Street, Lahti, Finland",
   phone: "457853144",
   paymentMethod: "PromptPay"
-}
+};
 
 function goBackToSummary() {
   step.value = 1;
 }
 
 function goHome() {
-  alert("กลับหน้าแรก");
-  // router.push('/') // ถ้ามี router
+  step.value = 3; // ไป step 3 แทน alert
 }
 </script>
 
@@ -37,7 +37,7 @@ function goHome() {
   </div>
 
   <div v-else-if="step === 2">
-    <!-- ✅ ProgressStep กลางจอ -->
+    <!-- ✅ ProgressStep -->
     <div class="step-container">
       <ProgressStep :currentStep="step" />
     </div>
@@ -70,6 +70,19 @@ function goHome() {
       </div>
     </div>
   </div>
+
+  <!-- ✅ Step 3 -->
+  <div v-else-if="step === 3">
+    <div class="step-container">
+      <ProgressStep :currentStep="step" />
+    </div>
+
+    <div class="confirm-page">
+      <h2>✅ การสั่งซื้อเสร็จสมบูรณ์</h2>
+      <p>ขอบคุณที่สั่งซื้อกับเรา</p>
+      <button @click="step = 1">กลับไปหน้าแรก</button>
+    </div>
+  </div>
 </template>
 
 
@@ -86,8 +99,6 @@ function goHome() {
   display: flex;
   gap: 3rem;
   align-items: flex-start;
-
-  
 }
 
 .step-container {
@@ -125,7 +136,7 @@ h2 {
   text-align: left;
 }
 
-.info-row>span:last-child {
+.info-row > span:last-child {
   font-weight: 500;
   color: #333;
   word-break: break-word;

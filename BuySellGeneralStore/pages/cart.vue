@@ -18,19 +18,17 @@ const removeItem = cartStore.removeItem;
 
 const { showToast } = useToast();
 
-const totalQty = computed(() =>
-  cart.reduce((sum, item) => sum + item.qty, 0)
-);
+const totalQty = computed(() => cart.reduce((sum, item) => sum + item.qty, 0));
 
 const router = useRouter();
 function cancelOrder() {
-  router.push('/');
+  router.push("/");
 }
 
 function increaseWithCheck(item) {
-  const success = cartStore.increase(item)
+  const success = cartStore.increase(item);
   if (!success) {
-    showToast('สินค้าหมดแล้ว ไม่สามารถเพิ่มได้')
+    showToast("สินค้าหมดแล้ว ไม่สามารถเพิ่มได้");
   }
 }
 </script>
@@ -83,12 +81,13 @@ function increaseWithCheck(item) {
   </div>
 </template>
 
-
-
 <style scoped>
-
-.cart-container {
-  padding: 2rem;
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #fafaf5;
+  font-family: "Prompt", sans-serif;
+  min-height: 100vh;
 }
 
 .total-qty {
@@ -98,9 +97,10 @@ function increaseWithCheck(item) {
 }
 
 .cart-content {
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
+  max-width: 900px;
+  margin: auto;
+  margin-top: 4rem;
+  font-family: "Prompt", sans-serif;
 }
 
 .order-list {

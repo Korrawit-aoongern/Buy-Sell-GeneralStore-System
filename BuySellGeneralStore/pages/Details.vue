@@ -18,28 +18,26 @@ const totalPrice = cartStore.totalPrice;
 const name = ref("Alice");
 const surname = ref("Yoeta");
 const address = ref("1, Third Street, Lahti, Finland");
-const phone = ref("457853144"); 
+const phone = ref("457853144");
 const paymentMethod = ref("PromptPay");
 
 // ส่วนลดเฉพาะในหน้านี้
 const discount = ref(0);
 
 function cancelOrder() {
-  router.push('/cart'); // หรือใช้ชื่อ route เช่น router.push({ name: 'cart' })
+  router.push("/cart"); // หรือใช้ชื่อ route เช่น router.push({ name: 'cart' })
 }
 
 function confirmOrder() {
   alert("ยืนยันคำสั่งซื้อแล้ว");
-   router.push("/submit");
-  
+  router.push("/submit");
+
   // เช่น: router.push("/success");
 }
 </script>
 
-
 <template>
   <div>
-    <!-- Navbar -->
     <Navbar />
 
     <div class="cart-container">
@@ -51,19 +49,23 @@ function confirmOrder() {
         <div class="form-section">
           <h2>Address</h2>
           <form class="address-form">
-            <label>ชื่อ
+            <label
+              >ชื่อ
               <input type="text" v-model="name" />
             </label>
 
-            <label>นามสกุล
+            <label
+              >นามสกุล
               <input type="text" v-model="surname" />
             </label>
 
-            <label>ที่อยู่
+            <label
+              >ที่อยู่
               <input type="text" v-model="address" />
             </label>
 
-            <label>เบอร์โทร
+            <label
+              >เบอร์โทร
               <input type="text" v-model="phone" />
             </label>
 
@@ -84,11 +86,10 @@ function confirmOrder() {
         <!-- กล่องสรุปยอด -->
         <div class="summary1">
           <Summary :cart="cart" :currentStep="currentStep" />
-          </div>
         </div>
       </div>
     </div>
-
+  </div>
 </template>
 
 <style scoped>
@@ -148,45 +149,5 @@ legend {
 
 .summary1 {
   flex: 1;
-}
-
-.summary-box {
-  background: white;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px #ddd;
-  font-size: 0.9rem;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.summary-row.total {
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.btn-cancel,
-.btn-confirm {
-  width: 100%;
-  padding: 0.5rem 0;
-  margin-bottom: 0.7rem;
-  font-weight: 700;
-  border-radius: 4px;
-  cursor: pointer;
-  border: none;
-}
-
-.btn-cancel {
-  background-color: #d9534f;
-  color: white;
-}
-
-.btn-confirm {
-  background-color: #5cb85c;
-  color: white;
 }
 </style>
