@@ -41,35 +41,39 @@ function increaseWithCheck(item) {
     <div class="cart-container">
       <StepProgress :currentStep="currentStep" />
 
-      <h2>Order</h2>
-      <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
-
       <div class="cart-content">
-        <div class="order-list">
-          <div v-for="item in cart" :key="item.id" class="order-item">
-            <img :src="item.image" class="item-img" />
+        <div class="cart-detail">
+          <h2>Order</h2>
+          <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
 
-            <div class="item-info">
-              <div class="item-name">{{ item.name }}</div>
-              <div class="item-price">
-                <span v-if="item.oldPrice" class="old-price">
-                  {{ (item.oldPrice * item.qty).toFixed(2) }} บาท
-                </span>
+          <div class="order-list">
+            <div v-for="item in cart" :key="item.id" class="order-item">
+              <img :src="item.image" class="item-img" />
+
+              <div class="item-info">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-price">
+                  <span v-if="item.oldPrice" class="old-price">
+                    {{ (item.oldPrice * item.qty).toFixed(2) }} บาท
+                  </span>
+                </div>
+                <div>
+                  <span :class="item.oldPrice ? 'discounted' : ''">
+                    {{ (item.price * item.qty).toFixed(2) }} บาท
+                  </span>
+                </div>
               </div>
-              <div>
-                <span :class="item.oldPrice ? 'discounted' : ''">
-                  {{ (item.price * item.qty).toFixed(2) }} บาท
-                </span>
+
+              <div class="quantity-control">
+                <button @click="decrease(item)">-</button>
+                <span>{{ item.qty }}</span>
+                <button @click="increaseWithCheck(item)">+</button>
               </div>
-            </div>
 
-            <div class="quantity-control">
-              <button @click="decrease(item)">-</button>
-              <span>{{ item.qty }}</span>
-              <button @click="increaseWithCheck(item)">+</button>
+              <button class="remove-item-btn" @click="removeItem(item)">
+                ×
+              </button>
             </div>
-
-            <button class="remove-item-btn" @click="removeItem(item)">×</button>
           </div>
         </div>
 
@@ -82,12 +86,11 @@ function increaseWithCheck(item) {
 </template>
 
 <style scoped>
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #fafaf5;
+.cart-container {
+  max-width: 1000px;
+  margin: auto;
+  margin-top: 4rem;
   font-family: "Prompt", sans-serif;
-  min-height: 100vh;
 }
 
 .total-qty {
@@ -95,12 +98,13 @@ body {
   color: #2e8b57;
   margin: 0.5rem 0 1.5rem;
 }
-
+.cart-detail {
+  flex: 2;
+}
 .cart-content {
-  max-width: 900px;
-  margin: auto;
-  margin-top: 4rem;
-  font-family: "Prompt", sans-serif;
+  display: flex;
+  gap: 4rem;
+  margin-top: 2rem;
 }
 
 .order-list {
