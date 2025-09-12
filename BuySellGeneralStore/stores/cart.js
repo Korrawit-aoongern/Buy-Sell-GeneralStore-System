@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
   const cart = ref([])
 
   function addToCart(product) {
     const item = cart.value.find(i => i.id === product.productid)
-
     if (item) {
       if (product.stock && item.qty < product.stock) {
         item.qty++
@@ -50,11 +49,45 @@ export const useCartStore = defineStore('cart', () => {
     cart.value = cart.value.filter(i => i.id !== item.id)
   }
 
+  // คำนวณราคาทั้งหมด
+  const totalPrice = computed(() => {
+    return cart.value.reduce((sum, item) => sum + item.price * item.qty, 0)
+  })
+
+  // ข้อมูลลูกค้า
+  const customerInfo = ref({
+    name: "",
+    surname: "",
+    address: "",
+    phone: "",
+    paymentMethod: ""
+  })
+
+  function setCustomerInfo(info) {
+    customerInfo.value = { ...info } // copy เพื่อความปลอดภัย
+  }
+
+  // ล้างตะกร้าและข้อมูลลูกค้า (ถ้าต้องการ)
+  function clearCart() {
+    cart.value = []
+    customerInfo.value = {
+      name: "",
+      surname: "",
+      address: "",
+      phone: "",
+      paymentMethod: ""
+    }
+  }
+
   return {
     cart,
     addToCart,
     increase,
     decrease,
-    removeItem
+    removeItem,
+    totalPrice,
+    customerInfo,
+    setCustomerInfo,
+    clearCart
   }
 })
