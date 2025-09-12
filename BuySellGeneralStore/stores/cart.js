@@ -14,14 +14,15 @@ export const useCartStore = defineStore('cart', () => {
         return false
       }
     } else {
-      cart.value.push({
-        id: product.productid,
-        name: product.nameproduct,
-        price: product.baseprice,
-        qty: 1,
-        image: `Image/${product.imgurl}`,
-        stock: product.stock || 0
-      })
+        cart.value.push({
+          id: product.productid,
+          name: product.nameproduct,
+          price: product.saleprice ?? product.baseprice, // use sale price if exists
+          originalPrice: product.saleprice ? product.baseprice : null, // for display strike-through
+          qty: 1,
+          image: `Image/${product.imgurl}`,
+          stock: product.stock || 0
+        })
       return true
     }
   }

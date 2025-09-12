@@ -5,27 +5,21 @@ import Summary from "~/components/UI/Summary.vue";
 import Toast from "~/components/UI/Toast.vue";
 
 import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
 import { useCartStore } from "~/stores/cart";
 import { useToast } from "~/composables/useToast";
 
 const currentStep = ref(1);
 
 const cartStore = useCartStore();
-const cart = cartStore.cart;
+const cart = computed(() => cartStore.cart);
 const decrease = cartStore.decrease;
-const removeItem = cartStore.removeItem;
 
 const { showToast } = useToast();
 
 const totalQty = computed(() =>
-  cart.reduce((sum, item) => sum + item.qty, 0)
+  cart.value.reduce((sum, item) => sum + item.qty, 0)
 );
 
-const router = useRouter();
-function cancelOrder() {
-  router.push('/');
-}
 
 function increaseWithCheck(item) {
   const success = cartStore.increase(item)
@@ -54,12 +48,12 @@ function increaseWithCheck(item) {
             <div class="item-info">
               <div class="item-name">{{ item.name }}</div>
               <div class="item-price">
-                <span v-if="item.oldPrice" class="old-price">
-                  {{ (item.oldPrice * item.qty).toFixed(2) }} บาท
+                <span v-if="item.originalPrice" class="old-price">
+                  {{ (item.originalPrice * item.qty).toFixed(2) }} บาท
                 </span>
               </div>
               <div>
-                <span :class="item.oldPrice ? 'discounted' : ''">
+                <span :class="item.originalPrice ? 'discounted' : ''">
                   {{ (item.price * item.qty).toFixed(2) }} บาท
                 </span>
               </div>
@@ -71,7 +65,7 @@ function increaseWithCheck(item) {
               <button @click="increaseWithCheck(item)">+</button>
             </div>
 
-            <button class="remove-item-btn" @click="removeItem(item)">×</button>
+            <button class="remove-item-btn" @click="cartStore.removeItem(item)">×</button>
           </div>
         </div>
 

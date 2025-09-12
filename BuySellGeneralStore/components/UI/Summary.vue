@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-
+import { useCartStore } from '~/stores/cart'
+const cartStore = useCartStore()
 const props = defineProps({
   cart: {
     type: Array,
@@ -27,8 +28,8 @@ const router = useRouter();
 
 const discount = computed(() => {
   return props.cart.reduce((sum, item) => {
-    if (item.oldPrice) {
-      return sum + (item.oldPrice - item.price) * item.qty;
+    if (item.originalPrice) {
+      return sum + (item.originalPrice - item.price) * item.qty;
     }
     return sum;
   }, 0);
@@ -57,6 +58,7 @@ function goNext() {
 }
 
 function cancel() {
+  cartStore.clearCart()
   emit("cancel");
   router.push("/");
 }
