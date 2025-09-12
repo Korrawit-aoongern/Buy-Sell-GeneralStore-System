@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from "vue";
-import { useRouter } from "vue-router";
-import { useCartStore } from '~/stores/cart'
-const cartStore = useCartStore()
+import { useCartStore } from "~/stores/cart";
+
+const cartStore = useCartStore();
+
 const props = defineProps({
   cart: {
     type: Array,
@@ -24,48 +25,35 @@ const props = defineProps({
 
 const emit = defineEmits(["next", "back", "cancel"]);
 
-const router = useRouter();
-
-const discount = computed(() => {
-  return props.cart.reduce((sum, item) => {
+const discount = computed(() =>
+  props.cart.reduce((sum, item) => {
     if (item.originalPrice) {
       return sum + (item.originalPrice - item.price) * item.qty;
     }
     return sum;
-  }, 0);
-});
+  }, 0)
+);
 
-const total = computed(() => {
-  return props.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-});
+const total = computed(() =>
+  props.cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+);
 
-const isNextDisabled = computed(() => props.cart.length === 0 || props.disableNext);
+const isNextDisabled = computed(
+  () => props.cart.length === 0 || props.disableNext
+);
 
 function goNext() {
   if (isNextDisabled.value) return;
-
-  emit("next");
-
-  if (props.currentStep === 1) {
-    router.push("/details");
-  } else if (props.currentStep === 2) {
-    if (props.userInfo.paymentMethod === "PromptPay") {
-      router.push("/promptpay");
-    } else {
-      router.push("/some-other-page"); // เปลี่ยนเป็นหน้าอื่นถ้าจำเป็น
-    }
-  }
+  emit("next"); // 👉 ให้ parent คุม navigation
 }
 
 function cancel() {
-  cartStore.clearCart()
+  cartStore.clearCart();
   emit("cancel");
-  router.push("/");
 }
 
 function goBack() {
-  emit("back");
-  router.back();
+  emit("back"); // 👉 ไม่ใช้ router.back()
 }
 </script>
 
@@ -73,42 +61,30 @@ function goBack() {
   <div class="summary">
     <div class="row">
       <span>ส่วนลด</span>
-      <span><strong>{{ discount.toFixed(2) }}</strong></span>
+      <span
+        ><strong>{{ discount.toFixed(2) }}</strong></span
+      >
     </div>
     <div class="row total">
       <span>ราคารวม</span>
-      <span><strong>{{ total.toFixed(2) }}</strong></span>
+      <span
+        ><strong>{{ total.toFixed(2) }}</strong></span
+      >
     </div>
 
     <div class="buttons">
-      <button
-        v-if="currentStep === 1"
-        class="cancel"
-        @click="cancel"
-      >
+      <button v-if="currentStep === 1" class="cancel" @click="cancel">
         ยกเลิก
       </button>
 
-      <button
-        v-else
-        class="cancel"
-        @click="goBack"
-      >
-        ย้อนกลับ
-      </button>
+      <button v-else class="cancel" @click="goBack">ย้อนกลับ</button>
 
-      <button
-        class="next"
-        @click="goNext"
-        :disabled="isNextDisabled"
-      >
+      <button class="next" @click="goNext" :disabled="isNextDisabled">
         ต่อไป
       </button>
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
 .summary {

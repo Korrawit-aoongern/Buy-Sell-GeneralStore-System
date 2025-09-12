@@ -5,9 +5,11 @@ import Summary from "~/components/UI/Summary.vue";
 import Toast from "~/components/UI/Toast.vue";
 
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useCartStore } from "~/stores/cart";
 import { useToast } from "~/composables/useToast";
 
+const router = useRouter();
 const currentStep = ref(1);
 
 const cartStore = useCartStore();
@@ -20,12 +22,20 @@ const totalQty = computed(() =>
   cart.value.reduce((sum, item) => sum + item.qty, 0)
 );
 
-
 function increaseWithCheck(item) {
-  const success = cartStore.increase(item)
+  const success = cartStore.increase(item);
   if (!success) {
-    showToast('สินค้าหมดแล้ว ไม่สามารถเพิ่มได้')
+    showToast("สินค้าหมดแล้ว ไม่สามารถเพิ่มได้");
   }
+}
+
+// ฟังก์ชันเรียกไปหน้า details เมื่อกดต่อไป
+function goToDetails() {
+  if (cart.value.length === 0) {
+    showToast("กรุณาเลือกสินค้าก่อน");
+    return;
+  }
+  router.push("/details");
 }
 </script>
 
@@ -37,52 +47,63 @@ function increaseWithCheck(item) {
     <div class="cart-container">
       <StepProgress :currentStep="currentStep" />
 
-      <h2>Order</h2>
-      <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
-
       <div class="cart-content">
-        <div class="order-list">
-          <div v-for="item in cart" :key="item.id" class="order-item">
-            <img :src="item.image" class="item-img" />
+        <div class="cart-detail">
+          <h2>Order</h2>
+          <p class="total-qty">รวมจำนวน: {{ totalQty }} ชิ้น</p>
 
-            <div class="item-info">
-              <div class="item-name">{{ item.name }}</div>
-              <div class="item-price">
-                <span v-if="item.originalPrice" class="old-price">
-                  {{ (item.originalPrice * item.qty).toFixed(2) }} บาท
-                </span>
+          <div class="order-list">
+            <div v-for="item in cart" :key="item.id" class="order-item">
+              <img :src="item.image" class="item-img" />
+
+              <div class="item-info">
+                <div class="item-name">{{ item.name }}</div>
+                <div class="item-price">
+                  <span v-if="item.originalPrice" class="old-price">
+                    {{ (item.originalPrice * item.qty).toFixed(2) }} บาท
+                  </span>
+                </div>
+                <div>
+                  <span :class="item.originalPrice ? 'discounted' : ''">
+                    {{ (item.price * item.qty).toFixed(2) }} บาท
+                  </span>
+                </div>
               </div>
-              <div>
-                <span :class="item.originalPrice ? 'discounted' : ''">
-                  {{ (item.price * item.qty).toFixed(2) }} บาท
-                </span>
+
+              <div class="quantity-control">
+                <button @click="decrease(item)">-</button>
+                <span>{{ item.qty }}</span>
+                <button @click="increaseWithCheck(item)">+</button>
               </div>
-            </div>
 
-            <div class="quantity-control">
-              <button @click="decrease(item)">-</button>
-              <span>{{ item.qty }}</span>
-              <button @click="increaseWithCheck(item)">+</button>
+              <button
+                class="remove-item-btn"
+                @click="cartStore.removeItem(item)"
+              >
+                ×
+              </button>
             </div>
-
-            <button class="remove-item-btn" @click="cartStore.removeItem(item)">×</button>
           </div>
         </div>
 
         <div class="summary1">
-          <Summary :cart="cart" :currentStep="currentStep" />
+          <Summary
+            :cart="cart"
+            :currentStep="currentStep"
+            @next="goToDetails"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-
-
 <style scoped>
-
 .cart-container {
-  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
+  margin-top: 4rem;
+  font-family: "Prompt", sans-serif;
 }
 
 .total-qty {
@@ -90,11 +111,14 @@ function increaseWithCheck(item) {
   color: #2e8b57;
   margin: 0.5rem 0 1.5rem;
 }
-
+.cart-detail {
+  flex: 2;
+}
 .cart-content {
   display: flex;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 4rem;
+  margin-top: 2rem;
 }
 
 .order-list {

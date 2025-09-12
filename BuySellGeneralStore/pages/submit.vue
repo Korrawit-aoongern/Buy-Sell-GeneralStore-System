@@ -1,35 +1,58 @@
 <script setup>
-import { ref, watchEffect, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useCartStore } from "~/stores/cart";
 import Summary from "~/components/UI/Summary.vue";
 import Navbar from "~/components/UI/Navbar.vue";
 import ProgressStep from "~/components/UI/StepProgress.vue";
 
-const step = ref(3);
-
 const router = useRouter();
+const route = useRoute();
 
 const cartStore = useCartStore();
 const cart = cartStore.cart;
 const userInfo = cartStore.customerInfo;
 
-// ถ้า paymentMethod เป็น PromptPay ให้เด้งไปอีกหน้า
+const step = ref(3);
+
+// ตั้งค่า step จาก query param
 onMounted(() => {
   if (userInfo.paymentMethod === "PromptPay") {
     router.push("/promptpay");
   }
+  if (route.query.step) {
+    step.value = Number(route.query.step);
+  }
 });
 
+// เฝ้าดู query step เปลี่ยน
+watch(
+  () => route.query.step,
+  (newStep) => {
+    if (newStep) step.value = Number(newStep);
+  }
+);
+
+// ไปหน้าขอบคุณ (step = 2)
+function goToThankYou() {
+  router.push({ path: "/submit", query: { step: 2 } });
+}
+
+// กลับไป summary (step = 3)
 function goBackToSummary() {
-  step.value = 1;
+  router.push({ path: "/submit", query: { step: 3 } });
+}
+
+// กลับหน้าแรก
+function goHome() {
+  router.push("/");
 }
 </script>
 
 <template>
   <Navbar />
 
-  <!-- Step 1: หน้า summary (ยังไม่มีเนื้อหา) -->
+  <!-- Step 1: หน้า summary (ยังไม่ได้ใส่เนื้อหา) -->
   <div v-if="step === 1">
     <p>หน้านี้ยังไม่ได้ใส่เนื้อหา summary นะครับ</p>
     <button @click="step = 2">ไปหน้า Submit</button>
@@ -85,7 +108,7 @@ function goBackToSummary() {
           :cart="cart"
           :currentStep="2"
           @back="goBackToSummary"
-          @next="goHome"
+          @next="goToThankYou"
         />
       </div>
     </div>
@@ -100,7 +123,7 @@ function goBackToSummary() {
     <div class="confirm-page">
       <h2>✅ การสั่งซื้อเสร็จสมบูรณ์</h2>
       <p>ขอบคุณที่สั่งซื้อกับเรา</p>
-      <button @click="step = 1">กลับไปหน้าแรก</button>
+      <button @click="goHome">กลับไปหน้าแรก</button>
     </div>
   </div>
 </template>
@@ -212,5 +235,4 @@ h2 {
   min-width: 30px;
   text-align: center;
 }
-
 </style>

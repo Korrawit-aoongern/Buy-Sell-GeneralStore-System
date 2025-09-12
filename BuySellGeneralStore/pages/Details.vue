@@ -19,10 +19,11 @@ const address = ref("");
 const phone = ref("");
 const paymentMethod = ref("");
 
-// ควบคุมการแสดง modal
+// ควบคุม modal และ error
 const showConfirmModal = ref(false);
+const showError = ref(false);
 
-// เช็คความถูกต้องของฟอร์มง่ายๆ (แค่ตรวจไม่ว่าง)
+// เช็คความถูกต้องของฟอร์ม
 const formIsValid = computed(() => {
   return (
     name.value.trim() !== "" &&
@@ -43,9 +44,11 @@ function goBack() {
 
 function confirmOrder() {
   if (!formIsValid.value) {
-    alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    showError.value = true;
     return;
   }
+
+  showError.value = false;
 
   cartStore.setCustomerInfo({
     name: name.value,
@@ -55,7 +58,11 @@ function confirmOrder() {
     paymentMethod: paymentMethod.value,
   });
 
-  showConfirmModal.value = true;
+  if (paymentMethod.value === "PromptPay") {
+    router.push("/promptpay");
+  } else {
+    showConfirmModal.value = true;
+  }
 }
 
 function goToSubmit() {
@@ -72,6 +79,7 @@ function goToSubmit() {
       <StepProgress :currentStep="currentStep" />
 
       <div class="cart-content">
+        <!-- 🔹 Form ด้านซ้าย -->
         <div class="form-section">
           <h2>Address</h2>
           <form class="address-form" @submit.prevent>
@@ -109,13 +117,18 @@ function goToSubmit() {
               </div>
             </fieldset>
           </form>
+
+          <!-- 🔴 แจ้งเตือนถ้ากรอกไม่ครบ -->
+          <p v-if="showError" class="form-error">
+            กรุณากรอกข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ
+          </p>
         </div>
 
+        <!-- 🔹 Summary ด้านขวา -->
         <div class="summary1">
           <Summary
             :cart="cart"
             :currentStep="currentStep"
-            :disableNext="!formIsValid"
             @cancel="cancelOrder"
             @back="goBack"
             @next="confirmOrder"
@@ -124,7 +137,7 @@ function goToSubmit() {
       </div>
     </div>
 
-    <!-- Modal Confirm -->
+    <!-- ✅ Modal ยืนยันคำสั่งซื้อ -->
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal-box">
         <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
@@ -134,6 +147,14 @@ function goToSubmit() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.form-error {
+  color: red;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+</style>
 
 <style scoped>
 body {

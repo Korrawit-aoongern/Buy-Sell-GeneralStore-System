@@ -108,22 +108,25 @@ const normalProducts = computed(() =>
       </div>
     </section>
 
-    <footer style="background-color: #6acc91; width: 100%; height: 500px; margin-top: 12em;"></footer>
+    <footer
+      style="
+        background-color: #6acc91;
+        width: 100%;
+        height: 500px;
+        margin-top: 12em;
+      "
+    ></footer>
   </div>
 </template>
 
-
-<style>
+<style scoped>
 body {
   margin: 0;
   padding: 0;
-  background-color: #FAFAF5;
+  background-color: #fafaf5;
   font-family: "Prompt", sans-serif;
   min-height: 100vh;
 }
-</style>
-
-<style scoped>
 #Feature-Wrapper {
   display: flex;
   flex-direction: column;
