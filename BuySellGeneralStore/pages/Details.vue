@@ -2,55 +2,80 @@
 import Navbar from "~/components/UI/Navbar.vue";
 import StepProgress from "~/components/UI/StepProgress.vue";
 import Summary from "~/components/UI/Summary.vue";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useCartStore } from "~/stores/cart"; // 👈 import cart store
+import { useCartStore } from "~/stores/cart";
 
 const router = useRouter();
 const currentStep = ref(2);
 
-// ใช้ cart จาก store
 const cartStore = useCartStore();
 const cart = cartStore.cart;
-const totalPrice = cartStore.totalPrice;
 
 // ฟอร์มข้อมูลลูกค้า
-const name = ref("Alice");
-const surname = ref("Yoeta");
-const address = ref("1, Third Street, Lahti, Finland");
-const phone = ref("457853144"); 
-const paymentMethod = ref("PromptPay");
+const name = ref("");
+const surname = ref("");
+const address = ref("");
+const phone = ref("");
+const paymentMethod = ref("");
 
-// ส่วนลดเฉพาะในหน้านี้
-const discount = ref(0);
+// ควบคุมการแสดง modal
+const showConfirmModal = ref(false);
 
+// เช็คความถูกต้องของฟอร์มง่ายๆ (แค่ตรวจไม่ว่าง)
+const formIsValid = computed(() => {
+  return (
+    name.value.trim() !== "" &&
+    surname.value.trim() !== "" &&
+    address.value.trim() !== "" &&
+    phone.value.trim() !== "" &&
+    paymentMethod.value.trim() !== ""
+  );
+});
+
+// ฟังก์ชันกดปุ่ม
 function cancelOrder() {
-  router.push('/cart'); // หรือใช้ชื่อ route เช่น router.push({ name: 'cart' })
+  router.push("/cart");
+}
+
+function goBack() {
+  router.back();
 }
 
 function confirmOrder() {
-  alert("ยืนยันคำสั่งซื้อแล้ว");
-   router.push("/submit");
-  
-  // เช่น: router.push("/success");
+  if (!formIsValid.value) {
+    alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+    return; // ไม่ไปหน้าถัดไปถ้าฟอร์มไม่ครบ
+  }
+
+  cartStore.setCustomerInfo({
+    name: name.value,
+    surname: surname.value,
+    address: address.value,
+    phone: phone.value,
+    paymentMethod: paymentMethod.value,
+  });
+
+  showConfirmModal.value = true; // เปิด modal แทน alert
+}
+
+function goToSubmit() {
+  showConfirmModal.value = false;
+  router.push("/submit");
 }
 </script>
 
-
 <template>
   <div>
-    <!-- Navbar -->
     <Navbar />
 
     <div class="cart-container">
-      <!-- Progress bar -->
       <StepProgress :currentStep="currentStep" />
 
       <div class="cart-content">
-        <!-- ฟอร์มกรอกข้อมูล -->
         <div class="form-section">
           <h2>Address</h2>
-          <form class="address-form">
+          <form class="address-form" @submit.prevent>
             <label>ชื่อ
               <input type="text" v-model="name" />
             </label>
@@ -81,14 +106,28 @@ function confirmOrder() {
           </form>
         </div>
 
-        <!-- กล่องสรุปยอด -->
         <div class="summary1">
-          <Summary :cart="cart" :currentStep="currentStep" />
-          </div>
+          <Summary 
+            :cart="cart" 
+            :currentStep="currentStep" 
+            :disableNext="!formIsValid"  
+            @cancel="cancelOrder" 
+            @back="goBack" 
+            @next="confirmOrder" 
+          />
         </div>
       </div>
     </div>
 
+    <!-- Modal Confirm -->
+    <div v-if="showConfirmModal" class="modal-overlay">
+      <div class="modal-box">
+        <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
+        <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
+        <button @click="goToSubmit">ตกลง</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -150,43 +189,60 @@ legend {
   flex: 1;
 }
 
-.summary-box {
-  background: white;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px #ddd;
-  font-size: 0.9rem;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.summary-row.total {
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.btn-cancel,
-.btn-confirm {
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 0.5rem 0;
-  margin-bottom: 0.7rem;
+  height: 100%;
+
+  display: flex;
+  align-items: center;      /* กึ่งกลางแนวตั้ง */
+  justify-content: center;  /* กึ่งกลางแนวนอน */
+
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9999;
+}
+
+.modal-box {
+  background: white;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box h3 {
+  margin-bottom: 1rem;
   font-weight: 700;
-  border-radius: 4px;
-  cursor: pointer;
+  color: #2f855a;
+  font-size: 1.5rem;
+}
+
+.modal-box p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.modal-box button {
+  background-color: #2f855a;
+  color: white;
+  padding: 0.6rem 2rem;
   border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
 }
 
-.btn-cancel {
-  background-color: #d9534f;
-  color: white;
-}
-
-.btn-confirm {
-  background-color: #5cb85c;
-  color: white;
+.modal-box button:hover {
+  background-color: #276749;
 }
 </style>
