@@ -1,99 +1,141 @@
 <script setup>
 import { ref } from "vue";
 import Navbar from "~/components/UI/Navbar.vue";
-import { useCart } from "~/composables/useCart"; // ✅ นำเข้า
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@supabase/supabase-js";
 
 const orderCode = ref("");
-const showModal = ref(false); // Modal เตือนกรอกรหัส
-const confirmCancelModal = ref(false); // Modal ยืนยันยกเลิกออเดอร์
-const orderCodeErrorMessage = ref('กรุณากรอกรหัสรายการก่อน'); // ข้อความ error
+const billingID = ref(""); // snapshot for display
+const showModal = ref(false);
+const confirmCancelModal = ref(false);
+const orderCodeErrorMessage = ref("กรุณากรอกรหัสรายการก่อน");
 const foundOrder = ref(null);
 
-const orders = {
-  1: {
-    name: "Chathai",
-    surname: "Mino",
-    address: "19 หมู่ 2 เมืองพัทยา พัทยา",
-    phone: "056687641",
-     status: "processing", // สถานะที่เสร็จสิ้น
-    items: [
-      {
-        name: "ปากกาก",
-        price: 10.0,
-        qty: 5,
-        image: "/Image/pen.jpg"
-      },
-      {
-        name: "สายแลน",
-        price: 299.0,
-        originalPrice: 199.0,
-        qty: 2,
-        image: "/Image/Lan.jpg"
-      },
-    ],
-  },
-  "2": {
-    name: "สมนึก",
-    surname: "สุขเกษม",
-    address: "19 หมู่ 2 เมืองพัทยา พัทยา",
-    phone: "056687641",
-    status: "completed", // สถานะที่กำลังดำเนินการ
-    items: [
-      {
-        name: "ไข่เบอร์ 1",
-        price: 4.70,
-        qty: 10,
-        image: "/Image/egg.jpg"
-      },
-      {
-        name: "บะหมี่กึ่งสำเร็จรูป",
-        price: 12.00,
-        qty: 2,
-        image: "/Image/noodle.jpg"
-      },
-    ],
-  },
+const config = useRuntimeConfig();
+const supabase = createClient(
+  config.public.supabaseUrl,
+  config.public.supabaseAnonKey
+);
+
+// Mapping database status to Thai
+const statusMap = {
+  Complete: "เสร็จสิ้น",
+  Pending: "รอดำเนินการ",
+  Delivery: "กำลังจัดส่ง",
+  Cancelled: "ยกเลิกแล้ว"
 };
 
-
-const checkOrder = () => {
+const checkOrder = async () => {
   if (!orderCode.value.trim()) {
+    orderCodeErrorMessage.value = "กรุณากรอกรหัสรายการก่อน";
     showModal.value = true;
     return;
   }
 
-  const order = orders[orderCode.value.trim()];
-  if (order) {
-    foundOrder.value = order;
-  } else {
-    orderCodeErrorMessage.value = 'ไม่พบรหัสรายการนี้'; // เมื่อไม่พบรหัสออเดอร์
+  const { data: order, error } = await supabase
+    .from("order")
+    .select(
+      `
+      orderid,
+      billingid,
+      status,
+      payment_method,
+      total_amount,
+      orderdate,
+      customer:customerid (
+        fname,
+        lname,
+        phone,
+        address
+      ),
+      orderitems:orderitem (
+        quantity,
+        price_at_buy,
+        product:productid (
+          nameproduct,
+          baseprice,
+          saleprice,
+          imgurl
+        )
+      )
+      `
+    )
+    .eq("billingid", orderCode.value.trim())
+    .single();
+
+  if (error || !order) {
+    console.error(error);
+    orderCodeErrorMessage.value = "ไม่พบรหัสรายการนี้";
     foundOrder.value = null;
     showModal.value = true;
+  } else {
+    billingID.value = order.billingid; // snapshot
+    foundOrder.value = {
+      name: order.customer.fname,
+      surname: order.customer.lname,
+      address: order.customer.address,
+      phone: order.customer.phone,
+      status: order.status,
+      paymentMethod: order.payment_method,
+      orderDate: new Date(order.orderdate).toLocaleString("th-TH", {
+        dateStyle: "short",
+        timeStyle: "short",
+      }),
+      totalAmount: order.total_amount,
+      items: order.orderitems.map((item) => ({
+        name: item.product.nameproduct,
+        price: item.price_at_buy ?? item.product.baseprice,
+        originalPrice:
+          item.price_at_buy && item.price_at_buy < item.product.baseprice
+            ? item.product.baseprice
+            : null,
+        isSale: item.price_at_buy && item.price_at_buy < item.product.baseprice,
+        qty: item.quantity,
+        image: `/Image/${item.product.imgurl}`,
+      })),
+    };
   }
 };
 
-
-
-// เรียก modal ยืนยันยกเลิก
+// modal actions
 const promptCancelOrder = () => {
   confirmCancelModal.value = true;
 };
+const cancelOrder = async () => {
+  if (!billingID.value) return; // Safety check
 
-// ยืนยันยกเลิกออเดอร์จริงๆ
-const cancelOrder = () => {
-  orderCode.value = "";
-  foundOrder.value = null;
+  // Update the order status in database
+  const { data, error } = await supabase
+    .from("order")
+    .update({ status: "Cancelled" }) // set status to Cancelled
+    .eq("billingid", billingID.value);
+
+  if (error) {
+    console.error("ไม่สามารถยกเลิกออเดอร์ได้:", error.message);
+    orderCodeErrorMessage.value = "เกิดข้อผิดพลาดในการยกเลิกออเดอร์";
+    showModal.value = true;
+    return;
+  }
+
+  // Update local data so user sees it immediately
+  if (foundOrder.value) {
+    foundOrder.value.status = "Cancelled";
+  }
+
   confirmCancelModal.value = false;
+  orderCodeErrorMessage.value = "ยกเลิกออเดอร์เรียบร้อยแล้ว";
+  showModal.value = true;
 };
-
-// ปิด modal ยืนยันโดยไม่ยกเลิก
 const closeCancelModal = () => {
   confirmCancelModal.value = false;
 };
+
 </script>
 
+
 <template>
+  <div>
+
+  
   <div>
     <Navbar />
     <router-view />
@@ -110,19 +152,28 @@ const closeCancelModal = () => {
     <button class="check-button" @click="checkOrder">ตรวจสอบ</button>
   </div>
 
-   <div v-if="foundOrder" class="order-details">
+  <div v-if="foundOrder" class="order-details">
     <div class="order-detail">
       <span class="order-label">รหัสรายการ: </span>
-      <span class="order-value">{{ orderCode }}</span>
+      <span class="order-value">{{ billingID }}</span>
     </div>
 
     <div class="order-detail">
-  <span class="order-label">สถานะ: </span>
-  <!-- ใช้เงื่อนไขเพื่อตรวจสอบสถานะ -->
-  <span class="order-value">
-    {{ foundOrder.status === 'completed' ? 'เสร็จสิ้น' : 'กำลังดำเนินการ' }}
-  </span>
-</div>
+      <span class="order-label">สถานะ: </span>
+      <span class="order-value">
+        {{ statusMap[foundOrder.status] || "ไม่ทราบสถานะ" }}
+      </span>
+    </div>
+
+    <div class="order-detail">
+      <span class="order-label">วันที่สั่งซื้อ: </span>
+      <span class="order-value">{{ foundOrder.orderDate }}</span>
+    </div>
+
+    <div class="order-detail">
+      <span class="order-label">วิธีชำระเงิน: </span>
+      <span class="order-value">{{ foundOrder.paymentMethod }}</span>
+    </div>
 
     <div class="order-detail">
       <span class="order-label">ชื่อ: </span>
@@ -145,11 +196,11 @@ const closeCancelModal = () => {
     </div>
 
     <div v-for="item in foundOrder.items" :key="item.name" class="order-item">
-      <img :src="item.image" alt="" width="50" />
+      <img :src="item.image" alt="" width="139px" />
       <div>
         <strong>{{ item.name }}</strong><br />
-        <div class="price-stack" v-if="item.originalPrice">
-          <span class="current-price">{{ item.price.toFixed(2) }} บาท</span>
+        <div class="price-stack" v-if="item.isSale">
+          <span class="sale-price">{{ item.price.toFixed(2) }} บาท</span>
           <span class="original-price">{{ item.originalPrice.toFixed(2) }} บาท</span>
         </div>
         <div class="price-stack" v-else>
@@ -158,28 +209,31 @@ const closeCancelModal = () => {
       </div>
       <div class="item-quantity">จำนวน: {{ item.qty }}</div>
     </div>
+
+    <div class="order-sum">
+      <span class="order-label">รวมราคา: </span>
+      <span class="order-value">{{ foundOrder.totalAmount.toFixed(2) }} บาท</span>
+    </div>
   </div>
 
-  <!-- ปุ่มยกเลิกออเดอร์ เพิ่มคลาส large เพื่อให้อยู่ตรงกลาง -->
- <button
-  v-if="foundOrder && foundOrder.status === 'processing'"
-  class="cancel-button large"
-  @click="promptCancelOrder"
->
-  ยกเลิกออเดอร์
-</button>
+  <!-- ปุ่มยกเลิกออเดอร์ -->
+  <button
+    v-if="foundOrder && foundOrder.status === 'Pending'"
+    class="cancel-button large"
+    @click="promptCancelOrder"
+  >
+    ยกเลิกออเดอร์
+  </button>
 
-  <!-- Modal เตือนเมื่อไม่กรอก -->
+  <!-- Modal แจ้งเตือน -->
   <div v-if="showModal" class="modal-overlay">
     <div class="modal-box">
       <button class="close-button" @click="showModal = false">✕</button>
       <div class="modal-content">
         <div class="modal-icon">!</div>
-        <p class="modal-text">กรุณากรอกรหัสรายการก่อน</p>
+        <p class="modal-text">{{ orderCodeErrorMessage }}</p>
         <div class="modal-actions">
-          <button class="confirm-button" @click="showModal = false">
-            ตกลง
-          </button>
+          <button class="confirm-button" @click="showModal = false">ตกลง</button>
         </div>
       </div>
     </div>
@@ -199,7 +253,6 @@ const closeCancelModal = () => {
           <button
             class="cancel-button"
             @click="closeCancelModal"
-            style="background-color: #eee; color: #555; border: none"
           >
             ยกเลิก
           </button>
@@ -207,22 +260,7 @@ const closeCancelModal = () => {
       </div>
     </div>
   </div>
-
-  <div v-if="showModal" class="modal-overlay">
-    <div class="modal-box">
-      <button class="close-button" @click="showModal = false">✕</button>
-      <div class="modal-content">
-        <div class="modal-icon">!</div>
-        <p class="modal-text">
-          {{ orderCodeErrorMessage }}
-        </p>
-        <div class="modal-actions">
-          <button class="confirm-button" @click="showModal = false">
-            ตกลง
-          </button>
-        </div>
-      </div>
-    </div>
+  <footer style="background-color: #6acc91; width: 100%; height: 500px; margin-top: 12em;"></footer>
   </div>
 </template>
 
@@ -231,7 +269,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #FAFAF5;
-  font-family: "Prompt", sans-serif;
+  font-family: Prompt, sans-serif;
   min-height: 100vh;
 }
 </style>
@@ -262,7 +300,7 @@ body {
 }
 .form-label {
   font-size: 1rem;
-  color: #3cb371;
+  color: #6ACC91;
   font-weight: bold;
   display: block;
   margin-bottom: 0.5rem;
@@ -276,11 +314,12 @@ body {
   margin-bottom: 1rem;
 }
 .check-button {
-  background-color: #3cb371;
+  background-color: #6ACC91;
   color: white;
   border: none;
   padding: 0.5rem 1.5rem;
   font-weight: bold;
+  font-family: prompt, sans-serif;
   border-radius: 4px;
   cursor: pointer;
   float: right;
@@ -330,7 +369,14 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  color: #E73B3B;
+  border-color: #E73B3B;
   /* สีของ modal-icon กำหนดโดยคลาสเสริม */
+}
+.modal-text {
+  color: #E73B3B;
+  font-size: 24px;
+  font-weight: 700;
 }
 .modal-actions {
   display: flex;
@@ -347,7 +393,6 @@ body {
   font-size: 1.1rem;
   border-radius: 6px;
   cursor: pointer;
-  border: none;
   text-align: center;
   transition: background-color 0.3s ease;
   display: flex; /* จัดข้อความตรงกลางแนวตั้งและแนวนอน */
@@ -357,22 +402,28 @@ body {
 
 /* ปุ่มใช่ สีแดง */
 .confirm-button {
-  background-color: #e53935;
+  background-color: #E73B3B;
   color: white;
+  font-family: Prompt, sans-serif;
+  border: none;
 }
 
 .confirm-button:hover {
-  background-color: #b52a24;
+  background-color: #b32e2e;
 }
 
 /* ปุ่มยกเลิก สีเทา */
 .cancel-button {
-  background-color: #eee;
-  color: #555;
+  background-color: transparent;
+  color: #A8A4A4;
+  border-color: #A8A4A4;
+  border-width: 1px;
+  font-family: prompt, sans-serif;
 }
 
 .cancel-button:hover {
-  background-color: #ccc;
+  color: #767676;
+  border-color:#767676;
 }
 
 /* ปุ่มยกเลิกแบบใหญ่ ให้อยู่กลาง */
@@ -384,67 +435,59 @@ body {
   padding: 0.75rem;
   font-size: 1.1rem;
   text-align: center;
-  background-color: #e53935; /* สีแดง */
+  background-color: #E73B3B; /* สีแดง */
+  font-family: prompt, sans-serif;
   color: white;
   border: none;
   transition: background-color 0.3s ease;
 }
 
 .cancel-button.large:hover {
-  background-color: #b52a24; /* สีแดงเข้มเมื่อ hover */
+  background-color: #b32e2e; /* สีแดงเข้มเมื่อ hover */
 }
 
-/* ปุ่มยกเลิกสีแดงใน modal */
-.modal-actions .cancel-button {
-  background-color: #e53935;
-  color: white;
-  border: none;
-}
-
-.modal-actions .cancel-button:hover {
-  background-color: #b52a24;
-}
-
-/* สีของ cancel-button แบบใหญ่ กำหนดโดยคลาสเสริม */
-.cancel-button.red {
-  background-color: #e53935;
-  color: white;
-}
-.cancel-button.red:hover {
-  background-color: #b52a24;
-}
-.cancel-button.grey {
-  background-color: #eee;
-  color: #555;
-}
-.cancel-button.grey:hover {
-  background-color: #ccc;
-}
 
 /* รายละเอียดรายการ */
 .order-details {
   max-width: 600px;
   margin: 2rem auto;
   padding: 1.5rem;
-  background: #f9f9f9;
+  background: #ffffff;
   border-radius: 10px;
   font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.order-detail {
+  display: flex;
+  flex-direction: column;
 }
 .order-label {
   font-weight: bold;
-  color: #3cb371; /* Green color for labels */
+  color: #6ACC91; /* Green color for labels */
 }
 .order-value {
   color: #111827;  /* สีเข้มสำหรับค่า */
-  display: block;  /* ให้ข้อมูลอยู่บรรทัดใหม่ */
+  display: block;
+  font-weight: 700;
+}
+.order-sum {
+  align-self: flex-end;
+  justify-self: flex-end;
+  display: flex;
+  gap: 36px;
+
 }
 
 
 .order-item {
   display: flex;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  gap: 24px;
 }
 
 .item-quantity {
@@ -462,7 +505,13 @@ body {
   margin-bottom: 0.3rem;
 }
 
-.current-price {
+.price {
+  color: #111827;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.sale-price {
   color: red;
   font-weight: bold;
   font-size: 1rem;
@@ -471,7 +520,7 @@ body {
 
 .original-price {
   text-decoration: line-through;
-  color: #888;
+  color: #111827;
   font-size: 0.85rem;
   margin-top: 2px;
 }
