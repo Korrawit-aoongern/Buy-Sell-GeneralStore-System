@@ -1,31 +1,30 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watchEffect, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useCartStore } from "~/stores/cart";
 import Summary from "~/components/UI/Summary.vue";
 import Navbar from "~/components/UI/Navbar.vue";
 import ProgressStep from "~/components/UI/StepProgress.vue";
 
-const step = ref(2); // เริ่มที่หน้า Submit เลย
+const step = ref(3);
 
-// ข้อมูลตัวอย่าง
-const cart = [
-  { id: 1, name: "ข้าวหอมมะลิ 5 กก.", price: 250, qty: 1 }
-];
+const router = useRouter();
 
-const userInfo = {
-  name: "Alice",
-  surname: "Yoeta",
-  address: "1, Third Street, Lahti, Finland",
-  phone: "457853144",
-  paymentMethod: "PromptPay"
-};
+const cartStore = useCartStore();
+const cart = cartStore.cart;
+const userInfo = cartStore.customerInfo;
+
+// ถ้า paymentMethod เป็น PromptPay ให้เด้งไปอีกหน้า
+onMounted(() => {
+  if (userInfo.paymentMethod === "PromptPay") {
+    router.push("/promptpay");
+  }
+});
 
 function goBackToSummary() {
   step.value = 1;
 }
 
-function goHome() {
-  step.value = 3; // ไป step 3 แทน alert
-}
 </script>
 
 <template>
@@ -36,13 +35,11 @@ function goHome() {
     <button @click="step = 2">ไปหน้า Submit</button>
   </div>
 
-  <div v-else-if="step === 2">
-    <!-- ✅ ProgressStep -->
+  <div v-else-if="step === 3">
     <div class="step-container">
       <ProgressStep :currentStep="step" />
     </div>
 
-    <!-- ✅ เนื้อหา Submit -->
     <div class="submit-page">
       <div class="left-section">
         <h2>รายละเอียด</h2>
@@ -55,7 +52,7 @@ function goHome() {
         <h2>รายการ</h2>
         <ul class="item-list">
           <li v-for="item in cart" :key="item.id" class="item">
-            <img src="https://via.placeholder.com/80" alt="product" class="item-img" />
+            <img :src="item.image || 'https://via.placeholder.com/80'" alt="product" class="item-img" />
             <div class="item-info">
               <p class="item-name">{{ item.name }}</p>
               <p class="item-price">{{ item.price.toFixed(2) }} บาท</p>
@@ -84,6 +81,7 @@ function goHome() {
     </div>
   </div>
 </template>
+
 
 
 <style scoped>

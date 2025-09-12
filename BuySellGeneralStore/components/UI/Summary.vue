@@ -11,7 +11,17 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  disableNext: {
+    type: Boolean,
+    default: false,
+  },
+  userInfo: {
+    type: Object,
+    required: true,
+  },
 });
+
+const emit = defineEmits(["next", "back", "cancel"]);
 
 const router = useRouter();
 
@@ -28,19 +38,31 @@ const total = computed(() => {
   return props.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 });
 
+const isNextDisabled = computed(() => props.cart.length === 0 || props.disableNext);
+
 function goNext() {
+  if (isNextDisabled.value) return;
+
+  emit("next");
+
   if (props.currentStep === 1) {
     router.push("/details");
   } else if (props.currentStep === 2) {
-    router.push("/submit");
+    if (props.userInfo.paymentMethod === "PromptPay") {
+      router.push("/promptpay");
+    } else {
+      router.push("/some-other-page"); // เปลี่ยนเป็นหน้าอื่นถ้าจำเป็น
+    }
   }
 }
 
 function cancel() {
+  emit("cancel");
   router.push("/");
 }
 
 function goBack() {
+  emit("back");
   router.back();
 }
 </script>
@@ -57,7 +79,6 @@ function goBack() {
     </div>
 
     <div class="buttons">
-      <!-- ปุ่มย้อนกลับ / ยกเลิก -->
       <button
         v-if="currentStep === 1"
         class="cancel"
@@ -74,11 +95,18 @@ function goBack() {
         ย้อนกลับ
       </button>
 
-      <!-- ปุ่มต่อไป -->
-      <button class="next" @click="goNext">ต่อไป</button>
+      <button
+        class="next"
+        @click="goNext"
+        :disabled="isNextDisabled"
+      >
+        ต่อไป
+      </button>
     </div>
   </div>
 </template>
+
+
 
 <style scoped>
 .summary {

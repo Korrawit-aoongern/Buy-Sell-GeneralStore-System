@@ -14,8 +14,8 @@
         <img :src="image" alt="product" />
         <div v-if="saleprice === null" class="sold-out-overlay">
           <Icon
-          name="material-symbols:error"
-          style="color: red; width: 45px; height: 45px"
+            name="material-symbols:error"
+            style="color: red; width: 45px; height: 45px"
           />
           <span style="margin: 1em; font-weight: 700;">Error : ราคาผิดพลาด</span>
         </div>
@@ -26,7 +26,8 @@
 
       <!-- Product Details -->
       <div class="product-details">
-        <h3 class="product-name">{{ name }}</h3>
+        <!-- ใช้ shortName เพื่อแสดงชื่อสินค้า แบบตัด 2 บรรทัด + fallback ตัดข้อความยาว -->
+        <h3 class="product-name" :title="name">{{ shortName }}</h3>
 
         <!-- Show sale price if available -->
         <div v-if="isSale">
@@ -90,10 +91,20 @@ watch(() => props.qty, (newQty) => {
 })
 
 const isSale = computed(() => 
-props.saleprice !== null 
-&& props.originalprice !== null 
-&& props.saleprice !== props.originalprice
-&& props.promotype === 'sale')
+  props.saleprice !== null 
+  && props.originalprice !== null 
+  && props.saleprice !== props.originalprice
+  && props.promotype === 'sale'
+)
+
+// fallback ตัดชื่อสินค้า ถ้ายาวเกิน 80 ตัวอักษร (ประมาณ 2 บรรทัด)
+const shortName = computed(() => {
+  const maxLength = 23
+  if (props.name.length > maxLength) {
+    return props.name.slice(0, maxLength - 3) + '...'
+  }
+  return props.name
+})
 
 function handleAddToCart() {
   if (localQty.value > 0) {
@@ -170,10 +181,22 @@ function handleAddToCart() {
   font-size: 20px;
   font-weight: bold;
   color: #111827;
-  padding-left: 16px;
+  padding: 0 16px;
   margin: 0;
   text-align: left;
-  width: 255px;
+
+  /* CSS สำหรับ multiline ellipsis */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+
+  line-height: 1.4em;
+  max-height: 2.8em;
+  max-width: 255px;
+
+  word-break: break-word;
+  white-space: normal;
 }
 .product-details {
   display: flex;
