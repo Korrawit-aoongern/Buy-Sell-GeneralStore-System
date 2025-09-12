@@ -9,7 +9,7 @@ const { cartCount } = useCart()
     <ul class="nav-links">
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/Product-Listing">Product</router-link></li>
-      <li><router-link to="/Order">Order</router-link></li>
+      <li><router-link to="/Order-Tracker">Order</router-link></li>
 
     </ul>
     <div class="cart-icon">
