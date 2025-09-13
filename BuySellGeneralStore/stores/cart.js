@@ -17,7 +17,8 @@ export const useCartStore = defineStore('cart', () => {
       cart.value.push({
         id: product.productid,
         name: product.nameproduct,
-        price: product.baseprice,
+        price: product.baseprice,  // ราคาขายจริง (หลังลด)
+        originalprice: product.originalprice || product.baseprice, // ราคาก่อนลด ถ้ามี
         qty: 1,
         image: `Image/${product.imgurl}`,
         stock: product.stock || 0
@@ -54,6 +55,16 @@ export const useCartStore = defineStore('cart', () => {
     return cart.value.reduce((sum, item) => sum + item.price * item.qty, 0)
   })
 
+  // คำนวณส่วนลดรวม
+  const discount = computed(() => {
+    return cart.value.reduce((sum, item) => {
+      if (item.originalprice && item.originalprice > item.price) {
+        return sum + (item.originalprice - item.price) * item.qty
+      }
+      return sum
+    }, 0)
+  })
+
   // ข้อมูลลูกค้า
   const customerInfo = ref({
     name: "",
@@ -67,7 +78,7 @@ export const useCartStore = defineStore('cart', () => {
     customerInfo.value = { ...info } // copy เพื่อความปลอดภัย
   }
 
-  // ล้างตะกร้าและข้อมูลลูกค้า (ถ้าต้องการ)
+  // ล้างตะกร้าและข้อมูลลูกค้า
   function clearCart() {
     cart.value = []
     customerInfo.value = {
@@ -86,6 +97,7 @@ export const useCartStore = defineStore('cart', () => {
     decrease,
     removeItem,
     totalPrice,
+    discount,
     customerInfo,
     setCustomerInfo,
     clearCart

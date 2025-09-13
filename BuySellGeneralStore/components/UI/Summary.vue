@@ -27,12 +27,14 @@ const router = useRouter();
 
 const discount = computed(() => {
   return props.cart.reduce((sum, item) => {
-    if (item.oldPrice) {
-      return sum + (item.oldPrice - item.price) * item.qty;
+    if (item.originalprice && item.originalprice > item.saleprice) {
+      return sum + (item.originalprice - item.saleprice) * item.qty;
     }
     return sum;
   }, 0);
 });
+
+
 
 const total = computed(() => {
   return props.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
