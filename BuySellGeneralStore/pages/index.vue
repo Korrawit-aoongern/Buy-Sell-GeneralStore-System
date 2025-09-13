@@ -17,7 +17,10 @@ const supabase = createClient(
 );
 
 onMounted(async () => {
-  const { data, error } = await supabase.from("product").select("*");
+  const { data, error } = await supabase
+    .from("product")
+    .select("*")
+    .eq("is_featured", true)
   if (error) {
     console.error("Error loading products:", error);
   } else {
@@ -34,6 +37,26 @@ const saleProducts = computed(() =>
 const normalProducts = computed(() =>
   productList.value.filter((p) => p.promotype === "normal")
 );
+const rowsVisible = ref({
+  hot: 1,
+  sale: 1,
+  normal: 1,
+});
+
+const getVisibleProducts = (productsRef, key) =>
+  computed(() => productsRef.value.slice(0, rowsVisible.value[key] * 3));
+
+const hotVisible = getVisibleProducts(hotProducts, "hot");
+const saleVisible = getVisibleProducts(saleProducts, "sale");
+const normalVisible = getVisibleProducts(normalProducts, "normal");
+
+function toggleShow(key, total) {
+  if (rowsVisible.value[key] * 3 < total) {
+    rowsVisible.value[key]++; // expand
+  } else {
+    rowsVisible.value[key] = 1; // collapse
+  }
+}
 </script>
 
 <template>
@@ -50,10 +73,10 @@ const normalProducts = computed(() =>
       <div class="Feature-Section">
         <span class="title">สินค้าขายดี</span>
         <div v-if="!productList.length">Loading products...</div>
-        <div v-else>
+        <div v-else class="product-Visible">
           <div class="product-list">
             <ProductCard
-              v-for="(product, index) in hotProducts"
+              v-for="(product, index) in hotVisible"
               :key="index"
               :id="product.productid"
               :name="product.nameproduct"
@@ -65,60 +88,79 @@ const normalProducts = computed(() =>
               @add-to-cart="() => addToCart(product)"
             />
           </div>
+          <button
+            v-if="hotProducts.length > 3"
+            class="show-more-btn"
+            @click="toggleShow('hot', hotProducts.length)"
+          >
+            {{ rowsVisible.hot * 3 < hotProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }}
+          </button>
         </div>
       </div>
 
       <div class="Feature-Section">
         <span class="title">สินค้าลดราคา</span>
         <div v-if="!productList.length">Loading products...</div>
-        <div v-else>
+        <div v-else class="product-Visible">
           <div class="product-list">
             <ProductCard
-              v-for="(product, index) in saleProducts"
-              :key="index"
-              :id="product.productid"
-              :name="product.nameproduct"
-              :originalprice="product.baseprice"
-              :saleprice="product.saleprice"
-              :qty="product.stock"
+              v-for="(product, index) in saleVisible"
+              :key="index" 
+              :id="product.productid" 
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice" 
+              :qty="product.stock" 
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)"
             />
           </div>
+          <button
+            v-if="saleProducts.length > 3"
+            class="show-more-btn"
+            @click="toggleShow('sale', saleProducts.length)"
+          >
+            {{ rowsVisible.sale * 3 < saleProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }}
+          </button>
         </div>
       </div>
 
       <div class="Feature-Section">
         <span class="title">สินค้าปกติ</span>
         <div v-if="!productList.length">Loading products...</div>
-        <div v-else>
+        <div v-else class="product-Visible">
           <div class="product-list">
             <ProductCard
-              v-for="(product, index) in normalProducts"
+              v-for="(product, index) in normalVisible"
               :key="index"
               :id="product.productid"
               :name="product.nameproduct"
               :price="product.baseprice"
-              :qty="product.stock"
               :saleprice="product.saleprice"
+              :qty="product.stock"
               :image="`Image/${product.imgurl}`"
               :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)"
             />
           </div>
+          <button
+            v-if="normalProducts.length > 3"
+            class="show-more-btn"
+            @click="toggleShow('normal', normalProducts.length)"
+          >
+            {{ rowsVisible.normal * 3 < normalProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }}
+          </button>
         </div>
       </div>
     </section>
 
-    <footer
-      style="
+    <footer style="
         background-color: #6acc91;
         width: 100%;
         height: 500px;
         margin-top: 12em;
-      "
-    ></footer>
+      "></footer>
   </div>
 </template>
 <style>
@@ -166,10 +208,26 @@ body {
 }
 
 .product-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 57px;
   margin-left: 2rem;
+}
+.product-Visible{
+  display: flex;
+  flex-direction: column;
+}
+.show-more-btn {
+  align-self: center;
+  margin-top: 30px;
+  background: transparent;
+  border: #6acc91 1px solid;
+  padding: 0.7em 1.5em;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6acc91;
+  font-weight: bold;
+  font-family: prompt, 'san-serif';
 }
 
 footer {
