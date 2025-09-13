@@ -19,9 +19,9 @@ const address = ref("");
 const phone = ref("");
 const paymentMethod = ref("");
 
-// ควบคุม modal และ error
+// ควบคุม modal
 const showConfirmModal = ref(false);
-const showError = ref(false);
+const showErrorModal = ref(false);
 
 // เช็คความถูกต้องของฟอร์ม
 const formIsValid = computed(() => {
@@ -44,11 +44,9 @@ function goBack() {
 
 function confirmOrder() {
   if (!formIsValid.value) {
-    showError.value = true;
+    showErrorModal.value = true; // 👉 เปิด modal error
     return;
   }
-
-  showError.value = false;
 
   cartStore.setCustomerInfo({
     name: name.value,
@@ -117,11 +115,6 @@ function goToSubmit() {
               </div>
             </fieldset>
           </form>
-
-          <!-- 🔴 แจ้งเตือนถ้ากรอกไม่ครบ -->
-          <p v-if="showError" class="form-error">
-            กรุณากรอกข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ
-          </p>
         </div>
 
         <!-- 🔹 Summary ด้านขวา -->
@@ -137,24 +130,25 @@ function goToSubmit() {
       </div>
     </div>
 
-    <!-- ✅ Modal ยืนยันคำสั่งซื้อ -->
+    <!-- Modal Success -->
     <div v-if="showConfirmModal" class="modal-overlay">
-      <div class="modal-box">
+      <div class="modal-box success">
         <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
         <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
         <button @click="goToSubmit">ตกลง</button>
       </div>
     </div>
+
+    <!-- Modal Error -->
+    <div v-if="showErrorModal" class="modal-overlay">
+      <div class="modal-box error">
+        <h3>กรอกข้อมูลไม่ครบ!</h3>
+        <p>กรุณากรอกข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ</p>
+        <button @click="showErrorModal = false">ตกลง</button>
+      </div>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.form-error {
-  color: red;
-  font-weight: 600;
-  margin-top: 1rem;
-}
-</style>
 
 <style scoped>
 body {
@@ -242,7 +236,7 @@ legend {
   transform: scale(1.2); /* ขยายปุ่มเล็กน้อย */
 }
 
-/* Modal styles */
+/* ================= Modal ================= */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -273,19 +267,16 @@ legend {
 .modal-box h3 {
   margin-bottom: 1rem;
   font-weight: 700;
-  color: #2f855a;
   font-size: 1.5rem;
 }
 
 .modal-box p {
   margin-bottom: 1.5rem;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: #333;
 }
 
 .modal-box button {
-  background-color: #2f855a;
-  color: white;
   padding: 0.6rem 2rem;
   border: none;
   border-radius: 6px;
@@ -293,9 +284,28 @@ legend {
   font-weight: 600;
   font-size: 1rem;
   transition: background-color 0.2s ease;
+  color: white;
 }
 
-.modal-box button:hover {
+/* ✅ Success Modal */
+.modal-box.success h3 {
+  color: #2f855a;
+}
+.modal-box.success button {
+  background-color: #2f855a;
+}
+.modal-box.success button:hover {
   background-color: #276749;
+}
+
+/* ❌ Error Modal */
+.modal-box.error h3 {
+  color: #e63946;
+}
+.modal-box.error button {
+  background-color: #e63946;
+}
+.modal-box.error button:hover {
+  background-color: #c53030;
 }
 </style>
