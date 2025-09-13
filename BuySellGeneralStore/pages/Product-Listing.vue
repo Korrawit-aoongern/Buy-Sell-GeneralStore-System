@@ -256,7 +256,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #fafaf5;
-  font-family: "Prompt", sans-serif;
+  font-family: Prompt, sans-serif;
   min-height: 100vh;
 }
 </style>
