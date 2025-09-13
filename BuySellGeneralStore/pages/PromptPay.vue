@@ -4,18 +4,39 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const showConfirmModal = ref(false);
+const showWarning = ref(false);
+
+const slipFile = ref(null);
+const slipPreviewUrl = ref("");
+const qrCodeUrl = ref("/Image/PromptPay.png"); // ✅ ใช้จาก public/Image/
+
+function handleFileChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    slipFile.value = file;
+    slipPreviewUrl.value = URL.createObjectURL(file);
+  }
+}
 
 function goBack() {
   router.push("/Details");
 }
 
 function goHome() {
+  if (!slipFile.value) {
+    showWarning.value = true;
+    setTimeout(() => {
+      showWarning.value = false;
+    }, 3000);
+    return;
+  }
+
   showConfirmModal.value = true;
 }
 
 async function goToSubmit() {
   showConfirmModal.value = false;
-  await router.push("/submit");
+  await router.push("/random"); // ✅ ไปหน้า index.vue (หน้าแรก)
 }
 </script>
 
@@ -28,10 +49,26 @@ async function goToSubmit() {
       <img :src="qrCodeUrl" alt="PromptPay QR Code" class="qr-code" />
     </div>
 
+    <!-- อัปโหลดสลิป -->
+    <div class="upload-section">
+      <label class="upload-label" for="slipUpload">อัปโหลดสลิปการโอนเงิน</label>
+      <input id="slipUpload" type="file" accept="image/*" @change="handleFileChange" />
+
+      <div v-if="slipPreviewUrl" class="slip-preview">
+        <img :src="slipPreviewUrl" alt="Slip Preview" />
+      </div>
+    </div>
+
     <button class="btn-back" @click="goBack">ย้อนกลับ</button>
-    <button class="btn-home" @click="goHome">ต่อไป</button>
+    <button class="btn-home" @click="goHome">ยืนยัน</button>
   </div>
 
+  <!-- กล่องเตือนถ้าไม่ได้อัปโหลดสลิป -->
+  <div v-if="showWarning" class="warning-box">
+    กรุณาอัปโหลดสลิปก่อนยืนยันคำสั่งซื้อ
+  </div>
+
+  <!-- Modal ยืนยัน -->
   <div v-if="showConfirmModal" class="modal-overlay">
     <div class="modal-box">
       <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
@@ -40,7 +77,6 @@ async function goToSubmit() {
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .promptpay-container {
@@ -90,7 +126,8 @@ input[type="file"] {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.btn-submit {
+.btn-back,
+.btn-home {
   background-color: #2b776f;
   color: white;
   padding: 0.75rem 2rem;
@@ -98,6 +135,7 @@ input[type="file"] {
   border-radius: 8px;
   font-weight: 700;
   font-size: 1rem;
+  margin: 1rem 0.5rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -105,7 +143,43 @@ input[type="file"] {
 button:hover {
   background-color: #5ab67e;
 }
-/* Modal styles */
+
+/* กล่องแจ้งเตือนสีแดง */
+.warning-box {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #e53e3e;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fade-in-out 3s ease forwards;
+}
+
+@keyframes fade-in-out {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;

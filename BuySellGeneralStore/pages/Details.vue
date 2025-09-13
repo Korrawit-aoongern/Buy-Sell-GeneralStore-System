@@ -133,8 +133,8 @@ function goToSubmit() {
     <!-- Modal Success -->
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal-box success">
-        <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
-        <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
+        <h3>ยืนยันคำสั่งซื้อ</h3>
+        <p>ตรวจข้อมูลก่อนยืนยัน</p>
         <button @click="goToSubmit">ตกลง</button>
       </div>
     </div>
