@@ -35,12 +35,12 @@ watch(
 
 // ไปหน้าขอบคุณ (step = 2)
 function goToThankYou() {
-  router.push({ path: "/submit", query: { step: 2 } });
+  router.push("/random");
 }
 
 // ✅ กลับไปหน้า details (step = 1)
 function goBackToDetails() {
-  router.push({ path: "/submit", query: { step: 1 } });
+  router.push("/details");
 }
 
 // กลับหน้าแรก
@@ -114,18 +114,7 @@ function goHome() {
     </div>
   </div>
 
-  <!-- Step 2: หน้ายืนยันเสร็จ -->
-  <div v-else-if="step === 2">
-    <div class="step-container">
-      <ProgressStep :currentStep="step" />
-    </div>
 
-    <div class="confirm-page">
-      <h2>✅ การสั่งซื้อเสร็จสมบูรณ์</h2>
-      <p>ขอบคุณที่สั่งซื้อกับเรา</p>
-      <button @click="goHome">กลับไปหน้าแรก</button>
-    </div>
-  </div>
 </template>
 
 <style scoped>

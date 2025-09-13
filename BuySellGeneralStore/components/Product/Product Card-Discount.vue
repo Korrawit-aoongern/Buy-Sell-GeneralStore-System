@@ -86,13 +86,14 @@ function handleAddToCart() {
 
     // ✅ ส่งข้อมูลสินค้าให้ parent component
     emit('add-to-cart', {
-      id: props.id,
-      name: props.name,
-      saleprice: props.saleprice,
-      originalprice: props.originalprice,
-      image: props.image,
-      promotype: props.promotype,
-    })
+  id: props.id,
+  name: props.name,
+  saleprice: props.saleprice,
+  originalprice: props.originalprice,
+  image: props.image,
+  promotype: props.promotype,
+})
+
   }
 }
 </script>
