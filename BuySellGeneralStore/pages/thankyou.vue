@@ -1,36 +1,52 @@
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useCartStore } from "~/stores/cart";
-
-function generateRandomOrderId(length = 16) {
-  const chars = "abcdef0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
-
-const orderId = ref(generateRandomOrderId());
+import { createClient } from "@supabase/supabase-js";
 
 const router = useRouter();
+const route = useRoute();
 const cartStore = useCartStore();
 
+const orderId = ref(route.query.orderid || null);
+const billingId = ref(null);
+
+const config = useRuntimeConfig();
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
+
+onMounted(async () => {
+  if (orderId.value) {
+    const { data, error } = await supabase
+      .from("order")
+      .select("billingid")
+      .eq("orderid", orderId.value)
+      .single();
+
+    if (error) {
+      console.error("Error fetching billing ID:", error);
+    } else {
+      billingId.value = data.billingid;
+    }
+  }
+});
+
 function goHome() {
-  cartStore.clearCart(); // ล้างตะกร้าและข้อมูลลูกค้า
+  cartStore.clearCart(); // clear cart
   router.push("/");
 }
 
 function copyOrderId() {
-  navigator.clipboard.writeText(orderId.value);
+  navigator.clipboard.writeText(billingId.value);
 }
 </script>
 
 <template>
   <div class="order-complete-container">
     <h1>ขอบคุณสำหรับคำสั่งซื้อ</h1>
-    <p>รหัสรายการ : <strong>{{ orderId }}</strong> <button @click="copyOrderId" class="copy-btn" title="คัดลอกรหัส">📋</button></p>
+    <p>
+      รหัสรายการ : <strong>{{ billingId }}</strong>
+      <button @click="copyOrderId" class="copy-btn" title="คัดลอกรหัส">📋</button>
+    </p>
 
     <button class="btn-back-home" @click="goHome">กลับไปหน้าสินค้า</button>
   </div>

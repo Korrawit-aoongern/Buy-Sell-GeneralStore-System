@@ -1,14 +1,20 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
+import { createClient } from "@supabase/supabase-js";
 
 const router = useRouter();
-const showConfirmModal = ref(false);
-const showWarning = ref(false);
+const route = useRoute();
 
+const config = useRuntimeConfig();
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
+
+const orderId = ref(route.query.orderid || null);
 const slipFile = ref(null);
 const slipPreviewUrl = ref("");
-const qrCodeUrl = ref("/Image/PromptPay.png"); // ✅ ใช้จาก public/Image/
+const showConfirmModal = ref(false);
+const showWarning = ref(false);
+const qrCodeUrl = ref("/Image/PromptPay.png");
 
 function handleFileChange(event) {
   const file = event.target.files[0];
@@ -18,25 +24,61 @@ function handleFileChange(event) {
   }
 }
 
+async function insertSlip() {
+  if (!orderId.value || !slipFile.value) return;
+
+  try {
+    // 1️⃣ Upload slip to Supabase Storage (use correct bucket name)
+    const fileName = `${orderId.value}_${Date.now()}.png`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("img_slip") // ✅ correct bucket name
+      .upload(fileName, slipFile.value);
+
+    if (storageError) {
+      console.error("Upload error:", storageError);
+      return;
+    }
+
+    // 2️⃣ Get public URL
+    const { data: urlData } = supabase.storage
+      .from("img_slip")
+      .getPublicUrl(fileName);
+
+    const publicUrl = urlData.publicUrl;
+
+    // 3️⃣ Update order record with slip URL
+    const { error: updateError } = await supabase
+      .from("order")
+      .update({ payment_slip: publicUrl })
+      .eq("orderid", orderId.value);
+
+    if (updateError) {
+      console.error("Error updating slip:", updateError);
+    } else {
+      console.log("✅ Payment slip updated successfully!");
+    }
+  } catch (err) {
+    console.error("Unexpected error inserting slip:", err);
+  }
+}
+
 function goBack() {
-  router.push("/Details");
+  router.push("/details");
 }
 
 function goHome() {
   if (!slipFile.value) {
     showWarning.value = true;
-    setTimeout(() => {
-      showWarning.value = false;
-    }, 3000);
+    setTimeout(() => (showWarning.value = false), 3000);
     return;
   }
-
   showConfirmModal.value = true;
 }
 
-async function goToSubmit() {
+async function goToThankyou() {
+  await insertSlip();
   showConfirmModal.value = false;
-  await router.push("/random"); // ✅ ไปหน้า index.vue (หน้าแรก)
+  router.push({ path: "/thankyou", query: { orderid: orderId.value } });
 }
 </script>
 
@@ -73,7 +115,7 @@ async function goToSubmit() {
     <div class="modal-box">
       <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
       <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
-      <button @click="goToSubmit">ตกลง</button>
+      <button @click="goToThankyou">ตกลง</button>
     </div>
   </div>
 </template>

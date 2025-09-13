@@ -1,49 +1,34 @@
 <script setup>
 
 import Navbar from "~/components/UI/Navbar.vue";
-
 import StepProgress from "~/components/UI/StepProgress.vue";
-
 import Summary from "~/components/UI/Summary.vue";
-
 import { ref, computed, onMounted, watch } from "vue";
-
 import { useRouter } from "vue-router";
-
 import { useCartStore } from "~/stores/cart";
 
 const router = useRouter();
-
 const currentStep = ref(2);
-
 const cartStore = useCartStore();
-
 const cart = cartStore.cart;
 
 // ฟอร์มข้อมูลลูกค้า
 
 const name = ref("");
-
 const surname = ref("");
-
 const address = ref("");
-
 const phone = ref("");
-
 const paymentMethod = ref("");
 
 // ควบคุม modal
 
 const showConfirmModal = ref(false);
-
 const showErrorModal = ref(false);
 
 // ✅ ตรวจสอบเบอร์โทร: ต้องขึ้นต้นด้วย 0 และมี 10 หลัก
 
 const isPhoneValid = computed(() => {
-
   const phonePattern = /^0\d{9}$/;
-
   return phonePattern.test(phone.value);
 
 });
@@ -51,17 +36,11 @@ const isPhoneValid = computed(() => {
 // ✅ เช็คความถูกต้องของฟอร์มทั้งหมด
 
 const formIsValid = computed(() => {
-
   return (
-
     name.value.trim() !== "" &&
-
     surname.value.trim() !== "" &&
-
     address.value.trim() !== "" &&
-
     paymentMethod.value.trim() !== "" &&
-
     isPhoneValid.value
 
   );
@@ -69,97 +48,62 @@ const formIsValid = computed(() => {
 });
 
 onMounted(() => {
-
   if (cartStore.customerInfo) {
-
     name.value = cartStore.customerInfo.name || "";
-
     surname.value = cartStore.customerInfo.surname || "";
-
     address.value = cartStore.customerInfo.address || "";
-
     phone.value = cartStore.customerInfo.phone || "";
-
     paymentMethod.value = cartStore.customerInfo.paymentMethod || "";
-
   }
 
 });
 
 watch([name, surname, address, phone, paymentMethod], () => {
-
   cartStore.setCustomerInfo({
-
     name: name.value,
-
     surname: surname.value,
-
     address: address.value,
-
     phone: phone.value,
-
     paymentMethod: paymentMethod.value,
-
   });
 
 });
 
 function cancelOrder() {
-
   router.push("/cart");
-
 }
 
 function goBack() {
-
   router.push("/cart");
-
 }
 
 function confirmOrder() {
-
   if (!formIsValid.value) {
-
     showErrorModal.value = true; // 👉 เปิด modal error
-
     return;
-
   }
 
   // เซฟข้อมูลก่อนไปหน้าอื่น
 
   cartStore.setCustomerInfo({
-
     name: name.value,
-
     surname: surname.value,
-
     address: address.value,
-
     phone: phone.value,
-
     paymentMethod: paymentMethod.value,
-
   });
 
   if (paymentMethod.value === "PromptPay") {
-
     router.push("/promptpay");
-
   } else {
-
     showConfirmModal.value = true;
-
   }
 
 }
 
 function goToSubmit() {
-
   showConfirmModal.value = false;
-
   router.push("/submit");
-
 }
 </script>
 
@@ -204,12 +148,12 @@ function goToSubmit() {
 
               <div class="payment-row">
                 <span>ปลายทาง</span>
-                <input type="radio" value="ปลายทาง" v-model="paymentMethod" />
+                <input type="radio" value="COD" v-model="paymentMethod" />
               </div>
 
               <div class="payment-row">
                 <span>Prompt Pay</span>
-                <input type="radio" value="PromptPay" v-model="paymentMethod" />
+                <input type="radio" value="Prompt Pay" v-model="paymentMethod" />
               </div>
             </fieldset>
           </form>
@@ -225,8 +169,8 @@ function goToSubmit() {
     <!-- ✅ Modal Success -->
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal-box success">
-        <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
-        <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
+        <h3>กรุณาตรวจสอบข้อมูลอีกครั้ง</h3>
+        <p>สามารถตรวจสอบได้ในหน้าถัดไปและกดย้อนกลับเพื่อแก้ไข</p>
         <button @click="goToSubmit">ตกลง</button>
       </div>
     </div>
@@ -380,6 +324,7 @@ legend {
   font-size: 1rem;
   transition: background-color 0.2s ease;
   color: white;
+  font-family: "Prompt", sans-serif;
 }
 
 /* ✅ Success Modal */
