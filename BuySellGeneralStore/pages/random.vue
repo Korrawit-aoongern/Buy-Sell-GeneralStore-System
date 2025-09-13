@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useCartStore } from "~/stores/cart";
 
 function generateRandomOrderId(length = 16) {
   const chars = "abcdef0123456789";
@@ -14,13 +15,15 @@ function generateRandomOrderId(length = 16) {
 const orderId = ref(generateRandomOrderId());
 
 const router = useRouter();
+const cartStore = useCartStore();
 
 function goHome() {
+  cartStore.clearCart(); // ล้างตะกร้าและข้อมูลลูกค้า
   router.push("/");
 }
 
 function copyOrderId() {
-  navigator.clipboard.writeText(orderId.value)
+  navigator.clipboard.writeText(orderId.value);
 }
 </script>
 
@@ -32,6 +35,7 @@ function copyOrderId() {
     <button class="btn-back-home" @click="goHome">กลับไปหน้าสินค้า</button>
   </div>
 </template>
+
 
 
 <style scoped>

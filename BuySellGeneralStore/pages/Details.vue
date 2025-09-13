@@ -34,6 +34,26 @@ const formIsValid = computed(() => {
   );
 });
 
+onMounted(() => {
+  if (cartStore.customerInfo) {
+    name.value = cartStore.customerInfo.name || "";
+    surname.value = cartStore.customerInfo.surname || "";
+    address.value = cartStore.customerInfo.address || "";
+    phone.value = cartStore.customerInfo.phone || "";
+    paymentMethod.value = cartStore.customerInfo.paymentMethod || "";
+  }
+});
+
+watch([name, surname, address, phone, paymentMethod], () => {
+  cartStore.setCustomerInfo({
+    name: name.value,
+    surname: surname.value,
+    address: address.value,
+    phone: phone.value,
+    paymentMethod: paymentMethod.value,
+  });
+});
+
 function cancelOrder() {
   router.push("/cart");
 }
@@ -48,6 +68,7 @@ function confirmOrder() {
     return;
   }
 
+  // เซฟข้อมูลก่อนไปหน้าอื่น (ถ้ายังไม่ได้เซฟด้วย watch)
   cartStore.setCustomerInfo({
     name: name.value,
     surname: surname.value,
