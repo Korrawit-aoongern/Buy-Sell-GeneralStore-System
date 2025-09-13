@@ -38,9 +38,9 @@ function goToThankYou() {
   router.push({ path: "/submit", query: { step: 2 } });
 }
 
-// กลับไป summary (step = 3)
-function goBackToSummary() {
-  router.push({ path: "/submit", query: { step: 3 } });
+// ✅ กลับไปหน้า details (step = 1)
+function goBackToDetails() {
+  router.push({ path: "/submit", query: { step: 1 } });
 }
 
 // กลับหน้าแรก
@@ -52,7 +52,7 @@ function goHome() {
 <template>
   <Navbar />
 
-  <!-- Step 1: หน้า summary (ยังไม่ได้ใส่เนื้อหา) -->
+  <!-- Step 1: หน้า summary -->
   <div v-if="step === 1">
     <p>หน้านี้ยังไม่ได้ใส่เนื้อหา summary นะครับ</p>
     <button @click="step = 2">ไปหน้า Submit</button>
@@ -107,7 +107,7 @@ function goHome() {
         <Summary
           :cart="cart"
           :currentStep="2"
-          @back="goBackToSummary"
+          @back="goBackToDetails"
           @next="goToThankYou"
         />
       </div>
