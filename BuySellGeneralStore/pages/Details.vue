@@ -1,92 +1,165 @@
 <script setup>
+
 import Navbar from "~/components/UI/Navbar.vue";
+
 import StepProgress from "~/components/UI/StepProgress.vue";
+
 import Summary from "~/components/UI/Summary.vue";
-import { ref, computed } from "vue";
+
+import { ref, computed, onMounted, watch } from "vue";
+
 import { useRouter } from "vue-router";
+
 import { useCartStore } from "~/stores/cart";
 
 const router = useRouter();
+
 const currentStep = ref(2);
 
 const cartStore = useCartStore();
+
 const cart = cartStore.cart;
 
 // ฟอร์มข้อมูลลูกค้า
+
 const name = ref("");
+
 const surname = ref("");
+
 const address = ref("");
+
 const phone = ref("");
+
 const paymentMethod = ref("");
 
 // ควบคุม modal
+
 const showConfirmModal = ref(false);
+
 const showErrorModal = ref(false);
 
-// เช็คความถูกต้องของฟอร์ม
+// ✅ ตรวจสอบเบอร์โทร: ต้องขึ้นต้นด้วย 0 และมี 10 หลัก
+
+const isPhoneValid = computed(() => {
+
+  const phonePattern = /^0\d{9}$/;
+
+  return phonePattern.test(phone.value);
+
+});
+
+// ✅ เช็คความถูกต้องของฟอร์มทั้งหมด
+
 const formIsValid = computed(() => {
+
   return (
+
     name.value.trim() !== "" &&
+
     surname.value.trim() !== "" &&
+
     address.value.trim() !== "" &&
-    phone.value.trim() !== "" &&
-    paymentMethod.value.trim() !== ""
+
+    paymentMethod.value.trim() !== "" &&
+
+    isPhoneValid.value
+
   );
+
 });
 
 onMounted(() => {
+
   if (cartStore.customerInfo) {
+
     name.value = cartStore.customerInfo.name || "";
+
     surname.value = cartStore.customerInfo.surname || "";
+
     address.value = cartStore.customerInfo.address || "";
+
     phone.value = cartStore.customerInfo.phone || "";
+
     paymentMethod.value = cartStore.customerInfo.paymentMethod || "";
+
   }
+
 });
 
 watch([name, surname, address, phone, paymentMethod], () => {
+
   cartStore.setCustomerInfo({
+
     name: name.value,
+
     surname: surname.value,
+
     address: address.value,
+
     phone: phone.value,
+
     paymentMethod: paymentMethod.value,
+
   });
+
 });
 
 function cancelOrder() {
+
   router.push("/cart");
+
 }
 
 function goBack() {
+
   router.push("/cart");
+
 }
 
 function confirmOrder() {
+
   if (!formIsValid.value) {
+
     showErrorModal.value = true; // 👉 เปิด modal error
+
     return;
+
   }
 
-  // เซฟข้อมูลก่อนไปหน้าอื่น (ถ้ายังไม่ได้เซฟด้วย watch)
+  // เซฟข้อมูลก่อนไปหน้าอื่น
+
   cartStore.setCustomerInfo({
+
     name: name.value,
+
     surname: surname.value,
+
     address: address.value,
+
     phone: phone.value,
+
     paymentMethod: paymentMethod.value,
+
   });
 
   if (paymentMethod.value === "PromptPay") {
+
     router.push("/promptpay");
+
   } else {
+
     showConfirmModal.value = true;
+
   }
+
 }
 
 function goToSubmit() {
+
   showConfirmModal.value = false;
+
   router.push("/submit");
+
 }
 </script>
 
@@ -103,21 +176,25 @@ function goToSubmit() {
           <h2>Address</h2>
           <form class="address-form" @submit.prevent>
             <label>
+
               ชื่อ
               <input type="text" v-model="name" />
             </label>
 
             <label>
+
               นามสกุล
               <input type="text" v-model="surname" />
             </label>
 
             <label>
+
               ที่อยู่
               <input type="text" v-model="address" />
             </label>
 
             <label>
+
               เบอร์โทร
               <input type="text" v-model="phone" />
             </label>
@@ -140,27 +217,21 @@ function goToSubmit() {
 
         <!-- 🔹 Summary ด้านขวา -->
         <div class="summary1">
-          <Summary
-            :cart="cart"
-            :currentStep="currentStep"
-            @cancel="cancelOrder"
-            @back="goBack"
-            @next="confirmOrder"
-          />
+          <Summary :cart="cart" :currentStep="currentStep" @cancel="cancelOrder" @back="goBack" @next="confirmOrder" />
         </div>
       </div>
     </div>
 
-    <!-- Modal Success -->
+    <!-- ✅ Modal Success -->
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal-box success">
-        <h3>ยืนยันคำสั่งซื้อ</h3>
-        <p>ตรวจข้อมูลก่อนยืนยัน</p>
+        <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
+        <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
         <button @click="goToSubmit">ตกลง</button>
       </div>
     </div>
 
-    <!-- Modal Error -->
+    <!-- ✅ Modal Error -->
     <div v-if="showErrorModal" class="modal-overlay">
       <div class="modal-box error">
         <h3>กรอกข้อมูลไม่ครบ!</h3>
@@ -170,6 +241,8 @@ function goToSubmit() {
     </div>
   </div>
 </template>
+
+
 
 <style scoped>
 body {
@@ -254,7 +327,8 @@ legend {
 
 .payment-row input[type="radio"] {
   margin: 0;
-  transform: scale(1.2); /* ขยายปุ่มเล็กน้อย */
+  transform: scale(1.2);
+  /* ขยายปุ่มเล็กน้อย */
 }
 
 /* ================= Modal ================= */
@@ -312,9 +386,11 @@ legend {
 .modal-box.success h3 {
   color: #2f855a;
 }
+
 .modal-box.success button {
   background-color: #2f855a;
 }
+
 .modal-box.success button:hover {
   background-color: #276749;
 }
@@ -323,9 +399,11 @@ legend {
 .modal-box.error h3 {
   color: #e63946;
 }
+
 .modal-box.error button {
   background-color: #e63946;
 }
+
 .modal-box.error button:hover {
   background-color: #c53030;
 }
