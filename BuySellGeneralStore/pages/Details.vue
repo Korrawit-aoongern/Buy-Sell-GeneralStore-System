@@ -3,8 +3,7 @@ import Navbar from "~/components/UI/Navbar.vue";
 import StepProgress from "~/components/UI/StepProgress.vue";
 import Summary from "~/components/UI/Summary.vue";
 
-import { ref, computed, onMounted, watch } from "vue";
-
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "~/stores/cart";
 
@@ -33,35 +32,23 @@ const errors = ref({
 const showConfirmModal = ref(false);
 const showErrorModal = ref(false);
 
-// ✅ ตรวจสอบเบอร์โทร: ต้องขึ้นต้นด้วย 0 และมี 10 หลัก
+// ✅ validate เบอร์โทร และช่องอื่น ๆ
+function validateForm() {
+  errors.value = {
+    name: name.value.trim() === "" ? "กรุณากรอกชื่อ" : "",
+    surname: surname.value.trim() === "" ? "กรุณากรอกนามสกุล" : "",
+    address: address.value.trim() === "" ? "กรุณากรอกที่อยู่" : "",
+    phone:
+      phone.value.trim() === ""
+        ? "กรุณากรอกเบอร์โทร"
+        : !/^0\d{9}$/.test(phone.value)
+        ? "เบอร์โทรต้องขึ้นต้นด้วย 0 และมี 10 หลัก"
+        : "",
+    paymentMethod: paymentMethod.value === "" ? "กรุณาเลือกวิธีชำระเงิน" : "",
+  };
 
-const isPhoneValid = computed(() => {
-
-  const phonePattern = /^0\d{9}$/;
-
-  return phonePattern.test(phone.value);
-
-});
-
-// ✅ เช็คความถูกต้องของฟอร์มทั้งหมด
-
-const formIsValid = computed(() => {
-
-  return (
-
-    name.value.trim() !== "" &&
-
-    surname.value.trim() !== "" &&
-
-    address.value.trim() !== "" &&
-
-    paymentMethod.value.trim() !== "" &&
-
-    isPhoneValid.value
-
-  );
-
-});
+  return Object.values(errors.value).every((e) => e === "");
+}
 
 onMounted(() => {
   if (cartStore.customerInfo) {
@@ -92,11 +79,8 @@ function goBack() {
 }
 
 function confirmOrder() {
-
-  if (!formIsValid.value) {
-
-    showErrorModal.value = true; // 👉 เปิด modal error
-
+  if (!validateForm()) {
+    showErrorModal.value = true;
     return;
   }
 
@@ -215,6 +199,9 @@ function goToSubmit() {
     </div>
   </div>
 </template>
+
+
+
 <style scoped>
 body {
   margin: 0;
@@ -351,6 +338,7 @@ legend {
   font-size: 1rem;
   transition: background-color 0.2s ease;
   color: white;
+  margin-top: 1rem;
 }
 
 /* ✅ Success Modal */

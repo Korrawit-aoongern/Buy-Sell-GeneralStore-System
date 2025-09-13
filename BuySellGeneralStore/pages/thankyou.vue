@@ -95,6 +95,7 @@ p {
   border-radius: 10px;
   padding: 0.75rem 2.5rem;
   color: white;
+  font-family: prompt, 'san-serif';
   font-weight: 700;
   cursor: pointer;
   font-size: 1.1rem;
