@@ -3,45 +3,20 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-
-const qrCodeUrl = "Image/PromptPay.png"; // path รูป QR code
-
-const uploadedSlip = ref(null);
-const previewUrl = ref(null);
-
-const showToast = ref(false);
-
-function handleSlipUpload(event) {
-  const file = event.target.files[0];
-  if (file && file.type.startsWith("image/")) {
-    uploadedSlip.value = file;
-    previewUrl.value = URL.createObjectURL(file);
-  } else {
-    alert("กรุณาอัปโหลดรูปภาพเท่านั้น");
-  }
-}
-
-function submitSlip() {
-  if (!uploadedSlip.value) {
-    alert("กรุณาแนบสลิปก่อนส่ง");
-    return;
-  }
-
-  // ส่งสลิปไป backend หรือ Firebase ได้ที่นี่
-
-  showToast.value = true; // แสดง toast
-
-  setTimeout(() => {
-    showToast.value = false; // ซ่อน toast
-    router.push("/"); // กลับหน้าแรก
-  }, 2000); // แสดง 2 วินาที
-}
+const showConfirmModal = ref(false);
 
 function goBack() {
-  router.back();
+  router.push("/Details");
 }
 
+function goHome() {
+  showConfirmModal.value = true;
+}
 
+async function goToSubmit() {
+  showConfirmModal.value = false;
+  await router.push("/submit");
+}
 </script>
 
 <template>
@@ -53,31 +28,19 @@ function goBack() {
       <img :src="qrCodeUrl" alt="PromptPay QR Code" class="qr-code" />
     </div>
 
-    <div class="upload-section">
-      <label class="upload-label">
-        แนบสลิปการโอนเงิน
-        <input type="file" @change="handleSlipUpload" accept="image/*" />
-      </label>
+    <button class="btn-back" @click="goBack">ย้อนกลับ</button>
+    <button class="btn-home" @click="goHome">ต่อไป</button>
+  </div>
 
-      <div v-if="previewUrl" class="slip-preview">
-        <img :src="previewUrl" alt="Preview Slip" />
-      </div>
-
-      <button class="btn-submit" @click="submitSlip" :disabled="!uploadedSlip">
-        ส่งสลิป
-      </button>
-    </div>
-
-    <div class="btn-group">
-      <button class="btn-back" @click="goBack">ย้อนกลับ</button>
-    </div>
-
-    <!-- Toast Notification -->
-    <div v-if="showToast" class="toast">
-      ส่งสลิปเรียบร้อยแล้ว! รอการตรวจสอบ
+  <div v-if="showConfirmModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
+      <p>ขอบคุณที่สั่งซื้อกับเรา!</p>
+      <button @click="goToSubmit">ตกลง</button>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .promptpay-container {
@@ -139,52 +102,63 @@ input[type="file"] {
   transition: background-color 0.2s ease;
 }
 
-.btn-submit:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+button:hover {
+  background-color: #5ab67e;
 }
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 
-.btn-submit:hover:enabled {
-  background-color: #246656;
-}
-
-.btn-group {
-  margin-top: 2rem;
   display: flex;
-  justify-content: space-around;
+  align-items: center;
+  justify-content: center;
+
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
 }
 
-.btn-back,
-.btn-home {
-  background-color: #6b7280;
+.modal-box {
+  background: white;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box h3 {
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #2f855a;
+  font-size: 1.5rem;
+}
+
+.modal-box p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.modal-box button {
+  background-color: #2f855a;
   color: white;
+  padding: 0.6rem 2rem;
   border: none;
-  padding: 0.6rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
   transition: background-color 0.2s ease;
 }
 
-.btn-back:hover,
-.btn-home:hover {
-  background-color: #4b5563;
-}
-
-/* Toast style */
-.toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #2b776f;
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 10px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-  font-weight: 700;
-  font-size: 1.1rem;
-  z-index: 9999;
-  text-align: center;
+.modal-box button:hover {
+  background-color: #276749;
 }
 </style>

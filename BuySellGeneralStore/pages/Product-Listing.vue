@@ -233,6 +233,7 @@ onMounted(async () => {
         </div>
         <!-- Product list -->
         <div class="product-list">
+          <div v-if="!productList.length">Loading products...</div>
           <ProductCard v-for="(product, index) in sortedProducts"
           :id="product.productid"
           :key="index"

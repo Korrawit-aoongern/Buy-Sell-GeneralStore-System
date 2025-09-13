@@ -19,10 +19,11 @@ const address = ref("");
 const phone = ref("");
 const paymentMethod = ref("");
 
-// ควบคุมการแสดง modal
+// ควบคุม modal และ error
 const showConfirmModal = ref(false);
+const showError = ref(false);
 
-// เช็คความถูกต้องของฟอร์มง่ายๆ (แค่ตรวจไม่ว่าง)
+// เช็คความถูกต้องของฟอร์ม
 const formIsValid = computed(() => {
   return (
     name.value.trim() !== "" &&
@@ -33,20 +34,21 @@ const formIsValid = computed(() => {
   );
 });
 
-// ฟังก์ชันกดปุ่ม
 function cancelOrder() {
   router.push("/cart");
 }
 
 function goBack() {
-  router.back();
+  router.push("/cart");
 }
 
 function confirmOrder() {
   if (!formIsValid.value) {
-    alert("กรุณากรอกข้อมูลให้ครบถ้วน");
-    return; // ไม่ไปหน้าถัดไปถ้าฟอร์มไม่ครบ
+    showError.value = true;
+    return;
   }
+
+  showError.value = false;
 
   cartStore.setCustomerInfo({
     name: name.value,
@@ -56,7 +58,11 @@ function confirmOrder() {
     paymentMethod: paymentMethod.value,
   });
 
-  showConfirmModal.value = true; // เปิด modal แทน alert
+  if (paymentMethod.value === "PromptPay") {
+    router.push("/promptpay");
+  } else {
+    showConfirmModal.value = true;
+  }
 }
 
 function goToSubmit() {
@@ -73,53 +79,65 @@ function goToSubmit() {
       <StepProgress :currentStep="currentStep" />
 
       <div class="cart-content">
+        <!-- 🔹 Form ด้านซ้าย -->
         <div class="form-section">
           <h2>Address</h2>
           <form class="address-form" @submit.prevent>
-            <label>ชื่อ
+            <label>
+              ชื่อ
               <input type="text" v-model="name" />
             </label>
 
-            <label>นามสกุล
+            <label>
+              นามสกุล
               <input type="text" v-model="surname" />
             </label>
 
-            <label>ที่อยู่
+            <label>
+              ที่อยู่
               <input type="text" v-model="address" />
             </label>
 
-            <label>เบอร์โทร
+            <label>
+              เบอร์โทร
               <input type="text" v-model="phone" />
             </label>
 
-            <fieldset>
+            <fieldset class="payment-methods-column">
               <legend>วิธีการชำระเงิน</legend>
-              <label>
+
+              <div class="payment-row">
+                <span>ปลายทาง</span>
                 <input type="radio" value="ปลายทาง" v-model="paymentMethod" />
-                ปลายทาง
-              </label>
-              <label>
+              </div>
+
+              <div class="payment-row">
+                <span>Prompt Pay</span>
                 <input type="radio" value="PromptPay" v-model="paymentMethod" />
-                Prompt Pay
-              </label>
+              </div>
             </fieldset>
           </form>
+
+          <!-- 🔴 แจ้งเตือนถ้ากรอกไม่ครบ -->
+          <p v-if="showError" class="form-error">
+            กรุณากรอกข้อมูลให้ครบถ้วนก่อนดำเนินการต่อ
+          </p>
         </div>
 
+        <!-- 🔹 Summary ด้านขวา -->
         <div class="summary1">
-          <Summary 
-            :cart="cart" 
-            :currentStep="currentStep" 
-            :disableNext="!formIsValid"  
-            @cancel="cancelOrder" 
-            @back="goBack" 
-            @next="confirmOrder" 
+          <Summary
+            :cart="cart"
+            :currentStep="currentStep"
+            @cancel="cancelOrder"
+            @back="goBack"
+            @next="confirmOrder"
           />
         </div>
       </div>
     </div>
 
-    <!-- Modal Confirm -->
+    <!-- ✅ Modal ยืนยันคำสั่งซื้อ -->
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal-box">
         <h3>ยืนยันคำสั่งซื้อสำเร็จ</h3>
@@ -131,6 +149,14 @@ function goToSubmit() {
 </template>
 
 <style scoped>
+.form-error {
+  color: red;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+</style>
+
+<style scoped>
 body {
   margin: 0;
   padding: 0;
@@ -140,7 +166,7 @@ body {
 }
 
 .cart-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: auto;
   margin-top: 4rem;
   font-family: "Prompt", sans-serif;
@@ -189,6 +215,33 @@ legend {
   flex: 1;
 }
 
+.payment-methods-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  border: none;
+  padding: 0;
+}
+
+.payment-methods-column legend {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  width: 100%;
+}
+
+.payment-row input[type="radio"] {
+  margin: 0;
+  transform: scale(1.2); /* ขยายปุ่มเล็กน้อย */
+}
+
 /* Modal styles */
 .modal-overlay {
   position: fixed;
@@ -198,10 +251,10 @@ legend {
   height: 100%;
 
   display: flex;
-  align-items: center;      /* กึ่งกลางแนวตั้ง */
-  justify-content: center;  /* กึ่งกลางแนวนอน */
+  align-items: center;
+  justify-content: center;
 
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 9999;
 }
 
@@ -211,7 +264,7 @@ legend {
   border-radius: 12px;
   text-align: center;
   max-width: 320px;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
 
   max-height: 90vh;
   overflow-y: auto;
