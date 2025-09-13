@@ -1,9 +1,10 @@
 <script setup>
-
 import Navbar from "~/components/UI/Navbar.vue";
 import StepProgress from "~/components/UI/StepProgress.vue";
 import Summary from "~/components/UI/Summary.vue";
+
 import { ref, computed, onMounted, watch } from "vue";
+
 import { useRouter } from "vue-router";
 import { useCartStore } from "~/stores/cart";
 
@@ -13,22 +14,31 @@ const cartStore = useCartStore();
 const cart = cartStore.cart;
 
 // ฟอร์มข้อมูลลูกค้า
-
 const name = ref("");
 const surname = ref("");
 const address = ref("");
 const phone = ref("");
 const paymentMethod = ref("");
 
-// ควบคุม modal
+// errors สำหรับแสดงข้อความ
+const errors = ref({
+  name: "",
+  surname: "",
+  address: "",
+  phone: "",
+  paymentMethod: "",
+});
 
+// ควบคุม modal
 const showConfirmModal = ref(false);
 const showErrorModal = ref(false);
 
 // ✅ ตรวจสอบเบอร์โทร: ต้องขึ้นต้นด้วย 0 และมี 10 หลัก
 
 const isPhoneValid = computed(() => {
+
   const phonePattern = /^0\d{9}$/;
+
   return phonePattern.test(phone.value);
 
 });
@@ -36,11 +46,17 @@ const isPhoneValid = computed(() => {
 // ✅ เช็คความถูกต้องของฟอร์มทั้งหมด
 
 const formIsValid = computed(() => {
+
   return (
+
     name.value.trim() !== "" &&
+
     surname.value.trim() !== "" &&
+
     address.value.trim() !== "" &&
+
     paymentMethod.value.trim() !== "" &&
+
     isPhoneValid.value
 
   );
@@ -55,7 +71,6 @@ onMounted(() => {
     phone.value = cartStore.customerInfo.phone || "";
     paymentMethod.value = cartStore.customerInfo.paymentMethod || "";
   }
-
 });
 
 watch([name, surname, address, phone, paymentMethod], () => {
@@ -66,7 +81,6 @@ watch([name, surname, address, phone, paymentMethod], () => {
     phone: phone.value,
     paymentMethod: paymentMethod.value,
   });
-
 });
 
 function cancelOrder() {
@@ -78,12 +92,13 @@ function goBack() {
 }
 
 function confirmOrder() {
+
   if (!formIsValid.value) {
+
     showErrorModal.value = true; // 👉 เปิด modal error
+
     return;
   }
-
-  // เซฟข้อมูลก่อนไปหน้าอื่น
 
   cartStore.setCustomerInfo({
     name: name.value,
@@ -98,7 +113,6 @@ function confirmOrder() {
   } else {
     showConfirmModal.value = true;
   }
-
 }
 
 function goToSubmit() {
@@ -120,27 +134,33 @@ function goToSubmit() {
           <h2>Address</h2>
           <form class="address-form" @submit.prevent>
             <label>
-
               ชื่อ
               <input type="text" v-model="name" />
+              <p v-if="errors.name" class="error-message">{{ errors.name }}</p>
             </label>
 
             <label>
-
               นามสกุล
               <input type="text" v-model="surname" />
+              <p v-if="errors.surname" class="error-message">
+                {{ errors.surname }}
+              </p>
             </label>
 
             <label>
-
               ที่อยู่
               <input type="text" v-model="address" />
+              <p v-if="errors.address" class="error-message">
+                {{ errors.address }}
+              </p>
             </label>
 
             <label>
-
               เบอร์โทร
               <input type="text" v-model="phone" />
+              <p v-if="errors.phone" class="error-message">
+                {{ errors.phone }}
+              </p>
             </label>
 
             <fieldset class="payment-methods-column">
@@ -155,13 +175,23 @@ function goToSubmit() {
                 <span>Prompt Pay</span>
                 <input type="radio" value="Prompt Pay" v-model="paymentMethod" />
               </div>
+
+              <p v-if="errors.paymentMethod" class="error-message">
+                {{ errors.paymentMethod }}
+              </p>
             </fieldset>
           </form>
         </div>
 
         <!-- 🔹 Summary ด้านขวา -->
         <div class="summary1">
-          <Summary :cart="cart" :currentStep="currentStep" @cancel="cancelOrder" @back="goBack" @next="confirmOrder" />
+          <Summary
+            :cart="cart"
+            :currentStep="currentStep"
+            @cancel="cancelOrder"
+            @back="goBack"
+            @next="confirmOrder"
+          />
         </div>
       </div>
     </div>
@@ -185,9 +215,6 @@ function goToSubmit() {
     </div>
   </div>
 </template>
-
-
-
 <style scoped>
 body {
   margin: 0;
@@ -292,15 +319,15 @@ legend {
 }
 
 .modal-box {
-  background: white;
+  background: #fff;
   padding: 2rem 3rem;
   border-radius: 12px;
   text-align: center;
   max-width: 320px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
-
+  width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
 }
 
 .modal-box h3 {
@@ -324,18 +351,15 @@ legend {
   font-size: 1rem;
   transition: background-color 0.2s ease;
   color: white;
-  font-family: "Prompt", sans-serif;
 }
 
 /* ✅ Success Modal */
 .modal-box.success h3 {
   color: #2f855a;
 }
-
 .modal-box.success button {
   background-color: #2f855a;
 }
-
 .modal-box.success button:hover {
   background-color: #276749;
 }
@@ -344,12 +368,18 @@ legend {
 .modal-box.error h3 {
   color: #e63946;
 }
-
 .modal-box.error button {
   background-color: #e63946;
 }
-
 .modal-box.error button:hover {
   background-color: #c53030;
 }
+
+/* ✅ Error message under input */
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
 </style>
