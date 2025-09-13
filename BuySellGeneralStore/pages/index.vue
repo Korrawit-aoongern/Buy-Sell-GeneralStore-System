@@ -150,12 +150,12 @@ body {
 }
 
 .shop-banner {
-  width: 100vw;
+  width: 100%;
   margin-top: 60px;
 }
 
 .shop-banner img {
-  width: 100vw;
+  width: 100%;
   object-fit: fill;
 }
 
