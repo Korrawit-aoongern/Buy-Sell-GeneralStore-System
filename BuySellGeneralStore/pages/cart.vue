@@ -59,12 +59,12 @@ function goToDetails() {
               <div class="item-info">
                 <div class="item-name">{{ item.name }}</div>
                 <div class="item-price">
-                  <span v-if="item.originalPrice" class="old-price">
+                  <span v-if="item.originalPrice && item.originalPrice > item.price" class="old-price">
                     {{ (item.originalPrice * item.qty).toFixed(2) }} บาท
                   </span>
                 </div>
                 <div>
-                  <span :class="item.originalPrice ? 'discounted' : ''">
+                  <span :class="item.originalPrice > item.price ? 'discounted' : ''">
                     {{ (item.price * item.qty).toFixed(2) }} บาท
                   </span>
                 </div>
@@ -76,10 +76,7 @@ function goToDetails() {
                 <button @click="increaseWithCheck(item)">+</button>
               </div>
 
-              <button
-                class="remove-item-btn"
-                @click="cartStore.removeItem(item)"
-              >
+              <button class="remove-item-btn" @click="cartStore.removeItem(item)">
                 ×
               </button>
             </div>
@@ -87,11 +84,7 @@ function goToDetails() {
         </div>
 
         <div class="summary1">
-          <Summary
-            :cart="cart"
-            :currentStep="currentStep"
-            @next="goToDetails"
-          />
+          <Summary :cart="cart" :currentStep="currentStep" @next="goToDetails" />
         </div>
       </div>
     </div>

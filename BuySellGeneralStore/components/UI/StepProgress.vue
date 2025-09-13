@@ -51,7 +51,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  font-family: sans-serif;
+  font-family: prompt, 'san-serif';
 }
 
 .step {

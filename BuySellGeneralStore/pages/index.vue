@@ -38,7 +38,10 @@ const normalProducts = computed(() =>
 
 <template>
   <div>
-    <Navbar />
+    <div>
+      <Navbar />
+      <router-view />
+    </div>
     <div class="shop-banner">
       <img src="/Image/Banner.svg" alt="shop-banner" />
     </div>
@@ -118,15 +121,17 @@ const normalProducts = computed(() =>
     ></footer>
   </div>
 </template>
-
-<style scoped>
+<style>
 body {
   margin: 0;
   padding: 0;
-  background-color: #fafaf5;
-  font-family: "Prompt", sans-serif;
+  background-color: #FAFAF5;
+  font-family: Prompt, sans-serif;
   min-height: 100vh;
 }
+</style>
+
+<style scoped>
 #Feature-Wrapper {
   display: flex;
   flex-direction: column;

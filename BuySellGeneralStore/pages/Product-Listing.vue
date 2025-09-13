@@ -17,6 +17,8 @@ const cartStore = useCartStore(); // เรียกใช้ store ตรงน
 const accentColor = "#6ACC91";
 const btnWidth = 220;
 
+const searchQuery = ref("");
+
 const sortOptions = [
   { value: "az", label: "ก-ฮ A-Z" },
   { value: "za", label: "ฮ-ก Z-A" },
@@ -69,6 +71,11 @@ const setCategory = (cat) => {
 
 const filteredProducts = computed(() => {
   return productList.value.filter(p => {
+    // search
+    if (searchQuery.value && !p.nameproduct.toLowerCase().includes(searchQuery.value.toLowerCase())) {
+      return false;
+    }
+
     if (activeCategory.value && p.categorytype !== activeCategory.value) return false;
 
     switch (activePrice.value) {
@@ -207,7 +214,7 @@ onMounted(async () => {
         <div class="top-bar">
           <div class="search-bar">
             <Icon name="material-symbols:search" style="color: black; width: 2em; height: 2em" />
-            <input type="text" />
+            <input v-model="searchQuery" type="text"/>
           </div>
           <div class="sort-dropdown">
             <label class="sort-label">จัดเรียงโดย</label>
@@ -256,7 +263,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #fafaf5;
-  font-family: "Prompt", sans-serif;
+  font-family: Prompt, sans-serif;
   min-height: 100vh;
 }
 </style>
