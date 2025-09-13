@@ -35,12 +35,12 @@ watch(
 
 // ไปหน้าขอบคุณ (step = 2)
 function goToThankYou() {
-  router.push({ path: "/submit", query: { step: 2 } });
+  router.push("/random");
 }
 
 // ✅ กลับไปหน้า details (step = 1)
 function goBackToDetails() {
-  router.push({ path: "/submit", query: { step: 1 } });
+  router.push("/details");
 }
 
 // กลับหน้าแรก
