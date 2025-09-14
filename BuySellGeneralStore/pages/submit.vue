@@ -66,11 +66,11 @@ async function submitOrder() {
     const { data: orderData, error: orderError } = await supabase
       .from("order")
       .insert({
-        ownerid: 1, // or the shop owner's id
+        ownerid: 1,
         customerid: customerId,
         orderdate: formatDateForPostgres(),
         total_amount: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
-        billingid: billingId.value, // <-- make sure it's set
+        billingid: billingId.value,
         status: "Pending",
         payment_method: userInfo.paymentMethod,
         payment_slip: null,
@@ -89,14 +89,25 @@ async function submitOrder() {
       price_at_buy: item.price,
     }));
 
-    const { error: orderItemError } = await supabase.from("orderitem").insert(orderItems);
+    const { error: orderItemError } = await supabase
+      .from("orderitem")
+      .insert(orderItems);
+
     if (orderItemError) throw orderItemError;
 
+    // 4️⃣ Update stock (decrement)
+    for (const item of cart) {
+      const { error: stockError } = await supabase
+        .rpc("decrement_stock", { product_id: item.id, qty: item.qty });
 
+      if (stockError) throw stockError;
+    }
+
+    // 5️⃣ Redirect based on payment
     if (userInfo.paymentMethod === "Prompt Pay") {
-      router.push({ path: "/promptpay", query: { orderid: orderData.orderid } });
+      router.push({ path: "/promptpay", query: { orderid: orderId } });
     } else {
-      router.push({ path: "/thankyou", query: { orderid: orderData.orderid } });
+      router.push({ path: "/thankyou", query: { orderid: orderId } });
     }
   } catch (err) {
     console.error("Error submitting order:", err);

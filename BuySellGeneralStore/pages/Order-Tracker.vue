@@ -70,6 +70,7 @@ const checkOrder = async () => {
   } else {
     billingID.value = order.billingid; // snapshot
     foundOrder.value = {
+      orderid: order.orderid,
       name: order.customer.fname,
       surname: order.customer.lname,
       address: order.customer.address,
@@ -103,27 +104,44 @@ const promptCancelOrder = () => {
 const cancelOrder = async () => {
   if (!billingID.value) return; // Safety check
 
-  // Update the order status in database
-  const { data, error } = await supabase
-    .from("order")
-    .update({ status: "Cancelled" }) // set status to Cancelled
-    .eq("billingid", billingID.value);
+  try {
+    // 1️⃣ Find the order first to get its items
+    const { data: orderItems, error: fetchError } = await supabase
+      .from("orderitem")
+      .select("productid, quantity")
+      .eq("orderid", foundOrder.value.orderid);
 
-  if (error) {
-    console.error("ไม่สามารถยกเลิกออเดอร์ได้:", error.message);
+    if (fetchError) throw fetchError;
+
+    // 2️⃣ Return stock for each product
+    for (const item of orderItems) {
+      const { error: stockError } = await supabase
+        .rpc("increment_stock", { product_id: item.productid, qty: item.quantity });
+
+      if (stockError) throw stockError;
+    }
+
+    // 3️⃣ Update the order status in database
+    const { error: updateError } = await supabase
+      .from("order")
+      .update({ status: "Cancelled" })
+      .eq("billingid", billingID.value);
+
+    if (updateError) throw updateError;
+
+    // 4️⃣ Update local data so user sees it immediately
+    if (foundOrder.value) {
+      foundOrder.value.status = "Cancelled";
+    }
+
+    confirmCancelModal.value = false;
+    orderCodeErrorMessage.value = "ยกเลิกออเดอร์เรียบร้อยแล้ว";
+    showModal.value = true;
+  } catch (err) {
+    console.error("ไม่สามารถยกเลิกออเดอร์ได้:", err.message);
     orderCodeErrorMessage.value = "เกิดข้อผิดพลาดในการยกเลิกออเดอร์";
     showModal.value = true;
-    return;
   }
-
-  // Update local data so user sees it immediately
-  if (foundOrder.value) {
-    foundOrder.value.status = "Cancelled";
-  }
-
-  confirmCancelModal.value = false;
-  orderCodeErrorMessage.value = "ยกเลิกออเดอร์เรียบร้อยแล้ว";
-  showModal.value = true;
 };
 const closeCancelModal = () => {
   confirmCancelModal.value = false;
