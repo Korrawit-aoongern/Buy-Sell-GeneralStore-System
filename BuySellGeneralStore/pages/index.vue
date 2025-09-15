@@ -16,17 +16,24 @@ const supabase = createClient(
   config.public.supabaseAnonKey
 );
 
+const isLoading = ref(true);
+
 onMounted(async () => {
   const { data, error } = await supabase
     .from("product")
     .select("*")
-    .eq("is_featured", true)
+    .eq("is_featured", true);
+
   if (error) {
     console.error("Error loading products:", error);
   } else {
     productList.value = data;
   }
+
+  isLoading.value = false; // ✅ บอกว่าโหลดเสร็จแล้ว
 });
+
+
 
 const hotProducts = computed(() =>
   productList.value.filter((p) => p.promotype === "hot")
@@ -72,86 +79,51 @@ function toggleShow(key, total) {
     <section id="Feature-Wrapper">
       <div class="Feature-Section">
         <span class="title">สินค้าขายดี</span>
-        <div v-if="!productList.length">Loading products...</div>
-        <div v-else class="product-Visible">
+        <div v-if="isLoading">Loading products...</div>
+        <div v-else-if="hotProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard
-              v-for="(product, index) in hotVisible"
-              :key="index"
-              :id="product.productid"
-              :name="product.nameproduct"
-              :price="product.baseprice"
-              :saleprice="product.saleprice"
-              :stock="product.stock"
-              :image="`Image/${product.imgurl}`"
-              :promotype="product.promotype"
-              @add-to-cart="() => addToCart(product)"
-            />
+            <ProductCard v-for="(product, index) in hotVisible" :key="index" :id="product.productid"
+              :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"
+              :stock="product.stock" :image="`Image/${product.imgurl}`" :promotype="product.promotype"
+              @add-to-cart="() => addToCart(product)" />
           </div>
-          <button
-            v-if="hotProducts.length > 3"
-            class="show-more-btn"
-            @click="toggleShow('hot', hotProducts.length)"
-          >
-            {{ rowsVisible.hot * 3 < hotProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }}
-          </button>
+          <button v-if="hotProducts.length > 3" class="show-more-btn" @click="toggleShow('hot', hotProducts.length)">
+            {{ rowsVisible.hot * 3 < hotProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }} </button>
         </div>
+        <div v-else>ยังไม่มีสินค้า</div>
       </div>
 
       <div class="Feature-Section">
         <span class="title">สินค้าลดราคา</span>
-        <div v-if="!productList.length">Loading products...</div>
-        <div v-else class="product-Visible">
+        <div v-if="isLoading">Loading products...</div>
+        <div v-else-if="hotProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard
-              v-for="(product, index) in saleVisible"
-              :key="index" 
-              :id="product.productid" 
-              :name="product.nameproduct" 
-              :originalprice="product.baseprice" 
-              :saleprice="product.saleprice" 
-              :stock="product.stock" 
-              :image="`Image/${product.imgurl}`"
-              :promotype="product.promotype"
-              @add-to-cart="() => addToCart(product)"
-            />
+            <ProductCard v-for="(product, index) in saleVisible" :key="index" :id="product.productid"
+              :name="product.nameproduct" :originalprice="product.baseprice" :saleprice="product.saleprice"
+              :stock="product.stock" :image="`Image/${product.imgurl}`" :promotype="product.promotype"
+              @add-to-cart="() => addToCart(product)" />
           </div>
-          <button
-            v-if="saleProducts.length > 3"
-            class="show-more-btn"
-            @click="toggleShow('sale', saleProducts.length)"
-          >
-            {{ rowsVisible.sale * 3 < saleProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }}
-          </button>
+          <button v-if="saleProducts.length > 3" class="show-more-btn" @click="toggleShow('sale', saleProducts.length)">
+            {{ rowsVisible.sale * 3 < saleProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }} </button>
         </div>
+        <div v-else>ยังไม่มีสินค้า</div>
       </div>
 
       <div class="Feature-Section">
         <span class="title">สินค้าปกติ</span>
-        <div v-if="!productList.length">Loading products...</div>
-        <div v-else class="product-Visible">
+        <div v-if="isLoading">Loading products...</div>
+        <div v-else-if="hotProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard
-              v-for="(product, index) in normalVisible"
-              :key="index"
-              :id="product.productid"
-              :name="product.nameproduct"
-              :price="product.baseprice"
-              :saleprice="product.saleprice"
-              :stock="product.stock"
-              :image="`Image/${product.imgurl}`"
-              :promotype="product.promotype"
-              @add-to-cart="() => addToCart(product)"
-            />
+            <ProductCard v-for="(product, index) in normalVisible" :key="index" :id="product.productid"
+              :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"
+              :stock="product.stock" :image="`Image/${product.imgurl}`" :promotype="product.promotype"
+              @add-to-cart="() => addToCart(product)" />
           </div>
-          <button
-            v-if="normalProducts.length > 3"
-            class="show-more-btn"
-            @click="toggleShow('normal', normalProducts.length)"
-          >
-            {{ rowsVisible.normal * 3 < normalProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }}
-          </button>
+          <button v-if="normalProducts.length > 3" class="show-more-btn"
+            @click="toggleShow('normal', normalProducts.length)">
+            {{ rowsVisible.normal * 3 < normalProducts.length ? 'ดูเพิ่มเติม' : 'ย่อ' }} </button>
         </div>
+        <div v-else>ยังไม่มีสินค้า</div>
       </div>
     </section>
 
@@ -213,10 +185,12 @@ body {
   gap: 57px;
   margin-left: 2rem;
 }
-.product-Visible{
+
+.product-Visible {
   display: flex;
   flex-direction: column;
 }
+
 .show-more-btn {
   align-self: center;
   margin-top: 30px;
