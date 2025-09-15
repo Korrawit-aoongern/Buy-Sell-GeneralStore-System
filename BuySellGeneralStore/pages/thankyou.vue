@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useCartStore } from "~/stores/cart";
 import { createClient } from "@supabase/supabase-js";
@@ -26,17 +26,25 @@ onMounted(async () => {
       console.error("Error fetching billing ID:", error);
     } else {
       billingId.value = data.billingid;
+      try {
+        await navigator.clipboard.writeText(data.billingid);
+        alert(`Billing ID ${data.billingid} has been copied to your clipboard!`);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
     }
+
   }
 });
+
 
 function goHome() {
   cartStore.clearCart(); // clear cart
   router.push("/");
 }
-
 function copyOrderId() {
   navigator.clipboard.writeText(billingId.value);
+  alert(`Billing ID ${billingId.value} has been copied to your clipboard!`);
 }
 </script>
 
