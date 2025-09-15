@@ -28,82 +28,30 @@ function generateRandomOrderId(length = 16) {
 }
 const billingId = ref(generateRandomOrderId());
 
-function formatDateForPostgres(date = new Date()) {
-  const pad = (n) => String(n).padStart(2, "0");
-
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1); // Month is 0-indexed
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
 // ================== ORDER SUBMIT FUNCTION ==================
 async function submitOrder() {
   try {
-    // 1️⃣ Insert customer if needed
-    const { data: customerData, error: customerError } = await supabase
-      .from("customer")
-      .insert([
-        {
-          fname: userInfo.name,
-          lname: userInfo.surname,
-          phone: userInfo.phone,
-          address: userInfo.address,
-          created_at: formatDateForPostgres()
-        },
-      ])
-      .select("customerid")
-      .single();
+    const { data, error } = await supabase.rpc("place_order", {
+      p_customer: {
+        fname: userInfo.name,
+        lname: userInfo.surname,
+        phone: userInfo.phone,
+        address: userInfo.address,
+      },
+      p_items: cart.map((item) => ({
+        id: item.id,
+        qty: item.qty,
+        price: item.price,
+      })),
+      p_payment_method: userInfo.paymentMethod,
+      p_billingid: billingId.value,
+    });
 
-    if (customerError) throw customerError;
-    const customerId = customerData.customerid;
+    if (error) throw error;
 
-    // 2️⃣ Insert order
-    const { data: orderData, error: orderError } = await supabase
-      .from("order")
-      .insert({
-        ownerid: 1,
-        customerid: customerId,
-        orderdate: formatDateForPostgres(),
-        total_amount: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
-        billingid: billingId.value,
-        status: "Pending",
-        payment_method: userInfo.paymentMethod,
-        payment_slip: null,
-      })
-      .select("orderid")
-      .single();
+    const orderId = data; // returned orderid from RPC
 
-    if (orderError) throw orderError;
-    const orderId = orderData.orderid;
-
-    // 3️⃣ Insert order items
-    const orderItems = cart.map((item) => ({
-      orderid: orderId,
-      productid: item.id,
-      quantity: item.qty,
-      price_at_buy: item.price,
-    }));
-
-    const { error: orderItemError } = await supabase
-      .from("orderitem")
-      .insert(orderItems);
-
-    if (orderItemError) throw orderItemError;
-
-    // 4️⃣ Update stock (decrement)
-    for (const item of cart) {
-      const { error: stockError } = await supabase
-        .rpc("decrement_stock", { product_id: item.id, qty: item.qty });
-
-      if (stockError) throw stockError;
-    }
-
-    // 5️⃣ Redirect based on payment
+    // ✅ Redirect based on payment method
     if (userInfo.paymentMethod === "Prompt Pay") {
       router.push({ path: "/promptpay", query: { orderid: orderId } });
     } else {
@@ -111,7 +59,7 @@ async function submitOrder() {
     }
   } catch (err) {
     console.error("Error submitting order:", err);
-    alert("เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่");
+    alert(err.message || "เกิดข้อผิดพลาดในการสั่งซื้อ กรุณาลองใหม่");
   }
 }
 
@@ -132,27 +80,13 @@ watch(
 function goBackToDetails() {
   router.push("/details");
 }
-
-function goToThankyou() {
-  submitOrder();
-  router.push("/thankyou");
-}
-function goToPromptpay() {
-  router.push("/PromptPay");
-}
 </script>
 
 <template>
   <Navbar />
 
-  <!-- Step 1 -->
-  <div v-if="step === 1">
-    <p>หน้านี้ยังไม่ได้ใส่เนื้อหา summary นะครับ</p>
-    <button @click="step = 2">ไปหน้า Submit</button>
-  </div>
-
   <!-- Step 3: Summary / Submit -->
-  <div v-else-if="step === 3">
+  <div v-if="step === 3">
     <div class="step-container">
       <ProgressStep :currentStep="step" />
     </div>
@@ -183,13 +117,14 @@ function goToPromptpay() {
         <Summary
           :cart="cart"
           :currentStep="2"
-          @click="submitOrder"
+          @next="submitOrder"
           @back="goBackToDetails"
         />
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .submit-page {
