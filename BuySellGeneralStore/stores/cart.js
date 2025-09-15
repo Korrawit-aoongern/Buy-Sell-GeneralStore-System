@@ -5,7 +5,7 @@ export const useCartStore = defineStore('cart', () => {
   const cart = ref([])
 
   function addToCart(product) {
-    const item = cart.value.find(i => i.id === product.productid)
+    const item = cart.value.find(i => i.id === product.id)
     if (item) {
       if (product.stock && item.qty < product.stock) {
         item.qty++
@@ -14,15 +14,16 @@ export const useCartStore = defineStore('cart', () => {
         return false
       }
     } else {
-        cart.value.push({
-          id: product.productid,
-          name: product.nameproduct,
-          price: product.saleprice ?? product.baseprice, // use sale price if exists
-          originalPrice: product.saleprice ? product.baseprice : null, // for display strike-through
-          qty: 1,
-          image: `Image/${product.imgurl}`,
-          stock: product.stock || 0
-        })
+      cart.value.push({
+        id: product.id,
+        name: product.name,
+        price: product.saleprice ?? product.price,
+        originalPrice: product.saleprice ? product.price : null,
+        qty: 1,
+        image: product.image,
+        stock: product.stock || 0,
+        promotype: product.promotype || 'normal'
+      })
       return true
     }
   }
@@ -37,57 +38,62 @@ export const useCartStore = defineStore('cart', () => {
         return false
       }
     }
+    return false
   }
 
   function decrease(item) {
     const cartItem = cart.value.find(i => i.id === item.id)
     if (cartItem && cartItem.qty > 1) {
       cartItem.qty--
+      return true
     }
+    return false
   }
 
   function removeItem(item) {
     cart.value = cart.value.filter(i => i.id !== item.id)
   }
 
-  // คำนวณราคาทั้งหมด
-  const totalPrice = computed(() => {
-    return cart.value.reduce((sum, item) => sum + item.price * item.qty, 0)
-  })
+  const totalPrice = computed(() =>
+    cart.value.reduce((sum, item) => sum + item.price * item.qty, 0)
+  )
 
-  // คำนวณส่วนลดรวม
-  const discount = computed(() => {
-    return cart.value.reduce((sum, item) => {
-      if (item.originalprice && item.originalprice > item.price) {
-        return sum + (item.originalprice - item.price) * item.qty
+  const discount = computed(() =>
+    cart.value.reduce((sum, item) => {
+      if (item.originalPrice && item.originalPrice > item.price) {
+        return sum + (item.originalPrice - item.price) * item.qty
       }
       return sum
     }, 0)
-  })
+  )
 
-  // ข้อมูลลูกค้า
   const customerInfo = ref({
-    name: "",
-    surname: "",
-    address: "",
-    phone: "",
-    paymentMethod: ""
+    name: '',
+    surname: '',
+    address: '',
+    phone: '',
+    paymentMethod: ''
   })
 
   function setCustomerInfo(info) {
-    customerInfo.value = { ...info } // copy เพื่อความปลอดภัย
+    customerInfo.value = { ...info }
   }
 
-  // ล้างตะกร้าและข้อมูลลูกค้า
   function clearCart() {
     cart.value = []
     customerInfo.value = {
-      name: "",
-      surname: "",
-      address: "",
-      phone: "",
-      paymentMethod: ""
+      name: '',
+      surname: '',
+      address: '',
+      phone: '',
+      paymentMethod: ''
     }
+  }
+
+  // ฟังก์ชันนี้ใช้ดึงจำนวนสินค้าที่อยู่ในตะกร้า ตาม product id
+  function getQty(productId) {
+    const item = cart.value.find(i => i.id === productId)
+    return item ? item.qty : 0
   }
 
   return {
@@ -96,10 +102,12 @@ export const useCartStore = defineStore('cart', () => {
     increase,
     decrease,
     removeItem,
+    getQty, 
     totalPrice,
     discount,
     customerInfo,
     setCustomerInfo,
-    clearCart
+    clearCart,
+    getQty
   }
 })

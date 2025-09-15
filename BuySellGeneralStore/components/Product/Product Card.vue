@@ -19,17 +19,15 @@
           />
           <span style="margin: 1em; font-weight: 700;">Error : ราคาผิดพลาด</span>
         </div>
-        <div v-if="localQty === 0" class="sold-out-overlay">
+        <div v-if="availableStock <= 0" class="sold-out-overlay">
           <span class="sold-out-text">SOLD OUT</span>
         </div>
       </div>
 
       <!-- Product Details -->
       <div class="product-details">
-        <!-- ใช้ shortName เพื่อแสดงชื่อสินค้า แบบตัด 2 บรรทัด + fallback ตัดข้อความยาว -->
         <h3 class="product-name" :title="name">{{ shortName }}</h3>
 
-        <!-- Show sale price if available -->
         <div v-if="isSale">
           <p
             class="product-price-original"
@@ -39,27 +37,25 @@
           </p>
           <div class="product-bottom-info">
             <span class="product-price-sale">{{ saleprice.toFixed(2) }} บาท</span>
-            <p class="product-qty" :class="{ 'zero-qty': localQty === 0 }">
-              {{ localQty }} Qty.
+            <p class="product-qty" :class="{ 'zero-qty': availableStock <= 0 }">
+              {{ availableStock }} Qty.
             </p>
           </div>
         </div>
 
-        <!-- Normal / Hot product -->
         <div v-else>
           <div class="product-meta">
             <span class="product-price">{{ price.toFixed(2) }} บาท</span>
-            <p class="product-qty" :class="{ 'zero-qty': localQty === 0 }">
-              {{ localQty }} Qty.
+            <p class="product-qty" :class="{ 'zero-qty': availableStock <= 0 }">
+              {{ availableStock }} Qty.
             </p>
           </div>
         </div>
       </div>
 
-      <!-- Add to Cart Button -->
       <button 
         class="add-to-cart" 
-        :disabled="localQty === 0 || saleprice === null"
+        :disabled="availableStock <= 0 || saleprice === null"
         @click="handleAddToCart"
       >
         เพิ่มลงตะกร้า
@@ -69,25 +65,28 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { computed } from 'vue'
+import { useCartStore } from "~/stores/cart";
 
 const props = defineProps({
   id: { type: Number, required: true },
   name: { type: String, default: 'ชื่อสินค้า' },
-  price: { type: Number, default: 0 }, // normal price
-  qty: { type: Number, default: 1 },
+  price: { type: Number, default: 0 }, // ราคาปกติ
+  qty: { type: Number, default: 1 },  // qty ที่ backend ส่งมา (อาจไม่ใช้ในนี้)
   image: { type: String, default: null },
   promotype: { type: String, default: 'normal' },
-  saleprice: { type: Number, default: null }, // optional sale price
-  originalprice: { type: Number, default: null }, // optional original price
+  saleprice: { type: Number, default: null }, // ราคาขายลด
+  originalprice: { type: Number, default: null }, // ราคาต้นฉบับ
+  stock: { type: Number, default: 0 } // จำนวนสต็อกทั้งหมด
 })
 
-const emit = defineEmits(['update-qty', 'add-to-cart'])
+const emit = defineEmits(['update-qty'])
 
-const localQty = ref(props.qty)
+const cartStore = useCartStore()
 
-watch(() => props.qty, (newQty) => {
-  localQty.value = newQty
+// คำนวณจำนวนสินค้าที่เหลือโดยลบจำนวนในตะกร้าออก
+const availableStock = computed(() => {
+  return props.stock - cartStore.getQty(props.id)
 })
 
 const isSale = computed(() => 
@@ -97,7 +96,7 @@ const isSale = computed(() =>
   && props.promotype === 'sale'
 )
 
-// fallback ตัดชื่อสินค้า ถ้ายาวเกิน 80 ตัวอักษร (ประมาณ 2 บรรทัด)
+// ตัดชื่อถ้ายาวเกิน 23 ตัวอักษร
 const shortName = computed(() => {
   const maxLength = 23
   if (props.name.length > maxLength) {
@@ -107,22 +106,28 @@ const shortName = computed(() => {
 })
 
 function handleAddToCart() {
-  if (localQty.value > 0) {
-    localQty.value -= 1
-    emit('update-qty', localQty.value)
-
-    emit('add-to-cart', {
+  if (availableStock.value > 0) {
+    const success = cartStore.addToCart({
       id: props.id,
       name: props.name,
-      price: isSale.value ? props.saleprice : props.originalprice,
-      originalprice: props.originalprice,
+      price: props.price,
       saleprice: props.saleprice,
+      originalprice: props.originalprice,
       image: props.image,
       promotype: props.promotype,
+      stock: props.stock
     })
+    if (!success) {
+      alert('ไม่สามารถเพิ่มสินค้าได้ เนื่องจากสินค้าหมดสต็อก')
+    } else {
+      // อัพเดต qty ใน component ถ้าจำเป็น (ถ้าใช้ props.qty ต้อง emit event แจ้ง parent)
+      emit('update-qty', availableStock.value - 1)
+    }
   }
 }
 </script>
+
+
 
 <style scoped>
 .product-card {
