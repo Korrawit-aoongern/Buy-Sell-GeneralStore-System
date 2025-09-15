@@ -24,6 +24,19 @@ const statusMap = {
   Cancelled: "ยกเลิกแล้ว",
 };
 
+onMounted(() => {
+  const saved = localStorage.getItem("orderTracker");
+  if (saved) {
+    const { billingid, expiry } = JSON.parse(saved);
+    if (Date.now() < expiry) {
+      orderCode.value = billingid; // auto fill
+      checkOrder(); // auto fetch
+    } else {
+      localStorage.removeItem("orderTracker"); // expired
+    }
+  }
+});
+
 const checkOrder = async () => {
   if (!orderCode.value.trim()) {
     orderCodeErrorMessage.value = "กรุณากรอกรหัสรายการก่อน";
@@ -142,6 +155,13 @@ const cancelOrder = async () => {
     orderCodeErrorMessage.value = "เกิดข้อผิดพลาดในการยกเลิกออเดอร์";
     showModal.value = true;
   }
+  localStorage.setItem(
+      "orderTracker",
+      JSON.stringify({
+        billingid: order.billingid,
+        expiry: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+      })
+    );
 };
 const closeCancelModal = () => {
   confirmCancelModal.value = false;
