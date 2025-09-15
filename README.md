@@ -7,14 +7,14 @@ This project was developed as part of a **Database and Software Process** course
 ## Tech Stack
 
 - **Frontend:** HTML, CSS, JavaScript, Nuxt
-- **Backend:** Node.js กับ Express  
-- **ฐานข้อมูล:** MySQL  
+- **Backend:** Node.js
+- **ฐานข้อมูล:** Supabase
 
 
 # Members
 | Name | Position |
 | ------------- |:-------------:|
 | กรวิชญ์ อู่เงิน      | Project Owner / Developer     |
-| ณัฏฐกิตติ์ กล่อมจิตต์      | Business Analysis / UX UI   |
+| ณัฏฐกิตติ์ กล่อมจิตต์      | Tester / UX UI   |
 | ชัยปรากานต์ ดวงแก้ว      | Business Analysis / Developer     |
 | ชัยณรงค์ ศานตินนท์      | Business Analysis / UX UI     |
