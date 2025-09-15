@@ -31,35 +31,31 @@ const billingId = ref(generateRandomOrderId());
 // ================== ORDER SUBMIT FUNCTION ==================
 async function submitOrder() {
   try {
-    if (userInfo.paymentMethod === "Prompt Pay") {
-      router.push({
-        path: "/promptpay",
-        query: {
-          cart: JSON.stringify(cart),
-          customer: JSON.stringify(userInfo),
-          billingid: billingId.value,
-        },
-      });
-    } else {
-      // Cash on Delivery → call RPC immediately
-      const { data, error } = await supabase.rpc("place_order", {
-        p_customer: {
-          fname: userInfo.name,
-          lname: userInfo.surname,
-          phone: userInfo.phone,
-          address: userInfo.address,
-        },
-        p_items: cart.map((item) => ({
-          id: item.id,
-          qty: item.qty,
-          price: item.price,
-        })),
-        p_payment_method: userInfo.paymentMethod,
-        p_billingid: billingId.value,
-      });
+    const { data, error } = await supabase.rpc("place_order", {
+      p_customer: {
+        fname: userInfo.name,
+        lname: userInfo.surname,
+        phone: userInfo.phone,
+        address: userInfo.address,
+      },
+      p_items: cart.map((item) => ({
+        id: item.id,
+        qty: item.qty,
+        price: item.price,
+      })),
+      p_payment_method: userInfo.paymentMethod,
+      p_billingid: billingId.value,
+    });
 
-      if (error) throw error;
-      router.push({ path: "/thankyou", query: { orderid: data } });
+    if (error) throw error;
+
+    const orderId = data; // returned orderid from RPC
+
+    // ✅ Redirect based on payment method
+    if (userInfo.paymentMethod === "Prompt Pay") {
+      router.push({ path: "/promptpay", query: { orderid: orderId } });
+    } else {
+      router.push({ path: "/thankyou", query: { orderid: orderId } });
     }
   } catch (err) {
     console.error("Error submitting order:", err);
