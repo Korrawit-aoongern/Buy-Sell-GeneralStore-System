@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import Navbar from "~/components/UI/Navbar.vue";
 import { createClient } from "@supabase/supabase-js";
 
 const orderCode = ref("");
-const billingID = ref(""); 
+const billingID = ref(""); // snapshot for display
 const showModal = ref(false);
 const confirmCancelModal = ref(false);
 const orderCodeErrorMessage = ref("กรุณากรอกรหัสรายการก่อน");
@@ -16,26 +16,13 @@ const supabase = createClient(
   config.public.supabaseAnonKey
 );
 
+// Mapping database status to Thai
 const statusMap = {
   Complete: "เสร็จสิ้น",
   Pending: "รอดำเนินการ",
   Delivery: "กำลังจัดส่ง",
   Cancelled: "ยกเลิกแล้ว",
 };
-
-// ⏰ check local storage on load
-onMounted(() => {
-  const saved = localStorage.getItem("orderTracker");
-  if (saved) {
-    const { billingid, expiry } = JSON.parse(saved);
-    if (Date.now() < expiry) {
-      orderCode.value = billingid; // auto fill
-      checkOrder(); // auto fetch
-    } else {
-      localStorage.removeItem("orderTracker"); // expired
-    }
-  }
-});
 
 const checkOrder = async () => {
   if (!orderCode.value.trim()) {
@@ -46,7 +33,8 @@ const checkOrder = async () => {
 
   const { data: order, error } = await supabase
     .from("order")
-    .select(`
+    .select(
+      `
       orderid,
       billingid,
       status,
@@ -69,7 +57,8 @@ const checkOrder = async () => {
           imgurl
         )
       )
-    `)
+      `
+    )
     .eq("billingid", orderCode.value.trim())
     .single();
 
@@ -79,7 +68,7 @@ const checkOrder = async () => {
     foundOrder.value = null;
     showModal.value = true;
   } else {
-    billingID.value = order.billingid;
+    billingID.value = order.billingid; // snapshot
     foundOrder.value = {
       orderid: order.orderid,
       name: order.customer.fname,
@@ -105,21 +94,59 @@ const checkOrder = async () => {
         image: `/Image/${item.product.imgurl}`,
       })),
     };
-
-    // ✅ save to localStorage for 1 day
-    localStorage.setItem(
-      "orderTracker",
-      JSON.stringify({
-        billingid: order.billingid,
-        expiry: Date.now() + 24 * 60 * 60 * 1000, // 1 day
-      })
-    );
   }
 };
 
-// rest of your cancel functions unchanged ...
-</script>
+// modal actions
+const promptCancelOrder = () => {
+  confirmCancelModal.value = true;
+};
+const cancelOrder = async () => {
+  if (!billingID.value) return; // Safety check
 
+  try {
+    // 1️⃣ Find the order first to get its items
+    const { data: orderItems, error: fetchError } = await supabase
+      .from("orderitem")
+      .select("productid, quantity")
+      .eq("orderid", foundOrder.value.orderid);
+
+    if (fetchError) throw fetchError;
+
+    // 2️⃣ Return stock for each product
+    for (const item of orderItems) {
+      const { error: stockError } = await supabase
+        .rpc("increment_stock", { product_id: item.productid, qty: item.quantity });
+
+      if (stockError) throw stockError;
+    }
+
+    // 3️⃣ Update the order status in database
+    const { error: updateError } = await supabase
+      .from("order")
+      .update({ status: "Cancelled" })
+      .eq("billingid", billingID.value);
+
+    if (updateError) throw updateError;
+
+    // 4️⃣ Update local data so user sees it immediately
+    if (foundOrder.value) {
+      foundOrder.value.status = "Cancelled";
+    }
+
+    confirmCancelModal.value = false;
+    orderCodeErrorMessage.value = "ยกเลิกออเดอร์เรียบร้อยแล้ว";
+    showModal.value = true;
+  } catch (err) {
+    console.error("ไม่สามารถยกเลิกออเดอร์ได้:", err.message);
+    orderCodeErrorMessage.value = "เกิดข้อผิดพลาดในการยกเลิกออเดอร์";
+    showModal.value = true;
+  }
+};
+const closeCancelModal = () => {
+  confirmCancelModal.value = false;
+};
+</script>
 
 <template>
   <div>
