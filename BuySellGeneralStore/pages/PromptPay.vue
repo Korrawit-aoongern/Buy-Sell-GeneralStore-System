@@ -24,43 +24,7 @@ function handleFileChange(event) {
   }
 }
 
-async function insertSlip() {
-  if (!orderId.value || !slipFile.value) return;
 
-  try {
-    // 1️⃣ Upload slip to Supabase Storage (use correct bucket name)
-    const fileName = `${orderId.value}_${Date.now()}.png`;
-    const { data: storageData, error: storageError } = await supabase.storage
-      .from("img_slip") // ✅ correct bucket name
-      .upload(fileName, slipFile.value);
-
-    if (storageError) {
-      console.error("Upload error:", storageError);
-      return;
-    }
-
-    // 2️⃣ Get public URL
-    const { data: urlData } = supabase.storage
-      .from("img_slip")
-      .getPublicUrl(fileName);
-
-    const publicUrl = urlData.publicUrl;
-
-    // 3️⃣ Update order record with slip URL
-    const { error: updateError } = await supabase
-      .from("order")
-      .update({ payment_slip: publicUrl })
-      .eq("orderid", orderId.value);
-
-    if (updateError) {
-      console.error("Error updating slip:", updateError);
-    } else {
-      console.log("✅ Payment slip updated successfully!");
-    }
-  } catch (err) {
-    console.error("Unexpected error inserting slip:", err);
-  }
-}
 
 function goBack() {
   router.push("/details");
@@ -76,9 +40,43 @@ function goHome() {
 }
 
 async function goToThankyou() {
-  await insertSlip();
-  showConfirmModal.value = false;
-  router.push({ path: "/thankyou", query: { orderid: orderId.value } });
+  if (!slipFile.value) {
+    showWarning.value = true;
+    setTimeout(() => (showWarning.value = false), 3000);
+    return;
+  }
+
+  try {
+    // Upload slip first
+    const fileName = `${billingId}_${Date.now()}.png`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("img_slip")
+      .upload(fileName, slipFile.value);
+
+    if (storageError) throw storageError;
+
+    const { data: urlData } = supabase.storage
+      .from("img_slip")
+      .getPublicUrl(fileName);
+
+    const publicUrl = urlData.publicUrl;
+
+    // Place order only after slip upload
+    const { data, error } = await supabase.rpc("place_order", {
+      p_customer: JSON.parse(route.query.customer),
+      p_items: JSON.parse(route.query.cart),
+      p_payment_method: "Prompt Pay",
+      p_billingid: route.query.billingid,
+      p_slip: publicUrl, // you can extend RPC to accept slip
+    });
+
+    if (error) throw error;
+
+    router.push({ path: "/thankyou", query: { orderid: data } });
+  } catch (err) {
+    console.error("Error placing order:", err);
+    alert("เกิดข้อผิดพลาดในการชำระเงิน กรุณาลองใหม่");
+  }
 }
 </script>
 
