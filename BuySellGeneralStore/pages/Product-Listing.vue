@@ -248,7 +248,7 @@ onMounted(async () => {
           :price="product.promotype === 'sale' ? product.saleprice : product.baseprice"
           :originalprice="product.baseprice"
           :saleprice="product.saleprice"
-          :qty="product.stock"
+          :stock="product.stock"
           :image="`Image/${product.imgurl}`"
           :promotype="product.promotype"
           @add-to-cart="() => cartStore.addToCart(product)"/>
