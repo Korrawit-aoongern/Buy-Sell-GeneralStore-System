@@ -28,34 +28,69 @@ function generateRandomOrderId(length = 16) {
 }
 const billingId = ref(generateRandomOrderId());
 
+function formatDateForPostgres(date = new Date()) {
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1); // Month is 0-indexed
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 // ================== ORDER SUBMIT FUNCTION ==================
 async function submitOrder() {
   try {
-    const { data, error } = await supabase.rpc("place_order", {
-      p_customer: {
-        fname: userInfo.name,
-        lname: userInfo.surname,
-        phone: userInfo.phone,
-        address: userInfo.address,
-      },
-      p_items: cart.map((item) => ({
-        id: item.id,
-        qty: item.qty,
-        price: item.price,
-      })),
-      p_payment_method: userInfo.paymentMethod,
-      p_billingid: billingId.value,
-    });
-
-    if (error) throw error;
-
-    const orderId = data; // returned orderid from RPC
-
-    // ✅ Redirect based on payment method
-    if (userInfo.paymentMethod === "Prompt Pay") {
-      router.push({ path: "/promptpay", query: { orderid: orderId } });
+      if (userInfo.paymentMethod === "Prompt Pay") {
+      // 🚫 Do NOT insert yet
+      router.push({
+        path: "/promptpay",
+        query: {
+          customer: JSON.stringify({
+          fname: userInfo.name,
+          lname: userInfo.surname,
+          phone: userInfo.phone,
+          address: userInfo.address,
+          }),
+          cart: JSON.stringify(cart),
+          billingid: billingId.value,
+        },
+      });
     } else {
+      // COD → insert immediately
+      const { data, error } = await supabase.rpc("place_order", {
+        p_customer: {
+          fname: userInfo.name,
+          lname: userInfo.surname,
+          phone: userInfo.phone,
+          address: userInfo.address,
+        },
+        p_items: cart.map((item) => ({
+          id: item.id,
+          qty: item.qty,
+          price: item.price,
+        })),
+        p_payment_method: userInfo.paymentMethod,
+        p_billingid: billingId.value,
+        p_slip: null,
+        p_created_at: formatDateForPostgres(new Date()),
+      });
+
+      if (error) throw error;
+      else {
+      const orderId = data;
       router.push({ path: "/thankyou", query: { orderid: orderId } });
+      localStorage.setItem(
+      "orderTracker",
+        JSON.stringify({
+          billingid: billingId.value,   // or route.query.billingid in promptpay
+          expiry: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+        })
+      );
+    }
     }
   } catch (err) {
     console.error("Error submitting order:", err);

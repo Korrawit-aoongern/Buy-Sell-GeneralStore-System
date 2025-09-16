@@ -8,7 +8,7 @@ const route = useRoute();
 
 const config = useRuntimeConfig();
 const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
-
+const billingId = ref(route.query.billingid || null);
 const orderId = ref(route.query.orderid || null);
 const slipFile = ref(null);
 const slipPreviewUrl = ref("");
@@ -23,13 +23,25 @@ function handleFileChange(event) {
     slipPreviewUrl.value = URL.createObjectURL(file);
   }
 }
+function formatDateForPostgres(date = new Date()) {
+  const pad = (n) => String(n).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1); // Month is 0-indexed
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 async function insertSlip() {
-  if (!orderId.value || !slipFile.value) return;
+  if (!slipFile.value) return;
 
   try {
     // 1️⃣ Upload slip to Supabase Storage (use correct bucket name)
-    const fileName = `${orderId.value}_${Date.now()}.png`;
+    const fileName = `${billingId.value}_${Date.now()}.png`;
     const { data: storageData, error: storageError } = await supabase.storage
       .from("img_slip") // ✅ correct bucket name
       .upload(fileName, slipFile.value);
@@ -46,17 +58,32 @@ async function insertSlip() {
 
     const publicUrl = urlData.publicUrl;
 
-    // 3️⃣ Update order record with slip URL
-    const { error: updateError } = await supabase
-      .from("order")
-      .update({ payment_slip: publicUrl })
-      .eq("orderid", orderId.value);
+    // 3️⃣ Actually insert order NOW (with slip)
+    const { data, error } = await supabase.rpc("place_order", {
+      p_customer: JSON.parse(route.query.customer),
+      p_items: JSON.parse(route.query.cart),
+      p_payment_method: "Prompt Pay",
+      p_billingid: route.query.billingid,
+      p_slip: publicUrl,
+      p_created_at: formatDateForPostgres(new Date()),
+     });
+ 
+     if (error) {
+       console.error("Error placing order with slip:", error);
+       return;
+     }
+     else {
+      orderId.value = data; // set returned orderid
+      console.log("✅ Order inserted with slip:", orderId.value);
+      localStorage.setItem(
+      "orderTracker",
+        JSON.stringify({
+          billingid: billingId.value,   // or route.query.billingid in promptpay
+          expiry: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+        })
+      );
+     }
 
-    if (updateError) {
-      console.error("Error updating slip:", updateError);
-    } else {
-      console.log("✅ Payment slip updated successfully!");
-    }
   } catch (err) {
     console.error("Unexpected error inserting slip:", err);
   }

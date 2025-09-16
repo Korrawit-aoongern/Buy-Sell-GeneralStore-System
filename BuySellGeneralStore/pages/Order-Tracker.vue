@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Navbar from "~/components/UI/Navbar.vue";
 import { createClient } from "@supabase/supabase-js";
 
@@ -107,6 +107,13 @@ const checkOrder = async () => {
         image: `/Image/${item.product.imgurl}`,
       })),
     };
+      localStorage.setItem(
+      "orderTracker",
+      JSON.stringify({
+        billingid: order.billingid,
+        expiry: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+      })
+    );
   }
 };
 
@@ -155,13 +162,7 @@ const cancelOrder = async () => {
     orderCodeErrorMessage.value = "เกิดข้อผิดพลาดในการยกเลิกออเดอร์";
     showModal.value = true;
   }
-  localStorage.setItem(
-      "orderTracker",
-      JSON.stringify({
-        billingid: order.billingid,
-        expiry: Date.now() + 24 * 60 * 60 * 1000, // 1 day
-      })
-    );
+
 };
 const closeCancelModal = () => {
   confirmCancelModal.value = false;
