@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
 
 const showNotifications = ref(false);
@@ -8,11 +8,15 @@ function toggleNotification() {
 }
 
 // ข้อมูลลูกค้าตัวอย่าง
-const customers = ref([
-  { id: 1, name: "ชื่อจริง นามสกุล", phone: "0123456789", address: "แม่กาจังหวัดพะเยา ประเทศไทย" },
-  { id: 2, name: "ชื่อจริง นามสกุล", phone: "0123456789", address: "แม่กาจังหวัดพะเยา ประเทศไทย" },
-  { id: 3, name: "ชื่อจริง นามสกุล", phone: "0123456789", address: "แม่กาจังหวัดพะเยา ประเทศไทย" },
-]);
+const customers = ref([]);
+for (let i = 1; i <= 500; i++) {
+  customers.value.push({
+    id: i,
+    name: `ลูกค้า ${i}`,
+    phone: "0123456789",
+    address: "แม่กาจังหวัดพะเยา ประเทศไทย"
+  });
+}
 
 const searchQuery = ref("");
 const currentPage = ref(1);
@@ -26,10 +30,18 @@ const filteredCustomers = computed(() => {
   );
 });
 
+const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / pageSize));
+
 const paginatedCustomers = computed(() => {
   const start = (currentPage.value - 1) * pageSize;
   return filteredCustomers.value.slice(start, start + pageSize);
 });
+
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+}
 </script>
 
 <template>
@@ -80,10 +92,27 @@ const paginatedCustomers = computed(() => {
           </tbody>
         </table>
 
+        <!-- pagination -->
         <div class="pagination">
-          <button @click="currentPage = Math.max(currentPage - 1, 1)">‹</button>
-          <span>หน้า {{ currentPage }}</span>
-          <button @click="currentPage++">›</button>
+          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">‹</button>
+
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            :class="{ active: page === currentPage }"
+            @click="changePage(page)"
+          >
+            {{ page }}
+          </button>
+
+          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">›</button>
+
+          <span class="summary">
+            แสดงสินค้า {{ (currentPage - 1) * pageSize + 1 }}
+            -
+            {{ Math.min(currentPage * pageSize, filteredCustomers.length) }}
+            จาก {{ filteredCustomers.length }}
+          </span>
         </div>
       </div>
     </div>
@@ -120,5 +149,26 @@ const paginatedCustomers = computed(() => {
   display: flex;
   gap: 5px;
   align-items: center;
+}
+.pagination button {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.pagination button.active {
+  background: #333;
+  color: white;
+  font-weight: bold;
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.summary {
+  margin-left: auto;
+  font-size: 14px;
+  color: #555;
 }
 </style>
