@@ -17,6 +17,7 @@
 
 <style scoped>
 .sidebar {
+  height: 140%;
   width: 250px;
   background-color: #597162;
   color: white;
