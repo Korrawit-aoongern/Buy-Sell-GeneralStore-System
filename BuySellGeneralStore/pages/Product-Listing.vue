@@ -249,7 +249,7 @@ onMounted(async () => {
           :originalprice="product.baseprice"
           :saleprice="product.saleprice"
           :stock="product.stock"
-          :image="`Image/${product.imgurl}`"
+          :image="product.imgurl"
           :promotype="product.promotype"
           @add-to-cart="() => cartStore.addToCart(product)"/>
         </div>

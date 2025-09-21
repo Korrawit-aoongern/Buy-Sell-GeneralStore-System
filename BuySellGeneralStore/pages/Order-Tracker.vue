@@ -104,7 +104,7 @@ const checkOrder = async () => {
             : null,
         isSale: item.price_at_buy && item.price_at_buy < item.product.baseprice,
         qty: item.quantity,
-        image: `/Image/${item.product.imgurl}`,
+        image: item.product.imgurl,
       })),
     };
       localStorage.setItem(

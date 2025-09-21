@@ -311,10 +311,10 @@ onMounted(() => {
         </div>
 
         <div v-if="selectedRows.length > 0" class="action-ribbon">
-          <div class="left">
+          <div class="action-ribbon-left">
             {{ selectedRows.length }} สินค้าที่ถูกเลือก
           </div>
-          <div class="right">
+          <div class="action-ribbon-right">
             <!-- ดูเพิ่มเติม only when 1 row selected -->
             <button 
               v-if="selectedRows.length === 1" 
@@ -324,7 +324,7 @@ onMounted(() => {
             </button>
 
             <!-- Edit button -->
-            <button class="btn edit" @click="openEditMultiple">
+            <button class="btn edit" @click="selectedRows.length === 1 ? openEdit(selectedRows[0]) : openEditMultiple()">
               แก้ไข
             </button>
 
@@ -595,6 +595,7 @@ body {
 
 .product-table th {
   background-color: #f0f0f0;
+  color: #111827;
 }
 
 .pagination {
@@ -626,6 +627,7 @@ input[type="checkbox"]:indeterminate {
 }
 .action-ribbon {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   background: #597162;
@@ -644,6 +646,16 @@ input[type="checkbox"]:indeterminate {
   font-family: Prompt, sans-serif;
   font-weight: bold;
   cursor: pointer;
+}
+.action-ribbon-left {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+.action-ribbon-right{
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
 }
 
 .action-ribbon .btn.more {

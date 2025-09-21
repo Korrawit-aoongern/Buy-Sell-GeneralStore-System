@@ -1,103 +1,210 @@
 <script setup>
 import { ref } from 'vue'
 import adminaside from '~/components/admin/adminaside.vue'
+import { createClient } from '@supabase/supabase-js'
 
 const showNotifications = ref(false)
+const config = useRuntimeConfig()
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
 
 function toggleNotification() {
   showNotifications.value = !showNotifications.value
 }
+
+// Form fields
+const nameproduct = ref('')
+const baseprice = ref(null)
+const saleprice = ref(null)
+const stock = ref(null)
+const categorytype = ref('')
+const promotype = ref('')
+const is_featured = ref(false)
+const imgFile = ref(null)
+
+// Select options
+const categories = [
+  { label: "อาหาร", value: "foods" },
+  { label: "เครื่องเขียน", value: "stationary" },
+  { label: "ของใช้ในครัว", value: "kitchen" },
+  { label: "ของใช้ในห้องนํ้า", value: "bathroom" },
+  { label: "ของตกแต่งบ้าน", value: "decoration" },
+  { label: "ของใช้ส่วนตัว", value: "personal" },
+  { label: "เทคโนโลยี", value: "technology" },
+  { label: "ของใช้กลางแจ้ง", value: "outdoors" },
+  { label: "ของใช้ในบ้านทั่วไป", value: "general" }
+]
+
+const promoTypes = [
+  { label: "สินค้าลดราคา", value: "sale" },
+  { label: "สินค้าขายดี", value: "hot" },
+  { label: "สินค้าปกติ", value: "normal" }
+]
+
+// Handle image selection
+const imgPreview = ref(null) // for live preview
+
+function handleFileChange(event) {
+  imgFile.value = event.target.files[0]
+  if (imgFile.value) {
+    imgPreview.value = URL.createObjectURL(imgFile.value) // generate temporary URL
+  } else {
+    imgPreview.value = null
+  }
+}
+
+async function uploadProductImage() {
+  if (!imgFile.value) {
+    // No file uploaded: use default image
+    const defaultImgUrl = 'https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg'; // replace with your actual public URL
+    return defaultImgUrl;
+  }
+
+  try {
+    const fileName = `product_${Date.now()}_${imgFile.value.name}`;
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("product")
+      .upload(fileName, imgFile.value);
+
+    if (storageError) throw storageError;
+
+    const { data: urlData } = supabase.storage
+      .from("product")
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  } catch (err) {
+    console.error("Upload image error:", err);
+    // fallback to default image if upload fails
+    return 'https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg';
+  }
+}
+
+// Submit form to insert product
+async function submitProduct() {
+  if (!nameproduct.value || !baseprice.value || !stock.value || !categorytype.value || !promotype.value) {
+    alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+    return;
+  }
+
+  // Upload image or use default
+  const imgUrl = await uploadProductImage();
+
+  // Warn user if default image is used
+  if (!imgFile.value) {
+    alert('คุณไม่ได้อัปโหลดรูปสินค้า ระบบจะใช้รูปภาพเริ่มต้นแทน');
+  }
+
+  const finalSalePrice = (saleprice.value && promotype.value === 'sale') ? saleprice.value : baseprice.value;
+
+  const { data, error } = await supabase
+    .from('product')
+    .insert([{
+      ownerid: 1,
+      nameproduct: nameproduct.value,
+      baseprice: baseprice.value,
+      saleprice: finalSalePrice,
+      stock: stock.value,
+      categorytype: categorytype.value,
+      promotype: promotype.value,
+      is_featured: is_featured.value,
+      imgurl: imgUrl
+    }]);
+
+  if (error) {
+    console.error(error);
+    alert("เกิดข้อผิดพลาดในการเพิ่มสินค้า: " + error.message);
+  } else {
+    alert("เพิ่มสินค้าสำเร็จ!");
+    // Reset form
+    nameproduct.value = '';
+    baseprice.value = null;
+    saleprice.value = null;
+    stock.value = null;
+    categorytype.value = '';
+    promotype.value = '';
+    is_featured.value = false;
+    imgFile.value = null;
+    imgPreview.value = null;
+  }
+}
+
 </script>
 
 <template>
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <adminaside />
-
-    <!-- Main Content -->
     <div class="main-content">
-      <!-- Top Bar -->
       <header class="topbar">
         <div class="notification" @click="toggleNotification">
           <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
         </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </header>
 
-      <!-- Page Title -->
       <div class="page-header">
         <h2>เพิ่มสินค้า</h2>
         <div class="actions">
-          <button class="btn cancel">ยกเลิก</button>
-          <button class="btn confirm">ยืนยัน</button>
+          <button class="btn cancel" @click="$router.back()">ยกเลิก</button>
+          <button class="btn confirm" @click="submitProduct">ยืนยัน</button>
         </div>
       </div>
 
-      <!-- Form Grid -->
       <div class="form-grid">
-        <!-- รายละเอียด -->
         <div class="form-section">
           <h3>รายละเอียด</h3>
           <label>ชื่อสินค้า</label>
-          <input type="text" />
+          <input v-model="nameproduct" type="text" />
           <label>จำนวน</label>
-          <input type="number" />
+          <input v-model.number="stock" type="number" />
         </div>
 
-        <!-- ประเภท -->
         <div class="form-section">
-          <h3>Type</h3>
+          <h3>ประเภท</h3>
           <label>หมวดหมู่สินค้า</label>
-          <input type="text" />
+          <select v-model="categorytype">
+            <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
+          </select>
+
           <label>ประเภทการขาย</label>
-          <input type="text" />
+          <select v-model="promotype">
+            <option v-for="p in promoTypes" :key="p.value" :value="p.value">{{ p.label }}</option>
+          </select>
+
           <label style="display: flex; align-items: center;">
-            <input type="checkbox" style="margin-right: 5px;" />
             แสดงในหน้าหลัก
+            <input type="checkbox" v-model="is_featured" style="margin-left: 5px; width:10%" />
           </label>
         </div>
 
-        <!-- ราคา -->
         <div class="form-section">
           <h3>ราคา</h3>
           <label>ราคา</label>
-          <input type="text" />
-          <label>ส่วนลดในเปอร์เซ็น</label>
-          <input type="text" />
+          <input v-model.number="baseprice" type="number" />
           <label>ราคาหลังลด</label>
-          <input type="text" />
+          <input v-model.number="saleprice" type="number" :disabled="promotype !== 'sale'" />
         </div>
 
-        <!-- อัปโหลดรูปภาพ -->
         <div class="form-section full-width">
           <h3>ใส่รูปสินค้า</h3>
           <div class="upload-box">
-            <Icon name="mdi:upload" style="font-size: 32px;" />
-            <p>ใส่รูปภาพ</p>
+            <input type="file" accept="image/*" @change="handleFileChange" />
+            
+            <!-- Preview -->
+            <div v-if="imgPreview" class="preview">
+              <img :src="imgPreview" alt="Preview Image" />
+            </div>
+            
+            <!-- Placeholder icon & text -->
+            <div v-else class="upload-placeholder">
+              <Icon name="mdi:upload" style="font-size: 32px;" />
+              <p>ใส่รูปภาพ</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 body {
@@ -263,11 +370,31 @@ body {
 }
 
 .upload-box {
-  border: 1px dashed #999;
-  padding: 40px;
+  position: relative;
+  border: 2px dashed #ccc;
+  padding: 1em;
   text-align: center;
-  border-radius: 10px;
-  color: #777;
   cursor: pointer;
+}
+
+.upload-box input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.preview img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

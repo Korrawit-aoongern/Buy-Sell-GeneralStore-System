@@ -145,22 +145,23 @@ function changePage(page) {
   margin-bottom: 10px;
 }
 .pagination {
-  margin-top: 10px;
+  margin-top: 15px;
   display: flex;
+  justify-content: space-between;
   gap: 5px;
-  align-items: center;
 }
+
 .pagination button {
   padding: 5px 10px;
-  border: 1px solid #ccc;
-  background: white;
+  border: none;
+  background-color: #ddd;
+  border-radius: 5px;
   cursor: pointer;
-  border-radius: 4px;
 }
-.pagination button.active {
-  background: #333;
+
+.pagination .active {
+  background-color: #597162;
   color: white;
-  font-weight: bold;
 }
 .pagination button:disabled {
   opacity: 0.5;
