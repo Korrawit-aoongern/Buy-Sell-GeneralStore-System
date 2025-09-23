@@ -225,7 +225,7 @@ body {
 
 .actions button {
   margin-left: 10px;
-  padding: 5px 12px;
+  padding: 0.5em 6em;
   border: none;
   border-radius: 5px;
   cursor: pointer;

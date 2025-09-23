@@ -96,7 +96,7 @@ function toggleShow(key, total) {
       <div class="Feature-Section">
         <span class="title">สินค้าลดราคา</span>
         <div v-if="isLoading">Loading products...</div>
-        <div v-else-if="hotProducts.length" class="product-Visible">
+        <div v-else-if="saleProducts.length" class="product-Visible">
           <div class="product-list">
             <ProductCard v-for="(product, index) in saleVisible" :key="index" :id="product.productid"
               :name="product.nameproduct" :originalprice="product.baseprice" :saleprice="product.saleprice"
@@ -112,7 +112,7 @@ function toggleShow(key, total) {
       <div class="Feature-Section">
         <span class="title">สินค้าปกติ</span>
         <div v-if="isLoading">Loading products...</div>
-        <div v-else-if="hotProducts.length" class="product-Visible">
+        <div v-else-if="normalProducts.length" class="product-Visible">
           <div class="product-list">
             <ProductCard v-for="(product, index) in normalVisible" :key="index" :id="product.productid"
               :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"

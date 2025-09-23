@@ -309,11 +309,12 @@ body {
 }
 
 .btn {
-  padding: 8px 16px;
+  padding: 0.5em 6em;
   border: none;
   border-radius: 5px;
   font-weight: bold;
   cursor: pointer;
+  font-family: Prompt, sans-serif;
 }
 
 .cancel {

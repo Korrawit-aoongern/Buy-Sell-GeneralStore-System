@@ -238,28 +238,31 @@ function openDeleteMultiple() {
   showDeleteModal.value = true
 }
 
-function openDelete(productid) {
-  productToDelete.value = productid
-  showDeleteModal.value = true
-}
 
 async function confirmDelete() {
+  let error = null  // ✅ declare error here
+
   if (selectedRows.value.length === 1) {
-    const { error } = await supabase
+    const res = await supabase
       .from("product")
       .delete()
       .eq("productid", selectedRows.value[0])
+    error = res.error
   } else {
-    const { error } = await supabase
+    const res = await supabase
       .from("product")
       .delete()
       .in("productid", selectedRows.value)
+    error = res.error
   }
 
   if (!error) {
     fetchProducts(currentPage.value)
     showDeleteModal.value = false
     selectedRows.value = []
+  } else {
+    console.error("Delete error:", error.message)
+    alert("ลบสินค้าไม่สำเร็จ: " + error.message)
   }
 }
 
@@ -319,7 +322,7 @@ onMounted(() => {
             <button 
               v-if="selectedRows.length === 1" 
               class="btn more" 
-              @click="$router.push(`/admin/product-detail/${selectedRows[0]}`)">
+               @click="$router.push({ path: '/admin/product-detail', query: { id: selectedRows[0] } })">
               ดูเพิ่มเติม
             </button>
 
