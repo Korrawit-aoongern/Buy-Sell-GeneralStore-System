@@ -22,7 +22,8 @@ onMounted(async () => {
   const { data, error } = await supabase
     .from("product")
     .select("*")
-    .eq("is_featured", true);
+    .eq("is_featured", true)
+    .eq('isDelete', false);
 
   if (error) {
     console.error("Error loading products:", error);

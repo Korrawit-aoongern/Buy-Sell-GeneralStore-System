@@ -129,7 +129,10 @@ const togglePanel = () => {
 };
 
 onMounted(async () => {
-  const { data, error } = await supabase.from("product").select("*");
+  const { data, error } = await supabase
+  .from("product")
+  .select("*")
+  .eq('isDelete', false);
   if (error) {
     console.error("Error loading products:", error);
   } else {
