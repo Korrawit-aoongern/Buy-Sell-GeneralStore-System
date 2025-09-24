@@ -57,7 +57,7 @@ async function uploadProductImage() {
   if (!imgFile.value) return productToEdit.value.image // keep old if no new
 
   try {
-    const fileName = `product_${productToEdit.value.id}_${Date.now()}_${imgFile.value.name}`
+    const fileName = `product_${Date.now()}`
     const { error: storageError } = await supabase.storage
       .from("product")
       .upload(fileName, imgFile.value)
@@ -112,24 +112,56 @@ async function submitEdit() {
   }
 }
 async function confirmDelete() {
-  if (!productToDelete.value) return
+  if (!productToDelete.value) return;
 
-  const { error } = await supabase
-    .from("product")
-    .delete()
-    .eq("productid", productToDelete.value)
+  const DEFAULT_IMG =
+    "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg";
 
-  if (error) {
-    console.error("Delete error:", error.message)
-    alert("ลบสินค้าไม่สำเร็จ: " + error.message)
-  } else {
-    alert("ลบสินค้าสำเร็จ")
-    showDeleteModal.value = false
-    product.value = null
-    // optionally redirect to all-product page
-    window.location.href = "/admin/all-products"
+  try {
+    // 1. Check if product is referenced in orderitem
+    const { data: refs, error: refError } = await supabase
+      .from("orderitem")
+      .select("order_item_id")
+      .eq("productid", productToDelete.value);
+
+    if (refError) throw refError;
+
+    if (refs && refs.length > 0) {
+      // SOFT DELETE
+      const { error: updateError } = await supabase
+        .from("product")
+        .update({ isDelete: true })
+        .eq("productid", productToDelete.value);
+
+      if (updateError) throw updateError;
+
+      alert("สินค้านี้มีออเดอร์อยู่ → ทำเครื่องหมายเป็นลบแล้ว (soft delete)");
+    } else {
+      // HARD DELETE
+      const { error: deleteError } = await supabase
+        .from("product")
+        .delete()
+        .eq("productid", productToDelete.value);
+
+      if (deleteError) throw deleteError;
+
+      // delete image if not default
+      if (product.value?.image && product.value.image !== DEFAULT_IMG) {
+        const path = product.value.image.split("/").pop();
+        await supabase.storage.from("product").remove([path]);
+      }
+
+      alert("ลบสินค้าสำเร็จ (hard delete)");
+    }
+
+    showDeleteModal.value = false;
+    window.location.href = "/admin/all-products";
+  } catch (err) {
+    console.error("Delete error:", err.message);
+    alert("ลบสินค้าไม่สำเร็จ: " + err.message);
   }
 }
+
 async function fetchProduct(id) {
   try {
     const cached = getWithExpiry(`product_${id}`);
@@ -168,26 +200,6 @@ async function fetchProduct(id) {
   } catch (err) {
     console.error(err);
     errorMsg.value = "ไม่สามารถโหลดข้อมูลสินค้าได้";
-  }
-}
-
-async function deleteProduct() {
-  if (!confirm("คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?")) return
-
-  try {
-    const { error } = await supabase
-      .from("product")
-      .delete()
-      .eq("productid", product.value.productid)
-
-    if (error) throw error
-
-    alert("ลบสินค้าสำเร็จ")
-    // after delete, go back to product list
-    router.push("/admin/all-products")
-  } catch (err) {
-    console.error("Delete error:", err.message)
-    alert("ไม่สามารถลบสินค้าได้: " + err.message)
   }
 }
 

@@ -60,7 +60,7 @@ async function uploadProductImage() {
   }
 
   try {
-    const fileName = `product_${Date.now()}_${imgFile.value.name}`;
+    const fileName = `product_${Date.now()}`;
     const { data: storageData, error: storageError } = await supabase.storage
       .from("product")
       .upload(fileName, imgFile.value);

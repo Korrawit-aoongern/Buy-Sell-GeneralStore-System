@@ -66,7 +66,8 @@ async function fetchProducts(page = 1) {
 
   const { data, error, count } = await supabase
     .from('product')
-    .select('productid, nameproduct, baseprice, saleprice, stock, promotype, categorytype, is_featured', { count: 'exact' })
+    .select('productid, nameproduct, baseprice, saleprice, stock, promotype, categorytype, is_featured, isDelete', { count: 'exact' })
+    .eq('isDelete', false)
     .order('productid', { ascending: true }) // 👈 sort by ID ASC
     .range(from, to) // 👈 pagination
 
@@ -124,7 +125,7 @@ async function uploadProductImage() {
   if (!imgFile.value) return productToEdit.value.imgurl // if no new file, keep old
 
   try {
-    const fileName = `product_${productToEdit.value.productid}_${Date.now()}_${imgFile.value.name}`
+    const fileName = `product_${Date.now()}`
     const { data: storageData, error: storageError } = await supabase.storage
       .from("product") // your bucket name
       .upload(fileName, imgFile.value)
@@ -240,31 +241,110 @@ function openDeleteMultiple() {
 
 
 async function confirmDelete() {
-  let error = null  // ✅ declare error here
+  try {
+    if (selectedRows.value.length === 1) {
+      const productid = selectedRows.value[0]
 
-  if (selectedRows.value.length === 1) {
-    const res = await supabase
-      .from("product")
-      .delete()
-      .eq("productid", selectedRows.value[0])
-    error = res.error
-  } else {
-    const res = await supabase
-      .from("product")
-      .delete()
-      .in("productid", selectedRows.value)
-    error = res.error
-  }
+      // Get product info (need image_url to know if we should delete it)
+      const { data: productData, error: productError } = await supabase
+        .from("product")
+        .select("imgurl")
+        .eq("productid", productid)
+        .single()
 
-  if (!error) {
+      if (productError) throw productError
+
+      // Check if product exists in orderitem
+      const { data: orderRefs, error: orderCheckError } = await supabase
+        .from("orderitem")
+        .select("order_item_id")
+        .eq("productid", productid)
+
+      if (orderCheckError) throw orderCheckError
+
+      if (orderRefs && orderRefs.length > 0) {
+        // Product is used in orderitem -> soft delete
+        const { error: softDeleteError } = await supabase
+          .from("product")
+          .update({ isDelete: true })
+          .eq("productid", productid)
+
+        if (softDeleteError) throw softDeleteError
+      } else {
+        // Product is not referenced -> hard delete
+
+        // 1. Delete product row
+        const { error: hardDeleteError } = await supabase
+          .from("product")
+          .delete()
+          .eq("productid", productid)
+
+        if (hardDeleteError) throw hardDeleteError
+
+        // 2. Delete image if not the default one
+        const imageUrl = productData?.imgurl
+        const defaultUrl =
+          "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg"
+
+        if (imageUrl && imageUrl !== defaultUrl) {
+          // Extract path from URL (after `/product/`)
+          const imagePath = imageUrl.split("/product/")[1]
+
+          if (imagePath) {
+            const { error: storageError } = await supabase.storage
+              .from("product")
+              .remove([imagePath])
+
+            if (storageError) throw storageError
+          }
+        }
+      }
+    } else {
+      // Multiple delete
+      for (const productid of selectedRows.value) {
+        const { data: productData } = await supabase
+          .from("product")
+          .select("imgurl")
+          .eq("productid", productid)
+          .single()
+
+        const { data: orderRefs } = await supabase
+          .from("orderitem")
+          .select("order_item_id")
+          .eq("productid", productid)
+
+        if (orderRefs && orderRefs.length > 0) {
+          await supabase
+            .from("product")
+            .update({ isDelete: true })
+            .eq("productid", productid)
+        } else {
+          await supabase.from("product").delete().eq("productid", productid)
+
+          const imageUrl = productData?.imgurl
+          const defaultUrl =
+            "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg"
+
+          if (imageUrl && imageUrl !== defaultUrl) {
+            const imagePath = imageUrl.split("/product/")[1]
+            if (imagePath) {
+              await supabase.storage.from("product").remove([imagePath])
+            }
+          }
+        }
+      }
+    }
+
+    // Refresh after delete
     fetchProducts(currentPage.value)
     showDeleteModal.value = false
     selectedRows.value = []
-  } else {
-    console.error("Delete error:", error.message)
-    alert("ลบสินค้าไม่สำเร็จ: " + error.message)
+    alert("ลบลินค้าสำเร็จ")
+  } catch (err) {
+    console.error("ลบสินค้าไม่สำเร็จ:", err.message)
   }
 }
+
 
 onMounted(() => {
   fetchProducts()
