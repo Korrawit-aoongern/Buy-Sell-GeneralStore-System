@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import adminaside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue";
 import { createClient } from '@supabase/supabase-js'
 
 const products = ref([])
@@ -13,7 +14,6 @@ const selectedRows = ref([]) // store productids
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 const productToEdit = ref(null)
-const productToDelete = ref(null)
 const imgFile = ref(null)
 const isMultipleEdit = ref(false)
 
@@ -37,9 +37,6 @@ const filteredProducts = computed(() => {
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage + 1)
 const endItem = computed(() =>
   Math.min(currentPage.value * itemsPerPage, totalItems.value))
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value
-}
 
 const categories = [
   { label: "อาหาร", value: "foods" },
@@ -357,32 +354,9 @@ onMounted(() => {
     <adminaside />
     <!-- Main Content -->
     <div class="main-content">
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <notification/>
 
-      <div class="product-list">
+      <div class="table-list">
         <h2>รายการสินค้า</h2>
 
         <div class="search-bar">
@@ -417,7 +391,7 @@ onMounted(() => {
             </button>
           </div>
         </div>
-        <table class="product-table">
+        <table class="list-table">
           <thead>
             <tr>
               <th><input 
@@ -581,67 +555,8 @@ body {
   box-sizing: border-box;
 }
 
-.notification {
-  height: 32px;
-  cursor: pointer;
-}
 
-.notification-card {
-  position: absolute;
-  top: 75px;
-  right: 20px;
-  background: #fff;
-  border-radius: 10px;
-  width: 300px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.notification-header {
-  font-size: 14px;
-  font-weight: bold;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-
-.notification-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-
-.red-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: red;
-  margin-top: 5px;
-  margin-right: 10px;
-}
-
-.notification-text {
-  flex: 1;
-}
-
-.notification-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.notification-desc {
-  font-size: 13px;
-  color: #555;
-}
-
-.product-list {
+.table-list {
   padding-top: 20px;
   padding-right: 20px;
   padding-left: 20px;
@@ -660,7 +575,7 @@ body {
   border: 1px solid #ccc;
 }
 
-.product-table {
+.list-table {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
@@ -668,15 +583,15 @@ body {
   overflow: hidden;
 }
 
-.product-table th,
-.product-table td {
+.list-table th,
+.list-table td {
   padding: 12px 10px;
   border-bottom: 1px solid #ddd;
   text-align: left;
   font-size: 14px;
 }
 
-.product-table th {
+.list-table th {
   background-color: #f0f0f0;
   color: #111827;
 }

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue";
 import { Icon } from '@iconify/vue';
 
 const showNotifications = ref(false);
@@ -45,33 +46,7 @@ const orders = [
     <!-- Main Content -->
     <div class="main-content">
       <!-- Topbar -->
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon
-            name="material-symbols:notifications-rounded"
-            style="color: black; width: 32px; height: 32px;"
-          />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <notification/>
 
       <!-- Customer Details -->
       <div class="customer-details">

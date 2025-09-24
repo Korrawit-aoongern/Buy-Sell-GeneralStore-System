@@ -1,11 +1,9 @@
 <script setup>
 import { ref } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue";
 
-const showNotifications = ref(false);
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value;
-}
+
 
 // ตัวอย่างข้อมูลออเดอร์
 const order = ref({
@@ -36,30 +34,7 @@ const totalPrice = () => {
 
     <!-- Main Content -->
     <div class="main-content">
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <notification/>
 
       <!-- Order Detail -->
       <div class="content">

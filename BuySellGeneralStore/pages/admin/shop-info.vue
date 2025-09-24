@@ -1,9 +1,10 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import adminaside from '~/components/admin/adminaside.vue';
+import notification from "~/components/admin/notification.vue";
 import { createClient } from "@supabase/supabase-js";
 
-const showNotifications = ref(false);
+
 const isEditing = ref(false);
 
 // === Supabase config ===
@@ -22,9 +23,6 @@ const storeData = ref({
 const editData = ref({ ...storeData.value });
 const qrFile = ref(null); // เก็บไฟล์ที่เลือก
 
-const toggleNotification = () => {
-  showNotifications.value = !showNotifications.value;
-};
 
 const cancelEdit = () => {
   isEditing.value = false;
@@ -119,31 +117,7 @@ onMounted(() => {
 
     <!-- Main Content -->
     <div class="main-content">
-      <!-- Topbar -->
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <notification/>
 
       <!-- Content -->
       <div class="content">

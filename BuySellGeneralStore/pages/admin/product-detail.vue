@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { createClient } from "@supabase/supabase-js";
 import adminaside from "~/components/admin/adminaside.vue";
+import notification from "~/components/admin/notification.vue";
 
 const config = useRuntimeConfig();
 const supabase = createClient(
@@ -11,11 +12,6 @@ const supabase = createClient(
 );
 
 const route = useRoute();
-const showNotifications = ref(false);
-
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value;
-}
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 const productToDelete = ref(null)
@@ -215,34 +211,7 @@ onMounted(() => {
     <adminaside />
 
     <div class="main-content">
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon
-            name="material-symbols:notifications-rounded"
-            style="color: black; width: 32px; height: 32px"
-          />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <!-- example notifications -->
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <notification/>
 
       <div class="content">
         <h2 class="title">รายละเอียดสินค้า</h2>

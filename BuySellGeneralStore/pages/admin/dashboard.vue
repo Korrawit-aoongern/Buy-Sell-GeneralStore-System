@@ -1,11 +1,6 @@
 <script setup>
-import { ref } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
-const showNotifications = ref(false);
-
-function toggleNotification() {
-    showNotifications.value = !showNotifications.value;
-}
+import notification from "~/components/admin/notification.vue";
 </script>
 <template>
     <div class="dashboard-container">
@@ -14,30 +9,7 @@ function toggleNotification() {
 
         <!-- Main Content -->
         <div class="main-content">
-            <header class="topbar">
-                <div class="notification" @click="toggleNotification">
-                    <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
-                </div>
-                <div v-if="showNotifications" class="notification-card">
-                    <div class="notification-header">Notifications</div>
-                    <div class="notification-list">
-                        <div class="notification-item">
-                            <div class="red-dot"></div>
-                            <div class="notification-text">
-                                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-                            </div>
-                        </div>
-                        <div class="notification-item">
-                            <div class="red-dot"></div>
-                            <div class="notification-text">
-                                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <notification/>
             <div class="welcome">
                 <h2>ยินดีต้อนรับ</h2>
             </div>

@@ -1,15 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import adminaside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue";
 import { createClient } from '@supabase/supabase-js'
 
-const showNotifications = ref(false)
 const config = useRuntimeConfig()
 const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
-
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value
-}
 
 // Form fields
 const nameproduct = ref('')
@@ -134,11 +130,7 @@ async function submitProduct() {
   <div class="dashboard-container">
     <adminaside />
     <div class="main-content">
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
-        </div>
-      </header>
+      <notification/>
 
       <div class="page-header">
         <h2>เพิ่มสินค้า</h2>

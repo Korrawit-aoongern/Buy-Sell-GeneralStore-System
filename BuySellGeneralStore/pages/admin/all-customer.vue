@@ -1,11 +1,9 @@
 <script setup>
 import { ref, computed } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue";
 
-const showNotifications = ref(false);
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value;
-}
+
 
 // ข้อมูลลูกค้าตัวอย่าง
 const customers = ref([]);
@@ -49,23 +47,7 @@ function changePage(page) {
     <adminaside />
 
     <div class="main-content">
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="width:32px;height:32px;color:black;" />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <notification/>
 
       <div class="content">
         <h2>รายการลูกค้า</h2>

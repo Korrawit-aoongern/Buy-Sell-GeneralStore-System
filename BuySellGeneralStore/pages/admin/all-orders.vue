@@ -1,19 +1,107 @@
 <script setup>
 import { ref } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue";
+import { createClient } from '@supabase/supabase-js';
 
-const showNotifications = ref(false);
+const orders = ref([])
+const currentPage = ref(1)
+const totalPages = ref(1)
+const totalItems = ref(0)
+const itemsPerPage = 10
 
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value;
+const selectedRows = ref([])
+const config = useRuntimeConfig();
+const supabase = createClient(
+  config.public.supabaseUrl,
+  config.public.supabaseAnonKey
+);
+const searchQuery = ref("")
+
+const filteredOrders = computed(() => {
+  if (!searchQuery.value) return orders.value
+  const query = searchQuery.value.toLowerCase()
+  return orders.value.filter((p) =>
+    Object.values(p).some((val) =>
+      String(val).toLowerCase().includes(query)
+    )
+  )
+})
+
+const startItem = computed(() => (currentPage.value - 1) * itemsPerPage + 1)
+const endItem = computed(() =>
+  Math.min(currentPage.value * itemsPerPage, totalItems.value))
+
+async function fetchOrders(page = 1) {
+  const from = (page - 1) * itemsPerPage
+  const to = from + itemsPerPage - 1
+
+  const { data, error, count } = await supabase
+    .from('order')
+    .select('orderid, orderdate, total_amount, billingid, status, payment_method, isDelete', { count: 'exact' })
+    .eq('isDelete', false)
+    .order('orderid', { ascending: true })
+    .range(from, to) // 👈 pagination
+
+  if (error) {
+    console.error('Error fetching orders:', error.message)
+  } else {
+    orders.value = data
+    totalItems.value = count
+    totalPages.value = Math.ceil(count / itemsPerPage)
+    currentPage.value = page
+  }
+}
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    fetchOrders(page)
+  }
+}
+function toggleSelection(orderid) {
+  if (selectedRows.value.includes(orderid)) {
+    selectedRows.value = selectedRows.value.filter(id => id !== orderid)
+  } else {
+    selectedRows.value.push(orderid)
+  }
+}
+const allSelected = computed({
+  get() {
+    return selectedRows.value.length === filteredOrders.value.length && filteredOrders.value.length > 0
+  },
+  set(value) {
+    if (value) {
+      selectedRows.value = filteredOrders.value.map(o => o.orderid)
+    } else {
+      selectedRows.value = []
+    }
+  }
+})
+const isIndeterminate = computed(() => {
+  return selectedRows.value.length > 0 &&
+         selectedRows.value.length < filteredOrders.value.length
+})
+async function updateStatus(newStatus) {
+  if (!newStatus) return
+  try {
+    const { error } = await supabase
+      .from("order")
+      .update({ status: newStatus })
+      .in("orderid", selectedRows.value)
+
+    if (error) throw error
+
+    alert("อัปเดตสถานะสำเร็จ")
+    fetchOrders(currentPage.value)
+    selectedRows.value = []
+  } catch (err) {
+    console.error("Update status error:", err.message)
+    alert("อัปเดตสถานะไม่สำเร็จ: " + err.message)
+  }
 }
 
-const orders = ref([
-  { id: 1, billId: "6fd94294aeed7f89", status: "ยกเลิก", date: "2025-09-16 22:25:17", total: 250.00, payment: "ปลายทาง" },
-  { id: 4, billId: "805cda85d02c47b3", status: "รอดำเนินการ", date: "2025-09-16 22:27:47", total: 59.00, payment: "Prompt Pay" },
-  { id: 5, billId: "f04d5aab5473ba6", status: "จัดส่ง", date: "2025-09-17 21:54:44", total: 250.00, payment: "ปลายทาง" },
-  { id: 6, billId: "d112fa34daf4516ff2", status: "เสร็จสิ้น", date: "2025-09-18 20:14:31", total: 177.00, payment: "Prompt Pay" }
-])
+onMounted(() => {
+  fetchOrders()
+})
 </script>
 
 <template>
@@ -23,69 +111,95 @@ const orders = ref([
 
     <!-- Main Content -->
     <div class="main-content">
-      <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
+      <notification/>
+      <!-- Order List -->
+      <div class="table-list">
+        <h2>รายการออเดอร์</h2>
+
+        <div class="search-bar">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="ค้นหา..."
+          />
         </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
-            </div>
+        <div v-if="selectedRows.length > 0" class="action-ribbon">
+          <div class="action-ribbon-left">
+            {{ selectedRows.length }} รายการที่ถูกเลือก
+          </div>
+          <div class="action-ribbon-right">
+            <!-- ดูเพิ่มเติม only when 1 row selected -->
+            <button 
+              v-if="selectedRows.length === 1" 
+              class="btn more" 
+              @click="$router.push({ path: '/admin/order-detail', query: { id: selectedRows[0] } })">
+              ดูเพิ่มเติม
+            </button>
+
+            <!-- Status dropdown -->
+            <select class="btn select-status" @change="updateStatus($event.target.value)">
+              <option value="" disabled selected>สถานะ</option>
+              <option value="Complete">เสร็จสิ้น</option>
+              <option value="Delivery">จัดส่ง</option>
+              <option value="Cancelled">ยกเลิก</option>
+              <option value="Pending">รอดำเนินการ</option>
+            </select>
           </div>
         </div>
-      </header>
-
-      <!-- Order List -->
-      <div class="content">
-        <h2 class="title">รายการออเดอร์</h2>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th><input type="checkbox" /></th>
-                <th>รหัส</th>
-                <th>บิลไอดี</th>
-                <th>สถานะ</th>
-                <th>วันที่ทำรายการ</th>
-                <th>ราคารวม</th>
-                <th>วิธีชำระ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="order in orders" :key="order.id">
-                <td><input type="checkbox" /></td>
-                <td>{{ order.id }}</td>
-                <td>{{ order.billId }}</td>
-                <td>{{ order.status }}</td>
-                <td>{{ order.date }}</td>
-                <td>{{ order.total.toFixed(2) }}</td>
-                <td>{{ order.payment }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="list-table">
+          <thead>
+            <tr>
+              <th>
+                <input 
+                type="checkbox"
+                v-model="allSelected"
+                :indeterminate="isIndeterminate"/>
+              </th>
+              <th>รหัส</th>
+              <th>บิลไอดี</th>
+              <th>สถานะ</th>
+              <th>วันที่ทำรายการ</th>
+              <th>ราคารวม</th>
+              <th>วิธีชำระ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(o, index) in filteredOrders" :key="index">
+              <td>
+                <input 
+                  type="checkbox" 
+                  :value="o.orderid" 
+                  :checked="selectedRows.includes(o.orderid)"
+                  @change="toggleSelection(o.orderid)" 
+                />
+              </td>
+              <td>{{ o.orderid }}</td>
+              <td>{{ o.billingid }}</td>
+              <td>{{ o.status }}</td>
+              <td>{{ new Date(o.orderdate).toLocaleString("sv-SE", { hour12: false }).replace("T", " ") }}</td>
+              <td>{{ new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2 }).format(o.total_amount) }}฿</td>
+              <td>{{ (o.payment_method == "COD") ? "ปลายทาง" : "Prompt Pay" }}</td>
+            </tr>
+          </tbody>
+        </table>
 
         <!-- Pagination -->
         <div class="pagination">
-          <button>&lt;</button>
-          <button class="active">1</button>
-          <button>2</button>
-          <button>3</button>
-          <button>&gt;</button>
-          <span>แสดงสินค้า 1 - 50 จาก 500</span>
+          <div>
+          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">&lt;</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            :class="{ active: currentPage === page }"
+            @click="changePage(page)"
+          >
+            {{ page }}
+          </button>
+          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">&gt;</button>
+          </div>
+          <div class="pagination-info">
+            แสดงสินค้า {{ startItem }} - {{ endItem }} จาก {{ totalItems }}
+          </div>
         </div>
       </div>
     </div>
@@ -94,7 +208,8 @@ const orders = ref([
 
 <style>
 body {
-  font-family: 'prompt', sans-serif;
+  margin: 0;
+  font-family: Prompt, sans-serif;
 }
 
 .dashboard-container {
@@ -110,6 +225,14 @@ body {
   position: relative;
 }
 
+.table-list {
+  padding-top: 20px;
+  padding-right: 20px;
+  padding-left: 20px;
+  background-color: #f7f7f7;
+  flex: 1;
+}
+
 .topbar {
   height: 60px;
   border-bottom: 1px solid #ccc;
@@ -119,122 +242,60 @@ body {
   padding: 0 20px;
   box-sizing: border-box;
 }
-
-.notification {
-  height: 32px;
-  cursor: pointer;
-}
-
-.notification-card {
-  position: absolute;
-  top: 75px;
-  right: 20px;
-  background: #fff;
-  border-radius: 10px;
-  width: 300px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.notification-header {
-  font-size: 14px;
+.select-status {
+  margin: 0;
+  color: black;
+  font-size: 12px;
+  font-family: Prompt, sans-serif;
   font-weight: bold;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
 }
 
-.notification-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-
-.red-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: red;
-  margin-top: 5px;
-  margin-right: 10px;
-}
-
-.notification-text {
-  flex: 1;
-}
-
-.notification-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.notification-desc {
-  font-size: 13px;
-  color: #555;
-}
-
-.content {
-  padding: 20px;
-}
-
-.title {
-  font-size: 20px;
-  margin-bottom: 15px;
-}
-
-.table-container {
-  background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #ddd;
-}
-
-table {
+.list-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.list-table th,
+.list-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
   font-size: 14px;
 }
 
-thead {
-  background: #f9f9f9;
-}
-
-th, td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #eee;
+.list-table th {
+  background-color: #f0f0f0;
+  color: #111827;
 }
 
 .pagination {
-  margin-top: 10px;
+  margin-top: 15px;
   display: flex;
-  align-items: center;
+  justify-content: space-between;
   gap: 5px;
 }
 
 .pagination button {
-  border: 1px solid #ccc;
-  background: white;
   padding: 5px 10px;
-  cursor: pointer;
+  border: none;
+  background-color: #ddd;
   border-radius: 5px;
+  cursor: pointer;
 }
 
 .pagination .active {
-  background: #333;
-  color: #fff;
+  background-color: #597162;
+  color: white;
 }
-
-.pagination span {
-  margin-left: auto;
-  font-size: 13px;
-  color: #666;
+.pagination-info {
+  color: #A8A4A4;
+  padding-right: 2em;
+}
+input[type="checkbox"]:indeterminate {
+  background-color: #ccc;
+  border-color: #999;
 }
 </style>
