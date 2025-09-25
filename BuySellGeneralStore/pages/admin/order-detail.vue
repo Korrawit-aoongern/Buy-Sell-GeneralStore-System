@@ -211,11 +211,20 @@ onMounted(() => {
           <!-- Payment -->
           <div class="box">
             <h3>Payment Method</h3>
-            <p>{{ (order.paymentMethod == "COD") ? "ปลายทาง" : "Prompt Pay" }}</p>
+            <div style="display: flex; gap: 12px;">
+              <div v-if="order.paymentMethod == 'COD'"><Icon name="material-symbols:local-atm-sharp" style="width: 24px; height: 24px; color: black;"/>
+              </div>
+              <div v-else>
+                <img src="../../public/Image/promptpay-icon.svg" alt="promptpay" style="width: 24px;">
+              </div>
+              <div>{{ (order.paymentMethod == "COD") ? "ปลายทาง" : "Prompt Pay" }}</div>
+            </div>
+            
           </div>
 
           <!-- Slip / Image -->
           <div class="box image-box">
+            <div v-if="order.paymentMethod == 'COD'">ไม่มีสลิปเนื่องจากเก็บปลายทาง</div>
             <img :src="order.slip" alt="payment slip" />
           </div>
         </div>
