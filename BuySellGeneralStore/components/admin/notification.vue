@@ -55,7 +55,7 @@ function toggleNotification() {
   background: #fff;
   border-radius: 10px;
   width: 300px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.20);
   overflow: hidden;
   z-index: 1000;
 }

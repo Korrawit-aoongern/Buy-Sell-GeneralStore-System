@@ -459,7 +459,7 @@ onMounted(() => {
               <!-- Upload Box -->
               <label class="form-label" v-if="!isMultipleEdit">รูปสินค้า</label>
               <div class="upload-box" v-if="!isMultipleEdit">
-                <input type="file" accept="image/*" @change="handleFileChange" />
+                <input class="form-field" type="file" accept="image/*" @change="handleFileChange" />
                 <div v-if="productToEdit.imgurl" class="preview">
                   <img :src="productToEdit.imgurl" alt="Product image" />
                 </div>
@@ -467,10 +467,10 @@ onMounted(() => {
               </div>
 
               <label class="form-label" v-if="!isMultipleEdit">ชื่อ</label>
-              <input v-model="productToEdit.nameproduct" placeholder="ชื่อสินค้า" v-if="!isMultipleEdit"/>
+              <input v-model="productToEdit.nameproduct" placeholder="ชื่อสินค้า" v-if="!isMultipleEdit" class="form-field"/>
 
               <label class="form-label" v-if="!isMultipleEdit">ราคา</label>
-              <input v-model.number="productToEdit.baseprice" placeholder="ราคา" type="number" v-if="!isMultipleEdit"/>
+              <input v-model.number="productToEdit.baseprice" placeholder="ราคา" type="number" v-if="!isMultipleEdit" class="form-field"/>
 
               <label class="form-label" v-if="!isMultipleEdit">ลดเหลือ</label>
               <input 
@@ -479,18 +479,19 @@ onMounted(() => {
                 type="number" 
                 :disabled="productToEdit.promotype !== 'sale'" 
                 v-if="!isMultipleEdit"
+                class="form-field"
               />
 
               <label class="form-label">หมวดหมู่</label>
-              <select v-model="productToEdit.categorytype">
+              <select v-model="productToEdit.categorytype" class="form-field">
                 <option v-for="c in categories" :key="c.value" :value="c.value">
                   {{ c.label }}
                 </option>
               </select>
 
               <label class="form-label">ประเภทการขาย</label>
-              <select v-model="productToEdit.promotype">
-                <option v-for="p in promoTypes" :key="p.value" :value="p.value">
+              <select v-model="productToEdit.promotype" class="form-field">
+                <option v-for="p in promoTypes" :key="p.value" :value="p.value" >
                   {{ p.label }}
                 </option>
               </select>
@@ -729,7 +730,7 @@ input[type="checkbox"]:indeterminate {
   display: block;
 }
 
-input, select {
+.form-field {
   width: 100%;
   padding: 8px;
   margin: 5px 0 10px;

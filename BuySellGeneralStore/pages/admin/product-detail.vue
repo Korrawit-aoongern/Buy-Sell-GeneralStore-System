@@ -219,7 +219,7 @@ onMounted(() => {
         <div v-if="errorMsg"><p>{{ errorMsg }}</p></div>
 
         <div v-else-if="product">
-          <div class="product-header">
+          <div class="content-header">
             <h3>#{{ product.id }} {{ product.name }}</h3>
             <div class="actions">
               <button class="btn-edit" @click="openEdit">แก้ไข</button>
@@ -292,24 +292,24 @@ onMounted(() => {
         </div>
 
         <label class="form-label">ชื่อ</label>
-        <input v-model="productToEdit.name" placeholder="ชื่อสินค้า" />
+        <input v-model="productToEdit.name" placeholder="ชื่อสินค้า" class="form-field" />
 
         <label class="form-label">ราคา</label>
-        <input v-model.number="productToEdit.baseprice" type="number" placeholder="ราคา" />
+        <input v-model.number="productToEdit.baseprice" type="number" placeholder="ราคา" class="form-field"/>
 
         <label class="form-label">ลดเหลือ</label>
         <input 
           v-model.number="productToEdit.saleprice" 
           type="number" 
           placeholder="ลดเหลือ"
-          :disabled="productToEdit.promotype !== 'sale'" 
+          :disabled="productToEdit.promotype !== 'sale'" class="form-field"
         />
 
         <label class="form-label">จำนวน</label>
-        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" />
+        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field"/>
 
         <label class="form-label">หมวดหมู่</label>
-        <select v-model="productToEdit.categorytype">
+        <select v-model="productToEdit.categorytype" class="form-field">
           <option value="foods">อาหาร</option>
           <option value="stationary">เครื่องเขียน</option>
           <option value="kitchen">ของใช้ในครัว</option>
@@ -322,7 +322,7 @@ onMounted(() => {
         </select>
 
         <label class="form-label">ประเภทการขาย</label>
-        <select v-model="productToEdit.promotype">
+        <select v-model="productToEdit.promotype" class="form-field">
           <option value="sale">สินค้าลดราคา</option>
           <option value="hot">สินค้าขายดี</option>
           <option value="normal">สินค้าปกติ</option>
@@ -449,13 +449,14 @@ body {
   margin-bottom: 15px;
 }
 
-.product-header {
+.content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
   background-color: white;
   padding: 1.2em;
+  gap: 24px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
@@ -463,9 +464,17 @@ body {
 .actions button{
   margin-left: 10px;
   padding: 0.5em 6em;
+  font-family: Prompt, sans-serif;
+  font-weight: bold;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.btn-success {
+  background: #6ACC91;
+  font-family: Prompt, sans-serif;
+  color: white;
 }
 
 .btn-edit {
@@ -476,6 +485,11 @@ body {
 
 .btn-delete {
   background: #D9534F;
+  font-family: Prompt, sans-serif;
+  color: white;
+}
+.btn-info {
+  background: #A8A4A4;
   font-family: Prompt, sans-serif;
   color: white;
 }

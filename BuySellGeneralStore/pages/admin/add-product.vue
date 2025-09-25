@@ -152,12 +152,12 @@ async function submitProduct() {
         <div class="form-section">
           <h3>ประเภท</h3>
           <label>หมวดหมู่สินค้า</label>
-          <select v-model="categorytype">
+          <select v-model="categorytype" class="form-field">
             <option v-for="c in categories" :key="c.value" :value="c.value">{{ c.label }}</option>
           </select>
 
           <label>ประเภทการขาย</label>
-          <select v-model="promotype">
+          <select v-model="promotype" class="form-field">
             <option v-for="p in promoTypes" :key="p.value" :value="p.value">{{ p.label }}</option>
           </select>
 
