@@ -1,52 +1,68 @@
 <script setup>
-import { ref, computed } from "vue";
-import adminaside from '~/components/admin/adminaside.vue'
-
-const showNotifications = ref(false);
+import { ref, computed, onMounted } from 'vue'
+import AdminAside from '~/components/admin/adminaside.vue'   // import component adminaside (แก้ชื่อเป็น PascalCase)
+import { Icon } from '@iconify/vue'                          // import Icon
+import { createClient } from '@supabase/supabase-js'
+const showNotifications = ref(false)
 function toggleNotification() {
-  showNotifications.value = !showNotifications.value;
+  showNotifications.value = !showNotifications.value
 }
 
-// ข้อมูลลูกค้าตัวอย่าง
-const customers = ref([]);
-for (let i = 1; i <= 500; i++) {
-  customers.value.push({
-    id: i,
-    name: `ลูกค้า ${i}`,
-    phone: "0123456789",
-    address: "แม่กาจังหวัดพะเยา ประเทศไทย"
-  });
+const config = useRuntimeConfig()
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
+
+const customers = ref([])
+const searchQuery = ref("")
+const currentPage = ref(1)
+const pageSize = 10
+
+
+async function loadCustomers() {
+  const { data, error } = await supabase
+    .from('customer')
+    .select('*')
+    .order('customerid', { ascending: true })  // เรียง customerid จากน้อยไปมาก
+
+  if (error) {
+    console.error("Error fetching customers:", error)
+  } else {
+    customers.value = data
+  }
 }
 
-const searchQuery = ref("");
-const currentPage = ref(1);
-const pageSize = 50;
+
+onMounted(() => {
+  loadCustomers()
+})
 
 const filteredCustomers = computed(() => {
+  if (!searchQuery.value) return customers.value
+  const q = searchQuery.value.toLowerCase()
   return customers.value.filter(c =>
-    c.name.includes(searchQuery.value) ||
-    c.phone.includes(searchQuery.value) ||
-    c.address.includes(searchQuery.value)
-  );
-});
+    c.fname.toLowerCase().includes(q) ||
+    c.lname.toLowerCase().includes(q) ||
+    c.phone.toLowerCase().includes(q) ||
+    c.address.toLowerCase().includes(q)
+  )
+})
 
-const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / pageSize));
+const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / pageSize))
 
 const paginatedCustomers = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  return filteredCustomers.value.slice(start, start + pageSize);
-});
+  const start = (currentPage.value - 1) * pageSize
+  return filteredCustomers.value.slice(start, start + pageSize)
+})
 
 function changePage(page) {
   if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+    currentPage.value = page
   }
 }
 </script>
 
 <template>
   <div class="dashboard-container">
-    <adminaside />
+    <AdminAside />  <!-- ใช้ชื่อ PascalCase -->
 
     <div class="main-content">
       <header class="topbar">
@@ -69,12 +85,12 @@ function changePage(page) {
 
       <div class="content">
         <h2>รายการลูกค้า</h2>
-        <input v-model="searchQuery" placeholder="ค้นหา..." class="search-box"/>
+        <input v-model="searchQuery" placeholder="ค้นหา..." class="search-box" />
 
         <table class="customer-table">
           <thead>
             <tr>
-              <th><input type="checkbox"/></th>
+              <th><input type="checkbox" /></th>
               <th>รหัส</th>
               <th>ชื่อ</th>
               <th>เบอร์โทร</th>
@@ -83,16 +99,15 @@ function changePage(page) {
           </thead>
           <tbody>
             <tr v-for="customer in paginatedCustomers" :key="customer.id">
-              <td><input type="checkbox"/></td>
-              <td>{{ customer.id }}</td>
-              <td>{{ customer.name }}</td>
+              <td><input type="checkbox" /></td>
+              <td>{{ customer.customerid }}</td>
+              <td>{{ customer.fname }} {{ customer.lname }}</td>
               <td>{{ customer.phone }}</td>
               <td>{{ customer.address }}</td>
             </tr>
           </tbody>
         </table>
 
-        <!-- pagination -->
         <div class="pagination">
           <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">‹</button>
 
@@ -108,10 +123,9 @@ function changePage(page) {
           <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">›</button>
 
           <span class="summary">
-            แสดงสินค้า {{ (currentPage - 1) * pageSize + 1 }}
-            -
-            {{ Math.min(currentPage * pageSize, filteredCustomers.length) }}
-            จาก {{ filteredCustomers.length }}
+            แสดงลูกค้า {{ (currentPage - 1) * pageSize + 1 }} -
+            {{ Math.min(currentPage * pageSize, filteredCustomers.length) }} จาก
+            {{ filteredCustomers.length }}
           </span>
         </div>
       </div>
