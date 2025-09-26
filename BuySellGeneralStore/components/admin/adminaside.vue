@@ -6,11 +6,11 @@
       <li><NuxtLink to="/admin/dashboard">หน้าหลัก</NuxtLink></li>
       <li><NuxtLink to="/admin/all-products">รายการสินค้า</NuxtLink></li>
       <li><NuxtLink to="/admin/add-product">เพิ่มสินค้า</NuxtLink></li>
-      <li><NuxtLink to="/admin/product-detail">รายละเอียดสินค้า</NuxtLink></li>
+
       <li><NuxtLink to="/admin/all-orders">รายการออเดอร์</NuxtLink></li>
-      <li><NuxtLink to="/admin/order-detail">รายละเอียดออเดอร์</NuxtLink></li>
+
       <li><NuxtLink to="/admin/all-customer">รายการลูกค้า</NuxtLink></li>
-      <li><NuxtLink to="/admin/customer-detail">รายละเอียดลูกค้า</NuxtLink></li>
+
     </ul>
   </nav>
 </template>
