@@ -114,8 +114,17 @@ const isIndeterminate = computed(() => {
 function openEdit(productid) {
   const product = products.value.find(p => p.productid === productid)
   productToEdit.value = { ...product }
+  isMultipleEdit.value = false   // 👈 เพิ่มบรรทัดนี้
   showEditModal.value = true
 }
+
+watch(selectedRows, (newVal) => {
+  if (newVal.length <= 1) {
+    isMultipleEdit.value = false   // 👈 reset กลับ single
+  }
+})
+
+
 
 function handleFileChange(event) {
   imgFile.value = event.target.files[0]
