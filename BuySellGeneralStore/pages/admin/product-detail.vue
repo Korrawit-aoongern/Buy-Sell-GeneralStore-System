@@ -67,24 +67,37 @@ async function uploadProductImage() {
 async function submitEdit() {
   const p = productToEdit.value;
 
-  // ตรวจสอบค่าที่จำเป็น
-  if (
-    !p.name || // ชื่อห้ามว่าง
-    p.baseprice == null || p.quantity == null || // ต้องไม่เป็น null หรือ undefined
-    isNaN(p.baseprice) || isNaN(p.quantity) ||   // ห้ามเป็น NaN
-    p.baseprice < 0 || p.quantity < 0            // ห้ามติดลบ
-  ) {
-    alert("กรุณากรอกข้อมูลให้ครบถ้วน และห้ามใส่ค่าติดลบ");
-    return;
-  }
-
-  const imgUrl = await uploadProductImage();
-  p.image = imgUrl;
-
   // ถ้าไม่มี saleprice หรือไม่ได้ตั้งเป็น 'sale' → ใช้ baseprice แทน
   if (!p.saleprice || p.promotype !== "sale") {
     p.saleprice = p.baseprice;
   }
+
+  // ตรวจสอบค่าที่จำเป็น
+    if (!p.name || p.baseprice == null || p.quantity == null || isNaN(p.baseprice) || isNaN(p.quantity)) {
+      alert("กรุณากรอกข้อมูลให้ครบถ้วน")
+      return
+    }
+    if (p.baseprice < 0 || p.quantity < 0) {
+      alert("ราคาหรือสต็อกติดลบไม่ได้")
+      return
+    }
+    if (p.saleprice < 0) {
+      alert("ราคาลดติดลบไม่ได้")
+      return
+    }
+    if (p.saleprice > p.baseprice) {
+      alert("ราคาลดมากกว่าราคาเดิมไม่ได้")
+      return
+    }
+    if ((p.saleprice === p.baseprice) && p.promotype === "sale") {
+      alert("ราคาลดเท่ากับราคาเดิมไม่ได้เมื่อเป็นประเภทลดราคา")
+      return
+    }
+
+  const imgUrl = await uploadProductImage();
+  p.image = imgUrl;
+
+
 
   const { error } = await supabase
     .from("product")
@@ -303,14 +316,14 @@ watch(
         <input v-model="productToEdit.name" placeholder="ชื่อสินค้า" class="form-field" />
 
         <label class="form-label">ราคา</label>
-        <input v-model.number="productToEdit.baseprice" type="number" placeholder="ราคา" class="form-field"/>
+        <input v-model.number="productToEdit.baseprice" type="number" placeholder="ราคา" class="form-field" min="0"/>
 
         <label class="form-label">ลดเหลือ</label>
         <input 
           v-model.number="productToEdit.saleprice" 
           type="number" 
           placeholder="ลดเหลือ"
-          :disabled="productToEdit.promotype !== 'sale'" class="form-field"
+          :disabled="productToEdit.promotype !== 'sale'" class="form-field" min="0"
         />
 
         <label class="form-label">จำนวน</label>

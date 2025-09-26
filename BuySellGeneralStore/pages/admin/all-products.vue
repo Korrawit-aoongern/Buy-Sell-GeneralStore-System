@@ -161,6 +161,11 @@ async function submitEdit() {
     const imgUrl = await uploadProductImage()
     productToEdit.value.imgurl = imgUrl
 
+    // ถ้าไม่มี saleprice หรือไม่ได้ตั้งเป็น 'sale' → ใช้ baseprice แทน
+    if (!productToEdit.value.saleprice || productToEdit.value.promotype !== "sale") {
+      productToEdit.value.saleprice = productToEdit.value.baseprice;
+    }
+
     if (!productToEdit.value.nameproduct || productToEdit.value.baseprice == null || productToEdit.value.stock == null || isNaN(productToEdit.value.baseprice) || isNaN(productToEdit.value.stock)) {
       alert("กรุณากรอกข้อมูลให้ครบถ้วน")
       return
@@ -181,6 +186,7 @@ async function submitEdit() {
       alert("ราคาลดเท่ากับราคาเดิมไม่ได้เมื่อเป็นประเภทลดราคา")
       return
     }
+
 
     const { error } = await supabase
       .from('product')
