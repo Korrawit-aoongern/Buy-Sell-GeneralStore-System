@@ -56,11 +56,6 @@ const promoTypes = [
   { label: "สินค้าขายดี", value: "hot" },
   { label: "สินค้าปกติ", value: "normal" }
 ]
-function saveWithExpiry(key, value) {
-  const now = new Date();
-  const item = { value, expiry: now.getTime() + 24 * 60 * 60 * 1000 };
-  localStorage.setItem(key, JSON.stringify(item));
-}
 async function fetchProducts(page = 1) {
   const from = (page - 1) * itemsPerPage
   const to = from + itemsPerPage - 1
@@ -194,7 +189,6 @@ async function submitEdit() {
       alert("อัปเดตไม่สำเร็จ: " + error.message)
     } else {
       showEditModal.value = false
-      saveWithExpiry(`product_${productToEdit.value.productid}`, productToEdit.value) // overwrite cache
       alert("อัปเดตสินค้าสำเร็จ")
     }
   } else {

@@ -16,30 +16,8 @@ const orderitems = ref([]);
 const customer = ref({})
 const errorMsg = ref("");
 
-function saveWithExpiry(key, value) {
-  const now = new Date();
-  const item = { value, expiry: now.getTime() + 24 * 60 * 60 * 1000 };
-  localStorage.setItem(key, JSON.stringify(item));
-}
-function getWithExpiry(key) {
-  const itemStr = localStorage.getItem(key);
-  if (!itemStr) return null;
-  const item = JSON.parse(itemStr);
-  if (Date.now() > item.expiry) {
-    localStorage.removeItem(key);
-    return null;
-  }
-  return item.value;
-}
 async function fetchOrder(id) {
   try {
-    const cached = getWithExpiry(`order_${id}`);
-    if (cached) {
-      order.value = cached.order;
-      customer.value = cached.customer;
-      orderitems.value = cached.orderitems;
-      return;
-    }
 
     const { data, error } = await supabase
       .from("order")
@@ -113,12 +91,6 @@ async function fetchOrder(id) {
     customer.value = customerdata;
     orderitems.value = orderitemsdata;
 
-    // Save everything in one cached object
-    saveWithExpiry(`order_${id}`, {
-      order: orderdata,
-      customer: customerdata,
-      orderitems: orderitemsdata,
-    });
   } catch (err) {
     console.error(err);
     errorMsg.value = "ไม่สามารถโหลดข้อมูลออเดอร์ได้";
