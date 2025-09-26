@@ -1,36 +1,90 @@
 <script setup>
-const showNotifications = ref(false);
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { createClient } from "@supabase/supabase-js";
+import { useNotificationStore } from '~/stores/notification'
+  
 
+const config = useRuntimeConfig(); // ถ้าใช้ Nuxt
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
+
+const showNotifications = ref(false);
+const notificationStore = useNotificationStore(); // ใช้ store
+
+// เปิด/ปิดแถบ Notification
 function toggleNotification() {
   showNotifications.value = !showNotifications.value;
+
+  // ถ้าเปิด popup แล้ว เคลียร์ตัวเลข badge
+  if (showNotifications.value) {
+    notificationStore.clearCount();
+  }
 }
+
+onMounted(() => {
+  // subscribe ฟัง event update ของตาราง product
+  const channel = supabase
+    .channel("low-stock")
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "product" },
+      (payload) => {
+        const newStock = payload.new.stock;
+
+        if (newStock <= 10) {
+          notificationStore.addNotification({
+            title: "สินค้าของคุณใกล้จะหมดสต๊อก",
+            desc: `${payload.new.nameproduct} เหลือ ${newStock} ชิ้น`,
+            is_read: false,
+            created_at: new Date().toISOString()   // ✅ เพิ่ม timestamp
+          });
+        }
+      }
+    )
+    .subscribe();
+
+  // cleanup channel ตอนออกจาก component
+  onBeforeUnmount(() => {
+    supabase.removeChannel(channel);
+  });
+});
 </script>
+
 <template>
-    <header class="topbar">
-        <div class="notification" @click="toggleNotification">
-          <Icon name="material-symbols:notifications-rounded" style="color: black; width: 32px; height: 32px;" />
-        </div>
-        <div v-if="showNotifications" class="notification-card">
-          <div class="notification-header">Notifications</div>
-          <div class="notification-list">
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">สินค้าของคุณใกล้จะหมดสต๊อก</div>
-                <div class="notification-desc">หูฟังเหลือ 1 ชิ้น</div>
-              </div>
-            </div>
-            <div class="notification-item">
-              <div class="red-dot"></div>
-              <div class="notification-text">
-                <div class="notification-title">คำสั่งซื้อใหม่</div>
-                <div class="notification-desc">ออเดอร์ #1234 รอการยืนยัน</div>
-              </div>
+  <header class="topbar">
+    <!-- ปุ่มแจ้งเตือน -->
+    <div class="notification" @click="toggleNotification">
+      <Icon
+        name="material-symbols:notifications-rounded"
+        style="color: black; width: 32px; height: 32px;"
+      />
+      <!-- Badge ตัวเลข -->
+      <span v-if="notificationStore.notificationCount > 0" class="notification-badge">
+        {{ notificationStore.notificationCount }}
+      </span>
+    </div>
+
+    <!-- การ์ด Notification -->
+    <div v-if="showNotifications" class="notification-card">
+      <div class="notification-header">Notifications</div>
+      <div class="notification-list">
+        <div
+          v-for="(n, i) in notificationStore.notifications"
+          :key="i"
+          class="notification-item"
+        >
+          <div class="red-dot" v-if="!n.is_read"></div>
+          <div class="notification-text">
+            <div class="notification-title">{{ n.title }}</div>
+            <div class="notification-desc">{{ n.desc }}</div>
+            <div class="notification-time">
+              {{ n.created_at ? new Date(n.created_at).toLocaleString() : '' }}
             </div>
           </div>
         </div>
-    </header>
-</template>
+      </div>
+    </div>
+  </header>
+</template> 
 
 <style scoped>
 .topbar {
@@ -41,11 +95,25 @@ function toggleNotification() {
   align-items: center;
   padding: 0 20px;
   box-sizing: border-box;
+  position: relative;
 }
 
 .notification {
+  position: relative;
   height: 32px;
   cursor: pointer;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 50%;
 }
 
 .notification-card {
