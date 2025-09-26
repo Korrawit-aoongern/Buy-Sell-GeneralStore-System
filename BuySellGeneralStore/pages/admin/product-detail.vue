@@ -314,7 +314,7 @@ watch(
         />
 
         <label class="form-label">จำนวน</label>
-        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field"/>
+        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field"  min="0"/>
 
         <label class="form-label">หมวดหมู่</label>
         <select v-model="productToEdit.categorytype" class="form-field">
