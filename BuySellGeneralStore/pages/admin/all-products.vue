@@ -161,8 +161,8 @@ async function submitEdit() {
     const imgUrl = await uploadProductImage()
     productToEdit.value.imgurl = imgUrl
 
-    if (!productToEdit.value.nameproduct || !productToEdit.value.baseprice || !productToEdit.value.stock) {
-      alert("กรุณากรอกข้อมูลให้ครบถ้วน")
+    if (!productToEdit.value.nameproduct || productToEdit.value.baseprice == null || productToEdit.value.stock == null || isNaN(productToEdit.value.baseprice) || isNaN(productToEdit.value.stock) || productToEdit.value.baseprice < 0 || productToEdit.value.stock < 0) {
+      alert("กรุณากรอกข้อมูลให้ครบถ้วน และห้ามใส่ค่าติดลบ")
       return
     }
 
@@ -492,7 +492,7 @@ onMounted(() => {
               />
 
               <label class="form-label" v-if="!isMultipleEdit">จำนวน</label>
-              <input v-model.number="productToEdit.stock" type="number" placeholder="จำนวน" class="form-field"  min="0"/>
+              <input v-if="!isMultipleEdit" v-model.number="productToEdit.stock" type="number" placeholder="จำนวน" class="form-field"  min="0"/>
 
               <label class="form-label">หมวดหมู่</label>
               <select v-model="productToEdit.categorytype" class="form-field">
