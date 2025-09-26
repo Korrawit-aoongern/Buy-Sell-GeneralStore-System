@@ -20,35 +20,26 @@ const imgFile = ref(null)
 const product = ref(null);
 const errorMsg = ref("");
 
-// cache helpers
-function saveWithExpiry(key, value) {
-  const now = new Date();
-  const item = { value, expiry: now.getTime() + 24 * 60 * 60 * 1000 };
-  localStorage.setItem(key, JSON.stringify(item));
-}
-function getWithExpiry(key) {
-  const itemStr = localStorage.getItem(key);
-  if (!itemStr) return null;
-  const item = JSON.parse(itemStr);
-  if (Date.now() > item.expiry) {
-    localStorage.removeItem(key);
-    return null;
-  }
-  return item.value;
-}
+// Removed cache helpers (localStorage functions)
 
+// Function to open the Edit Modal
 function openEdit() {
   productToEdit.value = { ...product.value } // copy current product
   showEditModal.value = true
 }
+
+// Function to open the Delete Modal
 function openDelete() {
   productToDelete.value = product.value.id
   showDeleteModal.value = true
 }
+
+// Handle file input change
 function handleFileChange(event) {
   imgFile.value = event.target.files[0]
 }
 
+// Upload product image to Supabase storage
 async function uploadProductImage() {
   if (!imgFile.value) return productToEdit.value.image // keep old if no new
 
@@ -71,42 +62,56 @@ async function uploadProductImage() {
   }
 }
 
+
+// Submit the edited product
 async function submitEdit() {
-  if (!productToEdit.value.name || !productToEdit.value.baseprice || !productToEdit.value.quantity) {
-    alert("กรุณากรอกข้อมูลให้ครบถ้วน")
-    return
+  const p = productToEdit.value;
+
+  // ตรวจสอบค่าที่จำเป็น
+  if (
+    !p.name || // ชื่อห้ามว่าง
+    p.baseprice == null || p.quantity == null || // ต้องไม่เป็น null หรือ undefined
+    isNaN(p.baseprice) || isNaN(p.quantity) ||   // ห้ามเป็น NaN
+    p.baseprice < 0 || p.quantity < 0            // ห้ามติดลบ
+  ) {
+    alert("กรุณากรอกข้อมูลให้ครบถ้วน และห้ามใส่ค่าติดลบ");
+    return;
   }
 
-  const imgUrl = await uploadProductImage()
-  productToEdit.value.image = imgUrl
+  const imgUrl = await uploadProductImage();
+  p.image = imgUrl;
 
-  if (!productToEdit.value.saleprice || productToEdit.value.promotype !== "sale") {
-    productToEdit.value.saleprice = productToEdit.value.baseprice
+  // ถ้าไม่มี saleprice หรือไม่ได้ตั้งเป็น 'sale' → ใช้ baseprice แทน
+  if (!p.saleprice || p.promotype !== "sale") {
+    p.saleprice = p.baseprice;
   }
 
   const { error } = await supabase
     .from("product")
     .update({
-      nameproduct: productToEdit.value.name,
-      baseprice: productToEdit.value.baseprice,
-      saleprice: productToEdit.value.saleprice,
-      stock: productToEdit.value.quantity,
-      categorytype: productToEdit.value.categorytype,
-      promotype: productToEdit.value.promotype,
-      is_featured: productToEdit.value.is_featured,
-      imgurl: productToEdit.value.image,
+      nameproduct: p.name,
+      baseprice: p.baseprice,
+      saleprice: p.saleprice,
+      stock: p.quantity,
+      categorytype: p.categorytype,
+      promotype: p.promotype,
+      is_featured: p.is_featured,
+      imgurl: p.image,
     })
-    .eq("productid", productToEdit.value.id)
+    .eq("productid", p.id);
 
   if (error) {
-    console.error("Update error:", error.message)
-    alert("อัปเดตไม่สำเร็จ: " + error.message)
+    console.error("Update error:", error.message);
+    alert("อัปเดตไม่สำเร็จ: " + error.message);
   } else {
-    alert("อัปเดตสินค้าสำเร็จ")
-    product.value = { ...productToEdit.value } // update UI
-    showEditModal.value = false
+    alert("อัปเดตสินค้าสำเร็จ");
+    product.value = { ...p }; // update UI
+    showEditModal.value = false;
   }
 }
+
+
+// Confirm deletion of product
 async function confirmDelete() {
   if (!productToDelete.value) return;
 
@@ -158,14 +163,9 @@ async function confirmDelete() {
   }
 }
 
+// Fetch product from Supabase
 async function fetchProduct(id) {
   try {
-    const cached = getWithExpiry(`product_${id}`);
-    if (cached) {
-      product.value = cached;
-      return;
-    }
-
     const { data, error } = await supabase
       .from("product")
       .select(
@@ -192,7 +192,6 @@ async function fetchProduct(id) {
     };
 
     product.value = transformed;
-    saveWithExpiry(`product_${id}`, transformed);
   } catch (err) {
     console.error(err);
     errorMsg.value = "ไม่สามารถโหลดข้อมูลสินค้าได้";
@@ -205,6 +204,7 @@ onMounted(() => {
   else errorMsg.value = "กรุณาเลือกสินค้าที่ต้องการดูจากหน้าสินค้าทั้งหมด";
 });
 </script>
+
 
 <template>
   <div class="dashboard-container">
@@ -306,7 +306,7 @@ onMounted(() => {
         />
 
         <label class="form-label">จำนวน</label>
-        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field"/>
+        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field" />
 
         <label class="form-label">หมวดหมู่</label>
         <select v-model="productToEdit.categorytype" class="form-field">
