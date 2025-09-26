@@ -56,7 +56,11 @@ const promoTypes = [
   { label: "สินค้าขายดี", value: "hot" },
   { label: "สินค้าปกติ", value: "normal" }
 ]
-
+function saveWithExpiry(key, value) {
+  const now = new Date();
+  const item = { value, expiry: now.getTime() + 24 * 60 * 60 * 1000 };
+  localStorage.setItem(key, JSON.stringify(item));
+}
 async function fetchProducts(page = 1) {
   const from = (page - 1) * itemsPerPage
   const to = from + itemsPerPage - 1
@@ -180,8 +184,9 @@ async function submitEdit() {
       console.error("Update error:", error.message)
       alert("อัปเดตไม่สำเร็จ: " + error.message)
     } else {
-      alert("อัปเดตสินค้าสำเร็จ")
       showEditModal.value = false
+      saveWithExpiry(`product_${productToEdit.value.productid}`, productToEdit.value) // overwrite cache
+      alert("อัปเดตสินค้าสำเร็จ")
     }
   } else {
     // Multiple edit (bulk update)
@@ -469,6 +474,7 @@ onMounted(() => {
               <label class="form-label" v-if="!isMultipleEdit">ชื่อ</label>
               <input v-model="productToEdit.nameproduct" placeholder="ชื่อสินค้า" v-if="!isMultipleEdit" class="form-field"/>
 
+
               <label class="form-label" v-if="!isMultipleEdit">ราคา</label>
               <input v-model.number="productToEdit.baseprice" placeholder="ราคา" type="number" v-if="!isMultipleEdit" class="form-field"/>
 
@@ -481,6 +487,9 @@ onMounted(() => {
                 v-if="!isMultipleEdit"
                 class="form-field"
               />
+
+              <label class="form-label" v-if="!isMultipleEdit">จำนวน</label>
+              <input v-model.number="productToEdit.stock" type="number" placeholder="จำนวน" class="form-field"  min="0"/>
 
               <label class="form-label">หมวดหมู่</label>
               <select v-model="productToEdit.categorytype" class="form-field">

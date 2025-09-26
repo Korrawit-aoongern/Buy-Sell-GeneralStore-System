@@ -1,39 +1,75 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import AdminAside from '~/components/admin/adminaside.vue'   // import component adminaside (แก้ชื่อเป็น PascalCase)              // import Icon
+import AdminAside from '~/components/admin/adminaside.vue'
+import notification from "~/components/admin/notification.vue"
 import { createClient } from '@supabase/supabase-js'
-import notification from "~/components/admin/notification.vue";
+
 const config = useRuntimeConfig()
 const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
 
 const customers = ref([])
 const searchQuery = ref("")
 const currentPage = ref(1)
-const pageSize = 10
+const totalPages = ref(1)
+const totalItems = ref(0)
+const itemsPerPage = 10
+
+const selectedGroupKey = ref(null) // track selected group
+
+// Compute start and end item for pagination summary
+const startItem = computed(() => (currentPage.value - 1) * itemsPerPage + 1)
+const endItem = computed(() => Math.min(currentPage.value * itemsPerPage, totalItems.value))
+
+// ✅ Fetch customers from Supabase with range
+async function fetchCustomers(page = 1) {
 
 
-async function loadCustomers() {
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from('customer')
-    .select('*')
-    .order('customerid', { ascending: true })  // เรียง customerid จากน้อยไปมาก
+    .select('*', { count: 'exact' })
+    .order('customerid', { ascending: true })
+
 
   if (error) {
-    console.error("Error fetching customers:", error)
+    console.error(error)
   } else {
     customers.value = data
+    totalItems.value = count
+    totalPages.value = Math.ceil(count / itemsPerPage)
+    currentPage.value = page
   }
 }
 
+onMounted(() => fetchCustomers())
 
-onMounted(() => {
-  loadCustomers()
+// Group by phone + name
+const groupedCustomers = computed(() => {
+  const grouped = {}
+  customers.value.forEach(c => {
+    const key = `${c.phone}-${c.fname}-${c.lname}`
+    if (!grouped[key]) {
+      grouped[key] = {
+        key,
+        ids: [c.customerid],
+        fname: c.fname,
+        lname: c.lname,
+        phone: c.phone,
+        address: c.address,
+        count: 1
+      }
+    } else {
+      grouped[key].ids.push(c.customerid)
+      grouped[key].count++
+    }
+  })
+  return Object.values(grouped)
 })
 
+// Filter grouped customers
 const filteredCustomers = computed(() => {
-  if (!searchQuery.value) return customers.value
+  if (!searchQuery.value) return groupedCustomers.value
   const q = searchQuery.value.toLowerCase()
-  return customers.value.filter(c =>
+  return groupedCustomers.value.filter(c =>
     c.fname.toLowerCase().includes(q) ||
     c.lname.toLowerCase().includes(q) ||
     c.phone.toLowerCase().includes(q) ||
@@ -41,76 +77,114 @@ const filteredCustomers = computed(() => {
   )
 })
 
-const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / pageSize))
-
+// Paginate filtered results (client-side)
 const paginatedCustomers = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredCustomers.value.slice(start, start + pageSize)
+  const start = (currentPage.value - 1) * itemsPerPage
+  return filteredCustomers.value.slice(start, start + itemsPerPage)
 })
 
+// ✅ Change page (fetch from Supabase)
 function changePage(page) {
   if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+    fetchCustomers(page)
   }
+}
+
+// Toggle group selection
+function toggleSelection(groupKey) {
+  selectedGroupKey.value = selectedGroupKey.value === groupKey ? null : groupKey
+}
+
+// Navigate to detail
+function goToDetail() {
+  if (!selectedGroupKey.value) return
+  const group = groupedCustomers.value.find(g => g.key === selectedGroupKey.value)
+  if (!group) return
+
+  const params = new URLSearchParams({
+    ids: group.ids.join(',')
+  }).toString()
+  navigateTo(`/admin/customer-detail?${params}`)
 }
 </script>
 
+
 <template>
   <div class="dashboard-container">
-    <AdminAside />  <!-- ใช้ชื่อ PascalCase -->
-
+    <AdminAside />
     <div class="main-content">
       <notification />
 
       <div class="content">
         <h2>รายการลูกค้า</h2>
-        <input v-model="searchQuery" placeholder="ค้นหา..." class="search-box" />
+        <div class="search-bar">
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="ค้นหา..." 
+          />
+        </div>
 
-        <table class="customer-table">
+        <div v-if="selectedGroupKey" class="action-ribbon">
+            <div class="action-ribbon-left">
+                ลูกค้าที่ถูกเลือก
+            </div>
+            <div class="action-ribbon-right">
+              <button class="btn more" @click="goToDetail">ดูเพิ่มเติม</button>
+            </div>
+        </div>
+
+        <table class="list-table">
           <thead>
             <tr>
-              <th><input type="checkbox" /></th>
-              <th>รหัส</th>
+              <th></th>
               <th>ชื่อ</th>
               <th>เบอร์โทร</th>
               <th>ที่อยู่</th>
+              <th>จำนวนคำสั่งซื้อ</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="customer in paginatedCustomers" :key="customer.id">
-              <td><input type="checkbox" /></td>
-              <td>{{ customer.customerid }}</td>
-              <td>{{ customer.fname }} {{ customer.lname }}</td>
-              <td>{{ customer.phone }}</td>
-              <td>{{ customer.address }}</td>
+            <tr v-for="group in paginatedCustomers" :key="group.key">
+              <td>
+                <input
+                  type="checkbox"
+                  :checked="selectedGroupKey === group.key"
+                  @change="toggleSelection(group.key)"
+                />
+              </td>
+              <td>{{ group.fname }} {{ group.lname }}</td>
+              <td>{{ group.phone }}</td>
+              <td>{{ group.address }}</td>
+              <td>{{ group.count }}</td>
             </tr>
           </tbody>
         </table>
 
         <div class="pagination">
-          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">‹</button>
-
+          <div>
+          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">&lt;</button>
           <button
             v-for="page in totalPages"
             :key="page"
-            :class="{ active: page === currentPage }"
+            :class="{ active: currentPage === page }"
             @click="changePage(page)"
           >
             {{ page }}
           </button>
-
-          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">›</button>
-
-          <span class="summary">
-            แสดงลูกค้า {{ (currentPage - 1) * pageSize + 1 }} -
-            {{ Math.min(currentPage * pageSize, filteredCustomers.length) }} จาก
-            {{ filteredCustomers.length }}
-          </span>
+          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">&gt;</button>
+          </div>
+          <div class="pagination-info">
+            แสดงสินค้า {{ startItem }} - {{ endItem }} จาก {{ totalItems }}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+
+
 
 <style>
 .dashboard-container {

@@ -11,7 +11,6 @@ const supabase = createClient(
 );
 
 const route = useRoute();
-// ตัวอย่างข้อมูลออเดอร์
 const order = ref({});
 const orderitems = ref([]);
 const customer = ref({})

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { createClient } from "@supabase/supabase-js";
 import adminaside from "~/components/admin/adminaside.vue";
@@ -104,6 +104,7 @@ async function submitEdit() {
   } else {
     alert("อัปเดตสินค้าสำเร็จ")
     product.value = { ...productToEdit.value } // update UI
+    saveWithExpiry(`product_${product.value.id}`, product.value) // overwrite cache
     showEditModal.value = false
   }
 }
@@ -204,6 +205,14 @@ onMounted(() => {
   if (id) fetchProduct(id);
   else errorMsg.value = "กรุณาเลือกสินค้าที่ต้องการดูจากหน้าสินค้าทั้งหมด";
 });
+watch(
+  () => route.query.id,
+  (newId) => {
+    const id = Number(newId);
+    if (id) fetchProduct(id);
+    else product.value = null; // clear if no id
+  }
+);
 </script>
 
 <template>
@@ -306,7 +315,7 @@ onMounted(() => {
         />
 
         <label class="form-label">จำนวน</label>
-        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field"/>
+        <input v-model.number="productToEdit.quantity" type="number" placeholder="จำนวน" class="form-field"  min="0"/>
 
         <label class="form-label">หมวดหมู่</label>
         <select v-model="productToEdit.categorytype" class="form-field">

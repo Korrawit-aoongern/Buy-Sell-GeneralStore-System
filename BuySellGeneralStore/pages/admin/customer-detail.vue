@@ -1,91 +1,181 @@
 <script setup>
-import { ref } from "vue";
-import adminaside from '~/components/admin/adminaside.vue'
+import { ref, onMounted } from "vue";
+import adminaside from '~/components/admin/adminaside.vue';
 import notification from "~/components/admin/notification.vue";
-import { Icon } from '@iconify/vue';
+import { createClient } from "@supabase/supabase-js";
 
-const showNotifications = ref(false);
+const config = useRuntimeConfig();
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
+const route = useRoute();
 
-function toggleNotification() {
-  showNotifications.value = !showNotifications.value;
+const idsParam = route.query.ids
+const customerIds = idsParam ? idsParam.split(',').map(id => Number(id)) : []
+
+const customer = ref({});
+const orders = ref([]);
+const errorMsg = ref("");
+
+// fetch all orders where customerid IN [customerIds]
+async function fetchCustomerOrders() {
+  if (customerIds.length === 0) {
+    errorMsg.value = "กรุณาเลือกจากรายชื่อลูกค้า";
+    return
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("order")
+      .select(`
+        orderid,
+        billingid,
+        total_amount,
+        orderdate,
+        status,
+        customer:customerid (
+          customerid,
+          fname,
+          lname,
+          phone,
+          address
+        ),
+        orderitems:orderitem (
+          order_item_id,
+          quantity,
+          price_at_buy,
+          product:productid (
+            productid,
+            nameproduct,
+            baseprice,
+            imgurl
+          )
+        )
+      `)
+      .in("customerid", customerIds)
+      .order("orderdate", { ascending: false })
+
+    if (error) throw error
+    if (!data || data.length === 0) throw new Error("ไม่พบลูกค้า")
+
+    const firstCustomer = data[0].customer
+    customer.value = {
+      id: firstCustomer.customerid,
+      name: `${firstCustomer.fname} ${firstCustomer.lname}`,
+      phone: firstCustomer.phone,
+      address: firstCustomer.address,
+      totalOrders: data.length
+    }
+
+    orders.value = data.map(ord => ({
+      id: ord.orderid,
+      code: ord.billingid,
+      status: ord.status,
+      total: ord.total_amount,
+      date: ord.orderdate,
+      items: (ord.orderitems || []).map(oi => ({
+        id: oi.order_item_id,
+        qty: oi.quantity,
+        price: oi.price_at_buy,
+        baseprice: oi.product?.baseprice,
+        name: oi.product?.nameproduct || "ไม่พบสินค้า",
+        img: oi.product?.imgurl || "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg",
+      })),
+    }))
+  } catch (err) {
+    console.error(err)
+    errorMsg.value = "ไม่สามารถโหลดข้อมูลลูกค้าได้"
+  }
+}
+function discountPercent() {
+  if (!orders.value.length) return 0;
+
+  let originalTotal = 0;
+  let discountedTotal = 0;
+
+  orders.value.forEach(order => {
+    (order.items || []).forEach(item => {
+      const base = item.baseprice || item.price; // fallback to price if baseprice missing
+      originalTotal += base * item.qty;
+      discountedTotal += item.price * item.qty;
+    });
+  });
+
+  if (originalTotal <= 0) return 0;
+
+  return ((originalTotal - discountedTotal) / originalTotal) * 100;
 }
 
-// mock data
-const customer = {
-  id: 1,
-  name: "ชื่อจริง นามสกุล",
-  phone: "0123456789",
-  address: "แม่น้ำ จังหวัดทะเล ประเทศไทย",
-};
 
-const orders = [
-  {
-    id: 4,
-    code: "805cda85d02c47b3",
-    items: [
-      { name: "หูฟัง", qty: 2, price: 69.0 },
-      { name: "หูฟัง", qty: 2, price: 69.0 },
-    ],
-  },
-  {
-    id: 5,
-    code: "805cda85d02c47b3",
-    items: [
-      { name: "หูฟัง", qty: 2, price: 69.0 },
-      { name: "หูฟัง", qty: 2, price: 69.0 },
-    ],
-  },
-];
+onMounted(() => fetchCustomerOrders())
+
 </script>
 
 <template>
   <div class="dashboard-container">
-    <!-- Sidebar -->
     <adminaside />
-
-    <!-- Main Content -->
     <div class="main-content">
-      <!-- Topbar -->
-      <notification/>
+      <notification />
 
-      <!-- Customer Details -->
-      <div class="customer-details">
+      <div class="content">
         <h2>รายละเอียดลูกค้า</h2>
-        <div class="customer-card">
-          <p><strong>#{{ customer.id }}</strong> {{ customer.name }}</p>
-          <p>📞 {{ customer.phone }}</p>
-          <p>{{ customer.address }}</p>
+
+        <div v-if="errorMsg"><p>{{ errorMsg }}</p></div>
+
+        <div v-else-if="customer.id">
+          <div class="card">
+            <p><strong>#{{ customer.id }}</strong> {{ customer.name }}</p>
+            <p>📞 {{ customer.phone }}</p>
+            <p>{{ customer.address }}</p>
+          </div>
+
+          <div>
+            <h3>จำนวนครั้งที่สั่งสินค้า : {{ orders.length }} ครั้ง</h3>
+          </div>
+
+          <div v-for="order in orders" :key="order.id" class="order-card">
+            <h4>Order #{{ order.id }}</h4>
+            <h4>Billing: {{ order.code }}</h4>
+            <table class="table-container">
+              <thead>
+                <tr>
+                  <th>รูปสินค้า</th>
+                  <th>ชื่อสินค้า</th>
+                  <th>จำนวน</th>
+                  <th>ราคา</th>
+                  <th>ราคาหลังลด</th>
+                  <th>ราคารวม</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in order.items" :key="item.id">
+                  <td>
+                    <img :src="item.img" alt="Product Image" style="width: 200px; height: auto;" /> 
+                  </td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.qty }}</td>
+                  <td>{{ item.baseprice.toFixed(2) }}</td>
+                  <td>{{ item.price.toFixed(2) }}</td>
+                  <td>{{ (item.qty*item.price).toFixed(2) }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="summary">
+              <span>ส่วนลดเปอร์เซ็นทั้งหมด : </span>
+                <b>{{
+                  discountPercent().toFixed(0)
+                }} %</b>
+            </div>
+            <div class="summary">
+            <p>ราคาทั้งหมด : <b>{{ new Intl.NumberFormat("th-TH",{minimumFractionDigits:2}).format
+                  (order.total) }} บาท</b></p>
+            </div>
+          </div>
         </div>
 
-        <h3>จำนวนครั้งที่สั่งสินค้า : {{ orders.length }} ครั้ง</h3>
-
-        <div v-for="order in orders" :key="order.id" class="order-card">
-          <h4>Order #{{ order.id }}</h4>
-          <small>{{ order.code }}</small>
-          <table class="order-table">
-            <thead>
-              <tr>
-                <th>ชื่อสินค้า</th>
-                <th>จำนวน</th>
-                <th>ราคา</th>
-                <th>ราคารวม</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, idx) in order.items" :key="idx">
-                <td>{{ item.name }}</td>
-                <td>{{ item.qty }}</td>
-                <td>{{ item.price.toFixed(2) }}</td>
-                <td>{{ (item.qty * item.price).toFixed(2) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div v-else><p>กำลังโหลด...</p></div>
       </div>
     </div>
   </div>
 </template>
-
 <style scoped>
 body {
   font-family: 'prompt', sans-serif;
@@ -210,4 +300,5 @@ body {
   border-bottom: 1px solid #ddd;
   padding: 10px;
 }
+
 </style>
