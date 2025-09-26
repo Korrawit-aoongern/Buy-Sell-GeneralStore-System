@@ -161,13 +161,25 @@ async function submitEdit() {
     const imgUrl = await uploadProductImage()
     productToEdit.value.imgurl = imgUrl
 
-    if (!productToEdit.value.nameproduct || productToEdit.value.baseprice == null || productToEdit.value.stock == null || isNaN(productToEdit.value.baseprice) || isNaN(productToEdit.value.stock) || productToEdit.value.baseprice < 0 || productToEdit.value.stock < 0) {
-      alert("กรุณากรอกข้อมูลให้ครบถ้วน และห้ามใส่ค่าติดลบ")
+    if (!productToEdit.value.nameproduct || productToEdit.value.baseprice == null || productToEdit.value.stock == null || isNaN(productToEdit.value.baseprice) || isNaN(productToEdit.value.stock)) {
+      alert("กรุณากรอกข้อมูลให้ครบถ้วน")
       return
     }
-
-    if (!productToEdit.value.saleprice || productToEdit.value.promotype !== "sale") {
-      productToEdit.value.saleprice = productToEdit.value.baseprice
+    if (productToEdit.value.baseprice < 0 || productToEdit.value.stock < 0) {
+      alert("ราคาหรือสต็อกติดลบไม่ได้")
+      return
+    }
+    if (productToEdit.value.saleprice < 0) {
+      alert("ราคาลดติดลบไม่ได้")
+      return
+    }
+    if (productToEdit.value.saleprice > productToEdit.value.baseprice) {
+      alert("ราคาลดมากกว่าราคาเดิมไม่ได้")
+      return
+    }
+    if ((productToEdit.value.saleprice === productToEdit.value.baseprice) && productToEdit.value.promotype === "sale") {
+      alert("ราคาลดเท่ากับราคาเดิมไม่ได้เมื่อเป็นประเภทลดราคา")
+      return
     }
 
     const { error } = await supabase
@@ -479,7 +491,7 @@ onMounted(() => {
 
 
               <label class="form-label" v-if="!isMultipleEdit">ราคา</label>
-              <input v-model.number="productToEdit.baseprice" placeholder="ราคา" type="number" v-if="!isMultipleEdit" class="form-field"/>
+              <input v-model.number="productToEdit.baseprice" placeholder="ราคา" type="number" v-if="!isMultipleEdit" class="form-field" min="0"/>
 
               <label class="form-label" v-if="!isMultipleEdit">ลดเหลือ</label>
               <input 
@@ -488,7 +500,7 @@ onMounted(() => {
                 type="number" 
                 :disabled="productToEdit.promotype !== 'sale'" 
                 v-if="!isMultipleEdit"
-                class="form-field"
+                class="form-field" min="0"
               />
 
               <label class="form-label" v-if="!isMultipleEdit">จำนวน</label>

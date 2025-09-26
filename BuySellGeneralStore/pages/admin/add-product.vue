@@ -90,7 +90,22 @@ async function submitProduct() {
     alert('คุณไม่ได้อัปโหลดรูปสินค้า ระบบจะใช้รูปภาพเริ่มต้นแทน');
   }
 
-  const finalSalePrice = (saleprice.value && promotype.value === 'sale') ? saleprice.value : baseprice.value;
+  const finalSalePrice = (promotype.value === 'sale')
+  ? saleprice.value
+  : baseprice.value;
+
+  // ✅ Validation
+  if (promotype.value === 'sale') {
+    if (saleprice.value == null || isNaN(saleprice.value)) {
+      alert("กรุณากรอกราคาลดที่ถูกต้อง");
+      return;
+    }
+    if (saleprice.value >= baseprice.value || saleprice.value < 0) {
+      alert("ราคาลดต้องน้อยกว่าราคาปกติ และมากกว่าหรือเท่ากับ 0");
+      return;
+    }
+  }
+
 
   const { data, error } = await supabase
     .from('product')
@@ -146,7 +161,7 @@ async function submitProduct() {
           <label>ชื่อสินค้า</label>
           <input v-model="nameproduct" type="text" />
           <label>จำนวน</label>
-          <input v-model.number="stock" type="number" />
+          <input v-model.number="stock" type="number" min="0"/>
         </div>
 
         <div class="form-section">
@@ -170,9 +185,9 @@ async function submitProduct() {
         <div class="form-section">
           <h3>ราคา</h3>
           <label>ราคา</label>
-          <input v-model.number="baseprice" type="number" />
+          <input v-model.number="baseprice" type="number" min="0"/>
           <label>ราคาหลังลด</label>
-          <input v-model.number="saleprice" type="number" :disabled="promotype !== 'sale'" />
+          <input v-model.number="saleprice" type="number" :disabled="promotype !== 'sale'" min="0"/>
         </div>
 
         <div class="form-section full-width">

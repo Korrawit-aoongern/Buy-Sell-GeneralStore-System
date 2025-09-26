@@ -464,7 +464,6 @@ body {
   margin-bottom: 15px;
   background-color: white;
   padding: 1.2em;
-  gap: 24px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }

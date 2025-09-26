@@ -45,7 +45,7 @@
 
         <div v-else>
           <div class="product-meta">
-            <span class="product-price">{{ price.toFixed(2) }} บาท</span>
+            <span class="product-price">{{ originalprice.toFixed(2) }} บาท</span>
             <p class="product-qty" :class="{ 'zero-qty': availableStock <= 0 }">
               {{ availableStock }} Qty.
             </p>

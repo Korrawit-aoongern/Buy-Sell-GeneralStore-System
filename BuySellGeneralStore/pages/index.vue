@@ -83,9 +83,14 @@ function toggleShow(key, total) {
         <div v-if="isLoading">Loading products...</div>
         <div v-else-if="hotProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard v-for="(product, index) in hotVisible" :key="index" :id="product.productid"
-              :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"
-              :stock="product.stock" :image="product.imgurl" :promotype="product.promotype"
+            <ProductCard v-for="(product, index) in hotVisible" :key="index" 
+              :id="product.productid"
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice"
+              :stock="product.stock" 
+              :image="product.imgurl" 
+              :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)" />
           </div>
           <button v-if="hotProducts.length > 3" class="show-more-btn" @click="toggleShow('hot', hotProducts.length)">
@@ -99,9 +104,14 @@ function toggleShow(key, total) {
         <div v-if="isLoading">Loading products...</div>
         <div v-else-if="saleProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard v-for="(product, index) in saleVisible" :key="index" :id="product.productid"
-              :name="product.nameproduct" :originalprice="product.baseprice" :saleprice="product.saleprice"
-              :stock="product.stock" :image="product.imgurl" :promotype="product.promotype"
+            <ProductCard v-for="(product, index) in saleVisible" :key="index" 
+              :id="product.productid"
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice"
+              :stock="product.stock" 
+              :image="product.imgurl" 
+              :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)" />
           </div>
           <button v-if="saleProducts.length > 3" class="show-more-btn" @click="toggleShow('sale', saleProducts.length)">
@@ -115,9 +125,14 @@ function toggleShow(key, total) {
         <div v-if="isLoading">Loading products...</div>
         <div v-else-if="normalProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard v-for="(product, index) in normalVisible" :key="index" :id="product.productid"
-              :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"
-              :stock="product.stock" :image="product.imgurl" :promotype="product.promotype"
+            <ProductCard v-for="(product, index) in normalVisible" :key="index" 
+              :id="product.productid"
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice"
+              :stock="product.stock" 
+              :image="product.imgurl" 
+              :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)" />
           </div>
           <button v-if="normalProducts.length > 3" class="show-more-btn"
