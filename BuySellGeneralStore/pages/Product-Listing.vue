@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
 import Navbar from "~/components/UI/Navbar.vue";
+import FooTer from "~/components/UI/FooTer.vue";
 import { useCartStore } from "~/stores/cart"; // เปลี่ยนมาใช้ store
 
 import { createClient } from "@supabase/supabase-js"
@@ -258,7 +259,9 @@ onMounted(async () => {
         </div>
       </main>
     </div>
-    <footer style="background-color: #6acc91; width: 100%; height: 500px"></footer>
+
+    <FooTer/>
+
   </div>
 </template>
 <style>

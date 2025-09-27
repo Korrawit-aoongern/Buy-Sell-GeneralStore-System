@@ -29,7 +29,7 @@ onMounted(async () => {
     }
     try {
         await navigator.clipboard.writeText(data.billingid);
-        alert(`Billing ID ${data.billingid} has been copied to your clipboard!`);
+        alert(`Billing ID ${data.billingid} ถูกคัดลอกลงคลิปบอร์ดของคุณเรียบร้อย!`);
       } catch (err) {
         console.error("Failed to copy:", err);
       }
@@ -43,7 +43,7 @@ function goHome() {
 
 function copyOrderId() {
   navigator.clipboard.writeText(billingId.value);
-  alert(`Billing ID ${billingId.value} has been copied to your clipboard!`);
+  alert(`Billing ID ${billingId.value} ถูกคัดลอกลงคลิปบอร์ดของคุณเรียบร้อย!`);
 }
 </script>
 

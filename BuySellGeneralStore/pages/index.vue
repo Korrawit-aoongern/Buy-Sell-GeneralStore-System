@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { createClient } from "@supabase/supabase-js";
+import { useCartStore } from "~/stores/cart";
 import Navbar from "~/components/UI/Navbar.vue";
 import ProductCard from "~/components/Product/Product Card.vue";
-import { useCartStore } from "~/stores/cart";
+import FooTer from "~/components/UI/FooTer.vue"
 
 const cartStore = useCartStore();
 const addToCart = cartStore.addToCart;
@@ -143,12 +144,9 @@ function toggleShow(key, total) {
       </div>
     </section>
 
-    <footer style="
-        background-color: #6acc91;
-        width: 100%;
-        height: 500px;
-        margin-top: 12em;
-      "></footer>
+    <div>
+      <FooTer/>
+    </div>
   </div>
 </template>
 <style>
