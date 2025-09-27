@@ -48,7 +48,8 @@ const categories = [
   { label: "เทคโนโลยี", value: "technology" },
   { label: "ของใช้กลางแจ้ง", value: "outdoors" },
   { label: "ของใช้ในบ้านทั่วไป", value: "general" }
-]
+];
+
 
 // promo types
 const promoTypes = [
@@ -566,6 +567,7 @@ body {
 .dashboard-container {
   display: flex;
   height: 100%;
+  min-height: 100vh;
 }
 
 /* main content remains */
@@ -761,7 +763,7 @@ input[type="checkbox"]:indeterminate {
 }
 
 .form-field {
-  width: 100%;
+  width: 99%;
   padding: 8px;
   margin: 5px 0 10px;
   border-radius: 6px;

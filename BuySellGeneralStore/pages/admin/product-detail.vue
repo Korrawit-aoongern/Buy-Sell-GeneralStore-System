@@ -377,12 +377,11 @@ watch(
 body {
   font-family: 'prompt', sans-serif;
 }
-
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
 }
-
 /* Main Content */
 .main-content {
   flex: 1;
@@ -401,65 +400,6 @@ body {
   box-sizing: border-box;
 }
 
-.notification {
-  height: 32px;
-  cursor: pointer;
-}
-
-.notification-card {
-  position: absolute;
-  top: 75px;
-  right: 20px;
-  background: #fff;
-  border-radius: 10px;
-  width: 300px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  overflow: hidden;
-  z-index: 1000;
-}
-
-.notification-header {
-  font-size: 14px;
-  font-weight: bold;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-
-.notification-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-
-.red-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: red;
-  margin-top: 5px;
-  margin-right: 10px;
-}
-
-.notification-text {
-  flex: 1;
-}
-
-.notification-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.notification-desc {
-  font-size: 13px;
-  color: #555;
-}
 
 .content {
   padding: 20px;
@@ -536,5 +476,40 @@ body {
 .image-card img {
   border-radius: 5px;
   margin-top: 10px;
+}
+.image-box img {
+  max-width: 200px;
+  margin: auto;
+  display: block;
+}
+
+.table-container {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+thead {
+  background: #597162;
+  color: white;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.summary {
+  text-align: right;
+  font-size: 16px;
 }
 </style>

@@ -2,27 +2,31 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { createClient } from "@supabase/supabase-js";
 import { useNotificationStore } from '~/stores/notification'
-  
 
-const config = useRuntimeConfig(); // ถ้าใช้ Nuxt
+const config = useRuntimeConfig(); // Nuxt
 const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
 
 const showNotifications = ref(false);
-const notificationStore = useNotificationStore(); // ใช้ store
+const notificationStore = useNotificationStore();
+const alreadyCleared = ref(false);
 
 // เปิด/ปิดแถบ Notification
 function toggleNotification() {
   showNotifications.value = !showNotifications.value;
 
-  // ถ้าเปิด popup แล้ว เคลียร์ตัวเลข badge
-  if (showNotifications.value) {
+  if (!showNotifications.value && !alreadyCleared.value) {
     notificationStore.clearCount();
+    notificationStore.notifications = notificationStore.notifications.map(n => ({
+      ...n,
+      is_read: true
+    }));
+    alreadyCleared.value = true;
   }
 }
 
 onMounted(() => {
-  // subscribe ฟัง event update ของตาราง product
-  const channel = supabase
+  // ✅ ฟังการอัปเดตสต๊อก (สินค้าใกล้หมด)
+  const productChannel = supabase
     .channel("low-stock")
     .on(
       "postgres_changes",
@@ -32,19 +36,37 @@ onMounted(() => {
 
         if (newStock <= 10) {
           notificationStore.addNotification({
-            title: "สินค้าของคุณใกล้จะหมดสต๊อก",
+            title: "สินค้าใกล้หมดสต๊อก",
             desc: `${payload.new.nameproduct} เหลือ ${newStock} ชิ้น`,
             is_read: false,
-            created_at: new Date().toISOString()   // ✅ เพิ่ม timestamp
+            created_at: new Date().toISOString()
           });
         }
       }
     )
     .subscribe();
 
-  // cleanup channel ตอนออกจาก component
+  // ✅ ฟังการสั่งซื้อใหม่ (order INSERT)
+  const orderChannel = supabase
+    .channel("new-order")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "order" }, 
+      (payload) => {
+        notificationStore.addNotification({
+          title: "มีออเดอร์ใหม่",
+          desc: `ลูกค้า #${payload.new.customerid} สั่งซื้อหมายเลขออเดอร์ ${payload.new.orderid}`,
+          is_read: false,
+          created_at: new Date().toISOString()
+        });
+      }
+    )
+    .subscribe();
+
+  // cleanup ตอนออกจาก component
   onBeforeUnmount(() => {
-    supabase.removeChannel(channel);
+    supabase.removeChannel(productChannel);
+    supabase.removeChannel(orderChannel);
   });
 });
 </script>
@@ -57,7 +79,6 @@ onMounted(() => {
         name="material-symbols:notifications-rounded"
         style="color: black; width: 32px; height: 32px;"
       />
-      <!-- Badge ตัวเลข -->
       <span v-if="notificationStore.notificationCount > 0" class="notification-badge">
         {{ notificationStore.notificationCount }}
       </span>
@@ -72,7 +93,7 @@ onMounted(() => {
           :key="i"
           class="notification-item"
         >
-          <div class="red-dot" v-if="!n.is_read"></div>
+          <div  v-if="!n.is_read" class="red-dot"></div>
           <div class="notification-text">
             <div class="notification-title">{{ n.title }}</div>
             <div class="notification-desc">{{ n.desc }}</div>
@@ -84,7 +105,7 @@ onMounted(() => {
       </div>
     </div>
   </header>
-</template> 
+</template>
 
 <style scoped>
 .topbar {

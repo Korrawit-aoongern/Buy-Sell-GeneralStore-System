@@ -23,11 +23,10 @@ body {
 }
 
 .dashboard-container {
-    display: flex;
-    height: 100vh;
+  display: flex;
+  height: 100%;
+  min-height: 100vh;
 }
-
-
 
 /* Main Content */
 .main-content {

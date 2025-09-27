@@ -220,7 +220,8 @@ body {
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
 }
 
 /* Sidebar นำเข้าแล้วจาก <adminaside /> */

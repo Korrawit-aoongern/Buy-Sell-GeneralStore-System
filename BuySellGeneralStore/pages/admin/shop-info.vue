@@ -139,21 +139,21 @@ onMounted(() => {
             <form @submit.prevent="saveData">
               <div>
                 <label>ชื่อ</label>
-                <input v-model="editData.name" type="text" />
+                <input v-model="editData.name" class="form-field" type="text"/>
               </div>
               <div>
                 <label>เบอร์โทร</label>
-                <input v-model="editData.phone" type="text" />
+                <input v-model="editData.phone" class="form-field" type="text" />
               </div>
               <div>
                 <label>ที่อยู่</label>
-                <input v-model="editData.address" type="text" />
+                <input v-model="editData.address" class="form-field" type="text" />
               </div>
 
               <div>
                 <label>QR Code</label>
                 <label class="upload-box">
-                  <input type="file" @change="handleFileUpload" hidden />
+                  <input type="file" class="form-field" @change="handleFileUpload" hidden />
                   <div class="upload-placeholder" :class="{ 'has-image': editData.qrcode }">
                     <template v-if="editData.qrcode">
                       <img :src="editData.qrcode" alt="preview" class="preview-img" />
@@ -168,7 +168,7 @@ onMounted(() => {
 
               <div class="btn-group">
                 <button type="button" class="cancel-btn" @click="cancelEdit">ยกเลิก</button>
-                <button type="submit" class="save-btn">ยืนยัน</button>
+                <button type="submit" class="edit-btn">ยืนยัน</button>
               </div>
             </form>
           </div>
@@ -186,7 +186,8 @@ body {
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
 }
 
 /* Main Content */
@@ -209,59 +210,6 @@ body {
   box-sizing: border-box;
 }
 
-.notification {
-  height: 32px;
-  cursor: pointer;
-}
-
-/* Notification card */
-.notification-card {
-  position: absolute;
-  top: 75px;
-  right: 20px;
-  background: #fff;
-  border-radius: 10px;
-  width: 300px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  overflow: hidden;
-  z-index: 1000;
-}
-.notification-header {
-  font-size: 14px;
-  font-weight: bold;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-.notification-list {
-  display: flex;
-  flex-direction: column;
-}
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 10px 15px;
-  border-bottom: 1px solid #E5E5E5;
-}
-.red-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: red;
-  margin-top: 5px;
-  margin-right: 10px;
-}
-.notification-text {
-  flex: 1;
-}
-.notification-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-.notification-desc {
-  font-size: 13px;
-  color: #555;
-}
 
 /* Content */
 .content {
@@ -286,6 +234,8 @@ body {
   border: none;
   cursor: pointer;
   margin-bottom: 20px;
+  font-family: prompt, sans-serif;
+  font-weight: bold;
 }
 .edit-btn:hover {
   background: #68b383;
@@ -298,11 +248,11 @@ body {
   width: 180px;
 }
 .upload-box {
-  border: 1px solid #ccc;  
-  border-radius: 6px;       
-  height:100%;          /* ความสูงคงเดิม */
-  width: 100%;             /* ให้เต็ม container แต่ไม่เกิน max */
-  max-width: 250px;        /* ขนาดสูงสุด ปรับได้ตามต้องการ */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  height:100%;
+  width: 100%;
+  max-width: 250px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -354,29 +304,17 @@ body {
 
 .cancel-btn {
   background: #e74c3c;
-  color: #fff;
+  color: white;
   padding: 8px 16px;
-  border: none;
   border-radius: 6px;
+  border: none;
   cursor: pointer;
-  font-size: 14px;
+  margin-bottom: 20px;
+  font-family: prompt, sans-serif;
   font-weight: bold;
 }
 .cancel-btn:hover {
   background: #c0392b;
 }
 
-.save-btn {
-  background: #2ecc71;
-  color: #fff;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-}
-.save-btn:hover {
-  background: #27ae60;
-}
 </style>

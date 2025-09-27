@@ -195,7 +195,7 @@ onMounted(() => {
 
           <!-- Slip / Image -->
           <div class="box image-box">
-            <div v-if="order.paymentMethod == 'COD'">ไม่มีสลิปเนื่องจากเก็บปลายทาง</div>
+            <div v-if="order.paymentMethod == 'COD'" style="text-align: center;">ไม่มีสลิปเนื่องจากเก็บปลายทาง</div>
             <img :src="order.slip" alt="payment slip" />
           </div>
         </div>
@@ -255,7 +255,8 @@ body {
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
 }
 
 .main-content {
@@ -305,6 +306,47 @@ body {
   padding: 15px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  background-color: white;
+  padding: 1.2em;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.actions button{
+  margin-left: 10px;
+  padding: 0.5em 6em;
+  font-family: Prompt, sans-serif;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-success {
+  background: #6ACC91;
+  font-family: Prompt, sans-serif;
+  color: white;
+}
+
+.btn-edit {
+  background: #CACC6A;
+  font-family: Prompt, sans-serif;
+  color: white;
+}
+
+.btn-delete {
+  background: #D9534F;
+  font-family: Prompt, sans-serif;
+  color: white;
+}
+.btn-info {
+  background: #A8A4A4;
+  font-family: Prompt, sans-serif;
+  color: white;
+}
 
 .image-box img {
   max-width: 200px;
@@ -340,5 +382,26 @@ th, td {
 .summary {
   text-align: right;
   font-size: 16px;
+}
+.order-card {
+  margin-top: 20px;
+}
+
+.order-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.order-table th {
+  background: #4d6651;
+  color: #fff;
+  padding: 10px;
+  text-align: left;
+}
+
+.order-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
 }
 </style>

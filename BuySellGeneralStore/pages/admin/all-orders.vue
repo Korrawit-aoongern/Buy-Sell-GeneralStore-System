@@ -40,7 +40,7 @@ async function fetchOrders(page = 1) {
     .from('order')
     .select('orderid, orderdate, total_amount, billingid, status, payment_method, isDelete', { count: 'exact' })
     .eq('isDelete', false)
-    .order('orderid', { ascending: true })
+    .order('orderid', { ascending: false })
     .range(from, to) // 👈 pagination
 
   if (error) {
@@ -214,7 +214,8 @@ body {
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
 }
 
 /* Main Content */

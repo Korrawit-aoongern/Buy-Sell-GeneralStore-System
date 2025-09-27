@@ -189,7 +189,8 @@ function goToDetail() {
 <style>
 .dashboard-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
 }
 .main-content {
   flex: 1;

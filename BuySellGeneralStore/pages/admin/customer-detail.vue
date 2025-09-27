@@ -121,10 +121,11 @@ onMounted(() => fetchCustomerOrders())
         <div v-if="errorMsg"><p>{{ errorMsg }}</p></div>
 
         <div v-else-if="customer.id">
-          <div class="card">
-            <p><strong>#{{ customer.id }}</strong> {{ customer.name }}</p>
-            <p>📞 {{ customer.phone }}</p>
-            <p>{{ customer.address }}</p>
+          <div class="card" style="display: flex; flex-direction: column; gap: 10px;">
+            <div><strong>#{{ customer.id }}</strong></div>
+            <span><strong>ชื่อ :</strong> {{ customer.name }}</span>
+            <div><strong><Icon name="material-symbols:phone-in-talk-rounded" color="black"/> :</strong> {{ customer.phone }}</div>
+            <div><strong>ที่อยู่ :</strong> {{ customer.address }}</div>
           </div>
 
           <div>
@@ -183,8 +184,8 @@ body {
 
 .dashboard-container {
   display: flex;
-  height: 100vh;
-  background: #f9f9f4;
+  height: 100%;
+  min-height: 100vh;
 }
 
 .main-content {
