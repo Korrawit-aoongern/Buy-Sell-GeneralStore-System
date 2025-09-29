@@ -14,7 +14,28 @@ const slipFile = ref(null);
 const slipPreviewUrl = ref("");
 const showConfirmModal = ref(false);
 const showWarning = ref(false);
-const qrCodeUrl = ref("/Image/PromptPay.png");
+const qrCodeUrl = ref(""); 
+
+async function fetchOwnerData() {
+  const { data, error } = await supabase
+    .from("owner")
+    .select("qrcode")   // ✅ only fetch qrcode column
+    .eq("ownerid", 1)
+    .single();
+
+  if (error) {
+    console.error("Error fetching owner qrcode:", error);
+    return;
+  }
+
+  if (data?.qrcode) {
+    qrCodeUrl.value = data.qrcode;
+  } else {
+    alert("เจ้าของร้านนี้ไม่มี Qr code โปรดติดต่อเจ้าหน้าที่หรือเจ้าของร้าน");
+    console.warn("⚠️ No qrcode found for ownerid=1");
+  }
+}
+
 
 function handleFileChange(event) {
   const file = event.target.files[0];
@@ -107,6 +128,10 @@ async function goToThankyou() {
   showConfirmModal.value = false;
   router.push({ path: "/thankyou", query: { orderid: orderId.value } });
 }
+
+onMounted(() => {
+  fetchOwnerData();
+});
 </script>
 
 <template>

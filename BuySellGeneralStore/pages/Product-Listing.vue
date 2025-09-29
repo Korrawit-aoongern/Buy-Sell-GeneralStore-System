@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import ProductCard from "~/components/Product/Product Card.vue";
 import Navbar from "~/components/UI/Navbar.vue";
+import FooTer from "~/components/UI/FooTer.vue";
 import { useCartStore } from "~/stores/cart"; // เปลี่ยนมาใช้ store
 
 import { createClient } from "@supabase/supabase-js"
@@ -129,7 +130,10 @@ const togglePanel = () => {
 };
 
 onMounted(async () => {
-  const { data, error } = await supabase.from("product").select("*");
+  const { data, error } = await supabase
+  .from("product")
+  .select("*")
+  .eq('isDelete', false);
   if (error) {
     console.error("Error loading products:", error);
   } else {
@@ -249,13 +253,15 @@ onMounted(async () => {
           :originalprice="product.baseprice"
           :saleprice="product.saleprice"
           :stock="product.stock"
-          :image="`Image/${product.imgurl}`"
+          :image="product.imgurl"
           :promotype="product.promotype"
           @add-to-cart="() => cartStore.addToCart(product)"/>
         </div>
       </main>
     </div>
-    <footer style="background-color: #6acc91; width: 100%; height: 500px"></footer>
+
+    <FooTer/>
+
   </div>
 </template>
 <style>

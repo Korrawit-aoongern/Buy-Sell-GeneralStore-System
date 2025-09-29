@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import Navbar from "~/components/UI/Navbar.vue";
+import FooTer from "~/components/UI/FooTer.vue";
 import { createClient } from "@supabase/supabase-js";
 
 const orderCode = ref("");
@@ -104,7 +105,7 @@ const checkOrder = async () => {
             : null,
         isSale: item.price_at_buy && item.price_at_buy < item.product.baseprice,
         qty: item.quantity,
-        image: `/Image/${item.product.imgurl}`,
+        image: item.product.imgurl,
       })),
     };
       localStorage.setItem(
@@ -299,14 +300,9 @@ const closeCancelModal = () => {
         </div>
       </div>
     </div>
-    <footer
-      style="
-        background-color: #6acc91;
-        width: 100%;
-        height: 500px;
-        margin-top: 12em;
-      "
-    ></footer>
+    <div>
+      <FooTer/>
+    </div>
   </div>
 </template>
 

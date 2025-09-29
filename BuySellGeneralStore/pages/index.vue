@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { createClient } from "@supabase/supabase-js";
+import { useCartStore } from "~/stores/cart";
 import Navbar from "~/components/UI/Navbar.vue";
 import ProductCard from "~/components/Product/Product Card.vue";
-import { useCartStore } from "~/stores/cart";
+import FooTer from "~/components/UI/FooTer.vue"
 
 const cartStore = useCartStore();
 const addToCart = cartStore.addToCart;
@@ -22,7 +23,8 @@ onMounted(async () => {
   const { data, error } = await supabase
     .from("product")
     .select("*")
-    .eq("is_featured", true);
+    .eq("is_featured", true)
+    .eq('isDelete', false);
 
   if (error) {
     console.error("Error loading products:", error);
@@ -82,9 +84,14 @@ function toggleShow(key, total) {
         <div v-if="isLoading">Loading products...</div>
         <div v-else-if="hotProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard v-for="(product, index) in hotVisible" :key="index" :id="product.productid"
-              :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"
-              :stock="product.stock" :image="`Image/${product.imgurl}`" :promotype="product.promotype"
+            <ProductCard v-for="(product, index) in hotVisible" :key="index" 
+              :id="product.productid"
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice"
+              :stock="product.stock" 
+              :image="product.imgurl" 
+              :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)" />
           </div>
           <button v-if="hotProducts.length > 3" class="show-more-btn" @click="toggleShow('hot', hotProducts.length)">
@@ -96,11 +103,16 @@ function toggleShow(key, total) {
       <div class="Feature-Section">
         <span class="title">สินค้าลดราคา</span>
         <div v-if="isLoading">Loading products...</div>
-        <div v-else-if="hotProducts.length" class="product-Visible">
+        <div v-else-if="saleProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard v-for="(product, index) in saleVisible" :key="index" :id="product.productid"
-              :name="product.nameproduct" :originalprice="product.baseprice" :saleprice="product.saleprice"
-              :stock="product.stock" :image="`Image/${product.imgurl}`" :promotype="product.promotype"
+            <ProductCard v-for="(product, index) in saleVisible" :key="index" 
+              :id="product.productid"
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice"
+              :stock="product.stock" 
+              :image="product.imgurl" 
+              :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)" />
           </div>
           <button v-if="saleProducts.length > 3" class="show-more-btn" @click="toggleShow('sale', saleProducts.length)">
@@ -112,11 +124,16 @@ function toggleShow(key, total) {
       <div class="Feature-Section">
         <span class="title">สินค้าปกติ</span>
         <div v-if="isLoading">Loading products...</div>
-        <div v-else-if="hotProducts.length" class="product-Visible">
+        <div v-else-if="normalProducts.length" class="product-Visible">
           <div class="product-list">
-            <ProductCard v-for="(product, index) in normalVisible" :key="index" :id="product.productid"
-              :name="product.nameproduct" :price="product.baseprice" :saleprice="product.saleprice"
-              :stock="product.stock" :image="`Image/${product.imgurl}`" :promotype="product.promotype"
+            <ProductCard v-for="(product, index) in normalVisible" :key="index" 
+              :id="product.productid"
+              :name="product.nameproduct" 
+              :originalprice="product.baseprice" 
+              :saleprice="product.saleprice"
+              :stock="product.stock" 
+              :image="product.imgurl" 
+              :promotype="product.promotype"
               @add-to-cart="() => addToCart(product)" />
           </div>
           <button v-if="normalProducts.length > 3" class="show-more-btn"
@@ -127,12 +144,9 @@ function toggleShow(key, total) {
       </div>
     </section>
 
-    <footer style="
-        background-color: #6acc91;
-        width: 100%;
-        height: 500px;
-        margin-top: 12em;
-      "></footer>
+    <div>
+      <FooTer/>
+    </div>
   </div>
 </template>
 <style>
