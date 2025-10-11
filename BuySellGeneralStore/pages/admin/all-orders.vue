@@ -141,7 +141,6 @@ onMounted(() => {
               <option value="" disabled selected>สถานะ</option>
               <option value="Complete">เสร็จสิ้น</option>
               <option value="Delivery">จัดส่ง</option>
-              <option value="Cancelled">ยกเลิก</option>
               <option value="Pending">รอดำเนินการ</option>
             </select>
           </div>

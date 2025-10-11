@@ -1,24 +1,23 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import adminaside from '~/components/admin/adminaside.vue'
 import notification from "~/components/admin/notification.vue";
 import { createClient } from "@supabase/supabase-js";
 
 const config = useRuntimeConfig();
-const supabase = createClient(
-  config.public.supabaseUrl,
-  config.public.supabaseAnonKey
-);
-
+const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey);
 const route = useRoute();
+const router = useRouter();
+
 const order = ref({});
 const orderitems = ref([]);
-const customer = ref({})
+const customer = ref({});
 const errorMsg = ref("");
+
+const showDeleteModal = ref(false); // 🔴 modal toggle
 
 async function fetchOrder(id) {
   try {
-
     const { data, error } = await supabase
       .from("order")
       .select(`
@@ -53,27 +52,25 @@ async function fetchOrder(id) {
 
     if (error || !data) throw error || new Error("ไม่พบออเดอร์");
 
-    // Transform for UI
-    const orderdata = {
+    order.value = {
       oid: data.orderid,
       billingid: data.billingid,
       status: data.status,
       paymentMethod: data.payment_method,
       total: data.total_amount,
       orderdate: data.orderdate,
-      slip:
-        data.payment_slip ||
+      slip: data.payment_slip ||
         "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg",
     };
 
-    const customerdata = {
+    customer.value = {
       fname: data.customer?.fname || "",
       lname: data.customer?.lname || "",
       phone: data.customer?.phone || "",
       address: data.customer?.address || "",
     };
 
-    const orderitemsdata = (data.orderitems || []).map((oi) => ({
+    orderitems.value = (data.orderitems || []).map((oi) => ({
       oiid: oi.order_item_id,
       quantity: oi.quantity,
       priceAtBuy: oi.price_at_buy,
@@ -81,37 +78,33 @@ async function fetchOrder(id) {
         id: oi.product.productid,
         name: oi.product?.nameproduct || "ไม่พบสินค้า",
         baseprice: oi.product?.baseprice || 0,
-        imgurl: oi.product?.imgurl ||
-        "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg",
+        imgurl:
+          oi.product?.imgurl ||
+          "https://cdjpebstofhdsmmqpzlw.supabase.co/storage/v1/object/public/product/no-image.jpg",
       },
     }));
-
-    // Assign to refs
-    order.value = orderdata;
-    customer.value = customerdata;
-    orderitems.value = orderitemsdata;
-
   } catch (err) {
     console.error(err);
     errorMsg.value = "ไม่สามารถโหลดข้อมูลออเดอร์ได้";
   }
 }
+
 function discountPercent() {
   if (!orderitems.value.length) return 0;
 
   let originalTotal = 0;
   let discountedTotal = 0;
 
-  orderitems.value.forEach(item => {
+  orderitems.value.forEach((item) => {
     const base = item.product?.baseprice || item.priceAtBuy;
     originalTotal += base * item.quantity;
     discountedTotal += item.priceAtBuy * item.quantity;
   });
 
   if (originalTotal <= 0) return 0;
-
   return ((originalTotal - discountedTotal) / originalTotal) * 100;
 }
+
 async function updateStatus(newStatus) {
   if (!newStatus || !order.value.oid) return;
 
@@ -124,7 +117,6 @@ async function updateStatus(newStatus) {
     if (error) throw error;
 
     alert("อัปเดตสถานะสำเร็จ");
-    // Update locally so UI reflects change immediately
     order.value.status = newStatus;
   } catch (err) {
     console.error("Update status error:", err.message);
@@ -132,12 +124,36 @@ async function updateStatus(newStatus) {
   }
 }
 
+function Softdelete() {
+  showDeleteModal.value = true;
+}
+
+//Confirm delete
+async function confirmDelete() {
+  try {
+    const { error } = await supabase
+      .from("order")
+      .update({ isDelete: true })
+      .eq("orderid", order.value.oid);
+
+    if (error) throw error;
+
+    alert("ลบรายการสำเร็จ");
+    showDeleteModal.value = false;
+    router.push("/admin/all-order");
+  } catch (err) {
+    console.error("Delete error:", err.message);
+    alert("ลบไม่สำเร็จ: " + err.message);
+  }
+}
+
 onMounted(() => {
-  const id = Number(route.query.id); // ✅ ensure numeric
+  const id = Number(route.query.id);
   if (id) fetchOrder(id);
   else errorMsg.value = "กรุณาเลือกออเดอร์ที่ต้องการดูจากหน้าออเดอร์ทั้งหมด";
 });
 </script>
+
 
 <template>
   <div class="dashboard-container">
@@ -165,8 +181,8 @@ onMounted(() => {
           <div class="actions">
             <button class="btn-success" @click="updateStatus('Complete')">เสร็จสิ้นแล้ว</button>
             <button class="btn-edit" @click="updateStatus('Delivery')">จัดส่ง</button>
-            <button class="btn-danger" @click="updateStatus('Cancelled')">ยกเลิก</button>
             <button class="btn-info" @click="updateStatus('Pending')">รอดำเนินการ</button>
+            <button class="btn-danger" @click="Softdelete()">ลบรายการ</button>
           </div>
         </div>
 
@@ -245,6 +261,17 @@ onMounted(() => {
         <div v-else><p>กำลังโหลด...</p></div>
       </div>
     </div>
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay">
+      <div class="modal">
+        <h3>ยืนยันการลบรายการนี้?</h3>
+        <div class="modal-actions">
+          <button class="btn-danger" @click="confirmDelete">ยืนยัน</button>
+          <button class="btn-cancel" @click="showDeleteModal = false">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -274,6 +301,38 @@ body {
   align-items: center;
   padding: 0 20px;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-cancel {
+  background: #ccc;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
 
 /* Content */
 .content {
