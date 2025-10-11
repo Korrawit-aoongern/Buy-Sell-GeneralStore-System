@@ -140,7 +140,7 @@ async function confirmDelete() {
 
     alert("ลบรายการสำเร็จ");
     showDeleteModal.value = false;
-    router.push("/admin/all-order");
+    router.push("/admin/all-orders");
   } catch (err) {
     console.error("Delete error:", err.message);
     alert("ลบไม่สำเร็จ: " + err.message);
