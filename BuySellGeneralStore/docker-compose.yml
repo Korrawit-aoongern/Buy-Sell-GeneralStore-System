@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    image: buy-sell-generalstore:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - NUXT_PUBLIC_SUPABASE_URL=${NUXT_PUBLIC_SUPABASE_URL}
+      - NUXT_PUBLIC_SUPABASE_ANON_KEY=${NUXT_PUBLIC_SUPABASE_ANON_KEY}
+
+  dev:
+    image: node:20-bullseye-slim
+    working_dir: /app
+    volumes:
+      - ./:/app:cached
+      - dev_node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    # Ensure dependencies exist inside the container (named volume) before starting dev server
+    command: ["sh", "-c", "if [ ! -d node_modules ] || [ \"$(ls -A node_modules 2>/dev/null)\" = \"\" ]; then npm install --no-audit --no-fund; fi && npm run dev -- -H 0.0.0.0"]
+    environment:
+      - NODE_ENV=development
+      - NUXT_HOST=0.0.0.0
+
+volumes:
+  dev_node_modules:

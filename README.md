@@ -19,7 +19,7 @@ This project was developed as part of a **Database and Software Process** course
 | ชัยปรากานต์ ดวงแก้ว      | Business Analysis / Developer     |
 | ชัยณรงค์ ศานตินนท์      | Business Analysis / UX UI     |
 
-## Installation
+## Installation (ดั้งเดิม)
 
 Install nuxt
 
@@ -57,4 +57,22 @@ Create .env
 Finally
 ```node
   npm run dev
+```
+## Installation (Docker)
+### Create .env
+```
+  NUXT_PUBLIC_SUPABASE_URL= YourURL
+  NUXT_PUBLIC_SUPABASE_ANON_KEY= YourKey
+```
+### dev environment
+``` bash
+  docker-compose up --build -d dev
+```
+### Production environment
+``` bash
+  docker-compose up --build -d app
+```
+### stop
+``` bash
+  docker-compose down
 ```
